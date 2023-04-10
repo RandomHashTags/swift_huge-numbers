@@ -151,6 +151,14 @@ public extension HugeInt {
     }
 }
 /*
+ prefixes
+ */
+public extension HugeInt {
+    static prefix func - (value: HugeInt) -> HugeInt {
+        return HugeInt(is_negative: !value.is_negative, value.numbers)
+    }
+}
+/*
  Addition
  */
 internal extension HugeInt {
@@ -191,6 +199,10 @@ internal extension HugeInt {
             }
             index += 1
         }
+        while index < result_count-1 {
+            result[index] = bigger_numbers[index]
+            index += 1
+        }
         while result.last == 0 {
             result.removeLast()
         }
@@ -200,6 +212,39 @@ internal extension HugeInt {
 /*
  Subtraction // TODO: support
  */
+public extension HugeInt {
+    /// Finds the net of two 8-bit number arrays.
+    /// - Returns: the net of the two arrays, in reverse order.
+    static func subtract(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] { // TODO: finish
+        let array_count:Int = bigger_numbers.count
+        let smaller_numbers_length:Int = smaller_numbers.count
+        let result_count:Int = array_count
+        var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
+        
+        var index:Int = 0
+        while index < smaller_numbers_length {
+            let new_value:UInt8 = bigger_numbers[index] + smaller_numbers[index]
+            result[index] = new_value
+            
+            while index < result_count && result[index] > 9 {
+                let original_value:UInt8 = result[index]
+                let remainder:UInt8 = original_value / 10
+                result[index] -= (remainder * 10)
+                index += 1
+                
+                let existing_value:UInt8 = bigger_numbers.get(index) ?? 0
+                let adding_value:UInt8 = smaller_numbers.get(index) ?? 0
+                let new_value:UInt8 = existing_value + adding_value + remainder
+                result[index] = new_value
+            }
+            index += 1
+        }
+        while result.last == 0 {
+            result.removeLast()
+        }
+        return result
+    }
+}
 /*
  Multiplication
  */
