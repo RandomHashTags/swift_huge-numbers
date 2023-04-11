@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable {
     public private(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.
@@ -18,9 +19,7 @@ public struct HugeInt : Hashable, Comparable {
     }
     public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T) {
         var target_string:T = string
-        while target_string.first == "0" {
-            target_string.removeFirst()
-        }
+        target_string.remove_leading_zeros()
         if target_string.isEmpty {
             is_negative = false
             numbers = []
@@ -44,6 +43,9 @@ public struct HugeInt : Hashable, Comparable {
     }
     public var is_zero : Bool {
         return numbers.count == 0
+    }
+    public var to_float : HugeFloat {
+        return HugeFloat(pre_decimal_number: self, post_decimal_number: HugeInt(0), exponent: 0)
     }
     
     public mutating func adding(_ value: HugeInt) -> HugeInt {
@@ -252,7 +254,11 @@ public extension HugeInt {
 internal extension HugeInt {
     static func add(left: [UInt8], right: [UInt8]) -> (result: [UInt8], left_is_bigger: Bool) {
         let (bigger_numbers, smaller_numbers, left_is_bigger):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
-        return (HugeInt.add(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers), left_is_bigger)
+        var result:[UInt8] = HugeInt.add(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+        while result.last == 0 {
+            result.removeLast()
+        }
+        return (result, left_is_bigger)
     }
     /// Finds the sum of two 8-bit number arrays.
     /// - Returns: the sum of the two arrays, in reverse order.
@@ -264,7 +270,7 @@ internal extension HugeInt {
         
         var index:Int = 0
         while index < smaller_numbers_length {
-            let new_value:UInt8 = bigger_numbers[index] + smaller_numbers[index]
+            let new_value:UInt8 = (bigger_numbers.get(index) ?? 0) + smaller_numbers[index]
             result[index] = new_value
             
             while index < result_count && result[index] > 9 {
@@ -283,9 +289,6 @@ internal extension HugeInt {
         while index < result_count-1 {
             result[index] = bigger_numbers[index]
             index += 1
-        }
-        while result.last == 0 {
-            result.removeLast()
         }
         return result
     }
@@ -343,7 +346,11 @@ public extension HugeInt {
 internal extension HugeInt {
     static func subtract(left: [UInt8], right: [UInt8]) -> (result: [UInt8], left_is_bigger: Bool) {
         let (bigger_numbers, smaller_numbers, left_is_bigger):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
-        return (HugeInt.subtract(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers), left_is_bigger)
+        var result:[UInt8] = HugeInt.subtract(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+        while result.last == 0 {
+            result.removeLast()
+        }
+        return (result, left_is_bigger)
     }
     /// Finds the net of two 8-bit number arrays.
     /// - Returns: the net of the two arrays, in reverse order.
@@ -373,9 +380,6 @@ internal extension HugeInt {
         while index < result_count {
             result[index] = bigger_numbers_copy[index]
             index += 1
-        }
-        while result.last == 0 {
-            result.removeLast()
         }
         return result
     }
@@ -414,7 +418,11 @@ internal extension HugeInt {
             smaller_numbers = left
             bigger_numbers = right
         }
-        return HugeInt.multiply(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+        var result:[UInt8] = HugeInt.multiply(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+        while result.last == 0 {
+            result.removeLast()
+        }
+        return result
     }
     /// Multiplies two 8-bit number arrays together.
     /// - Parameters:
@@ -448,9 +456,6 @@ internal extension HugeInt {
             }
             result = HugeInt.add(bigger_numbers: result, smaller_numbers: small_number_result)
             small_number_index += 1
-        }
-        while result.last == 0 {
-            result.removeLast()
         }
         return result
     }

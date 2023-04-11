@@ -70,5 +70,18 @@ final class huge_numbersTests: XCTestCase {
         let float:HugeFloat = HugeFloat("3.1415926535e-10")
         XCTAssert(float.description.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
+        
+        test_float_multiplication()
+    }
+    private func test_float_addition() {
+        let float:HugeFloat = HugeFloat(1.5)
+        let result:HugeFloat = float + 3
+        XCTAssert(result == HugeFloat(4.5), "test_float_addition;result=\(result)")
+    }
+    private func test_float_multiplication() {
+        let float:HugeFloat = HugeFloat("1.7959")
+        let um:Int = 2
+        let result:HugeFloat = float * um
+        XCTAssert(result == HugeFloat(3.5918), "test_float_multiplication;result=\(result)")
     }
 }
