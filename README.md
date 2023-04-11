@@ -5,10 +5,9 @@ A description of this package.
 ## Current features
 - `HugeInt`
 - `HugeFloat`
-- addition and multiplication
+- addition, subtraction, and multiplication
 - infinite precision
 
 ## Current limitations
 - `HugeFloat` is very limited in functionality
-- can only add positive numbers
-- no subtraction, division, or special arithmetic
+- no division or special arithmetic
