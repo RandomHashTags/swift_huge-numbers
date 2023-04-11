@@ -93,8 +93,8 @@ final class huge_numbersTests: XCTestCase {
         
         integer = HugeInt("3460987")
         number = HugeInt("89345")
-        let (test1, test2):([UInt8], [UInt8]) = HugeInt.divide2(bigger_numbers: integer.numbers, smaller_numbers: number.numbers)
-        (result, result_remainder) = (HugeInt(is_negative: false, test1.reversed()), HugeInt(is_negative: false, test2.reversed()))
+        let (test1, test2):([UInt8], [UInt8]) = HugeInt.divide(bigger_numbers: integer.numbers, smaller_numbers: number.numbers)
+        (result, result_remainder) = (HugeInt(is_negative: false, test1), HugeInt(is_negative: false, test2))
         XCTAssert(result == HugeInt("38"), "test_int_division;result=" + result.description + ";result_remainder=" + result_remainder.description)
     }
     

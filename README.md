@@ -5,12 +5,12 @@ This library was created to remove the decimal precision limitation on floats, w
 ## Current features
 - `HugeInt`
 - `HugeFloat`
-- addition, subtraction, and multiplication
+- addition, subtraction, multiplication, and division
 - infinite precision
 
 ## Current limitations
 - `HugeFloat` is partially limited in functionality
-- no division or special arithmetic
+- no special arithmetic
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.

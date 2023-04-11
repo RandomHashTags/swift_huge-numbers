@@ -480,125 +480,29 @@ internal extension HugeInt {
     }
 }
 /*
- Division // TODO: support
+ Division
  */
 public extension HugeInt {
     static func / (left: HugeInt, right: HugeInt) -> (result: HugeInt, remainder: HugeInt) {
         let (result, remainder):([UInt8], [UInt8]) = divide(bigger_numbers: left.numbers, smaller_numbers: right.numbers)
-        return (HugeInt(is_negative: false, result.reversed()), HugeInt(is_negative: false, remainder.reversed()))
+        return (HugeInt(is_negative: false, result), HugeInt(is_negative: false, remainder))
     }
 }
 internal extension HugeInt {
     static func divide(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> (result: [UInt8], result_remainder: [UInt8]) {
-        var remaining_value:[UInt8] = bigger_numbers.reversed()
-        let result_count:Int = bigger_numbers.count - smaller_numbers.count + 1
-        var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
-        var result_remainder:[UInt8] = [UInt8].init(repeating: 0, count: 0)
-        
+        let dividend:HugeInt = HugeInt(is_negative: false, bigger_numbers)
         let divisor:HugeInt = HugeInt(is_negative: false, smaller_numbers)
-        //print("HugeInt;divide;divisor=\(divisor)")
-        
-        var index:Int = 0, remainder:HugeInt = HugeInt("0"), remainder_is_previous_value:Bool = false
-        while index < result_count {
-            //print("index=" + index.description)
-            var value:HugeInt, maximum_divisions:UInt8
-            if index == 0 {
-                value = HugeInt(is_negative: false, [remaining_value[0]])
-                maximum_divisions = 0
-            } else {
-                var target_value:[UInt8] = remaining_value[index..<index+1].map({ $0 })
-                if remainder_is_previous_value {
-                    var previous_value:UInt8 = remaining_value[index-1]
-                    if previous_value == 0 {
-                        previous_value = 9
-                    }
-                    target_value.append(previous_value)// = HugeInt.add(left: current_value, right: test.numbers).result
-                } else {
-                    target_value = HugeInt.add(left: target_value, right: (remainder*10).numbers).result
-                }
-                //print("target_value=" + target_value.description)
-                value = HugeInt(is_negative: false, target_value)
-                maximum_divisions = UInt8(index)
-            }
-            
-            
-            var next_value:HugeInt = divisor * (maximum_divisions+1)
-            //print("value=" + value.description + ";(" + value.numbers.description + ");maximum_divisions=" + maximum_divisions.description + ";next_value=" + next_value.description)
-            while value >= next_value {
-                //print(value.description + " >= " + next_value.description)
-                maximum_divisions += 1
-                next_value += divisor
-            }
-            if maximum_divisions > 0 {
-                remainder_is_previous_value = false
-                let difference:HugeInt = divisor * maximum_divisions
-                remainder = value - difference
-                //print("maximum_divisions=\(maximum_divisions.description);difference=\(difference.description)")
-                result[index] = maximum_divisions
-                if index == result_count-1 {
-                    result_remainder = remainder.numbers
-                } else {
-                    remaining_value = HugeInt.subtract(bigger_numbers: remaining_value, smaller_numbers: difference.numbers)
-                }
-            } else {
-                result[index] = 255
-                remainder = HugeInt("0")
-                remainder_is_previous_value = true
-            }
-            //print("remainder=" + remainder.description)
-            index += 1
+        //print("HugeInt;divide2;dividend=" + dividend.description + ";divisor=" + divisor.description)
+        var maximum_divisions:UInt8 = 1
+        var next_value:HugeInt = divisor * 2
+        while dividend >= next_value {
+            maximum_divisions += 1
+            next_value += divisor
         }
-        result.removeAll(where: { $0 == 255 })
-        //print("result=" + result.description + ";result_remainder=" + result_remainder.description)
-        return (result, result_remainder)
-    }
-    static func divide2(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> (result: [UInt8], result_remainder: [UInt8]) {
-        var remaining_value:[UInt8] = bigger_numbers.reversed()
-        let result_count:Int = bigger_numbers.count - smaller_numbers.count + 1
-        var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
-        var result_remainder:[UInt8] = [UInt8].init(repeating: 0, count: 0)
-        
-        let divisor:HugeInt = HugeInt(is_negative: false, smaller_numbers)
-        //print("HugeInt;divide;divisor=\(divisor)")
-        
-        var index:Int = 0, remainder:HugeInt = HugeInt("0")
-        while index < result_count {
-            //print("index=" + index.description)
-            var value:HugeInt = HugeInt(is_negative: false, [bigger_numbers[index]]), maximum_divisions:UInt8
-            if index == 0 {
-                maximum_divisions = 0
-            } else {
-                value *= (remainder * 10)
-                maximum_divisions = UInt8(index)
-            }
-            
-            var next_value:HugeInt = divisor * (maximum_divisions+1)
-            print("value=" + value.description + ";(" + value.numbers.description + ");maximum_divisions=" + maximum_divisions.description + ";next_value=" + next_value.description)
-            while value >= next_value {
-                print(value.description + " >= " + next_value.description)
-                maximum_divisions += 1
-                next_value += divisor
-            }
-            if maximum_divisions > 0 {
-                let difference:HugeInt = divisor * maximum_divisions
-                remainder = value - difference
-                //print("maximum_divisions=\(maximum_divisions.description);difference=\(difference.description)")
-                result[index] = maximum_divisions
-                if index == result_count-1 {
-                    result_remainder = remainder.numbers
-                } else {
-                    remaining_value = HugeInt.subtract(bigger_numbers: remaining_value, smaller_numbers: difference.numbers)
-                }
-            } else {
-                remainder = HugeInt("0")
-                result[index] = 255
-            }
-            //print("remainder=" + remainder.description)
-            index += 1
-        }
-        result.removeAll(where: { $0 == 255 })
-        //print("result=" + result.description + ";result_remainder=" + result_remainder.description)
-        return (result, result_remainder)
+        let subtracted_value:HugeInt = (divisor * maximum_divisions)
+        let remainder:HugeInt = dividend - subtracted_value
+        //print("result=" + HugeInt(maximum_divisions).description + ";remainder=" + remainder.description)
+        return (HugeInt(maximum_divisions).numbers, remainder.numbers)
     }
 }
 /*
