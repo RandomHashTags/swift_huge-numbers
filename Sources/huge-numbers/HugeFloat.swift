@@ -78,7 +78,7 @@ public struct HugeFloat : Hashable, Comparable {
         return (is_negative ? "-" : "") + literal_description
     }
     var literal_description : String {
-        return pre_decimal_number.description + "." + post_decimal_number.description
+        return pre_decimal_number.literal_description + "." + post_decimal_number.literal_description
     }
     
     var description_simplified : String {
