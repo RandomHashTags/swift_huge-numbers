@@ -410,14 +410,7 @@ public extension HugeInt {
 }
 internal extension HugeInt {
     static func multiply(left: [UInt8], right: [UInt8]) -> [UInt8] {
-        let bigger_numbers:[UInt8], smaller_numbers:[UInt8]
-        if left.count > right.count {
-            bigger_numbers = left
-            smaller_numbers = right
-        } else {
-            smaller_numbers = left
-            bigger_numbers = right
-        }
+        let (bigger_numbers, smaller_numbers, _):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
         var result:[UInt8] = HugeInt.multiply(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
         while result.last == 0 {
             result.removeLast()

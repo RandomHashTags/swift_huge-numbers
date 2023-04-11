@@ -61,6 +61,9 @@ public struct HugeFloat : Hashable, Comparable {
     public init(_ float: any FloatingPoint) {
         self.init(String(describing: float))
     }
+    public init(_ integer: any BinaryInteger) {
+        self.init(String(describing: integer))
+    }
     
     var description : String {
         return (is_negative ? "-" : "") + literal_description
@@ -91,6 +94,15 @@ public struct HugeFloat : Hashable, Comparable {
 public extension HugeFloat {
     static func == (left: HugeFloat, right: HugeFloat) -> Bool {
         return left.is_negative == right.is_negative && left.exponent == right.exponent && left.pre_decimal_number == right.pre_decimal_number && left.post_decimal_number == right.post_decimal_number
+    }
+    static func == (left: HugeFloat, right: HugeInt) -> Bool {
+        return left == right.to_float
+    }
+    static func == (left: HugeFloat, right: any FloatingPoint) -> Bool {
+        return left == HugeFloat(right)
+    }
+    static func == (left: HugeFloat, right: any BinaryInteger) -> Bool {
+        return left == HugeFloat(right)
     }
 }
 public extension HugeFloat {
@@ -138,7 +150,7 @@ public extension HugeFloat {
         return left + HugeFloat(right)
     }
     static func + (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left + HugeFloat(String(describing: right))
+        return left + HugeFloat(right)
     }
 }
 /*
@@ -176,6 +188,6 @@ public extension HugeFloat {
         return left * HugeFloat(right)
     }
     static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left * HugeFloat(String(describing: right))
+        return left * HugeFloat(right)
     }
 }

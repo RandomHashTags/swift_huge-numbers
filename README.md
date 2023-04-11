@@ -13,7 +13,7 @@ This library was created to remove the decimal precision limitation on floats, w
 - no division or special arithmetic
 
 ## Contributing
-- adding/improving functionality is always welcome, just make a PR with your changes.
+Adding/improving functionality is always welcome, just make a PR.
 
 ## License
 Public Domain. Creative Commons Zero v1.0 Universal.
