@@ -29,6 +29,8 @@ final class huge_numbersTests: XCTestCase {
         test_int_addition()
         test_int_subtraction()
         test_int_multiplication()
+        
+        test_float()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -62,5 +64,11 @@ final class huge_numbersTests: XCTestCase {
         XCTAssert(integer * -2 == -result_multiplication)
         XCTAssert(second_integer * 2 == -result_multiplication)
         XCTAssert(second_integer * -2 == result_multiplication)
+    }
+    
+    private func test_float() {
+        let float:HugeFloat = HugeFloat("3.1415926535e-10")
+        XCTAssert(float.description.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
+        XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
     }
 }

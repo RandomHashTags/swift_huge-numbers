@@ -40,7 +40,7 @@ public struct HugeInt : Hashable, Comparable {
         return numbers.count
     }
     public var description : String {
-        return (is_negative ? "-" : "") + numbers.reversed().map({ String(describing: $0) }).joined()
+        return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
     public var is_zero : Bool {
         return numbers.count == 0
