@@ -11,6 +11,7 @@ import XCTest
 final class huge_numbersTests: XCTestCase {
     func testExample() throws {
         test_int()
+        test_float()
     }
     
     private func test_int() {
@@ -29,8 +30,7 @@ final class huge_numbersTests: XCTestCase {
         test_int_addition()
         test_int_subtraction()
         test_int_multiplication()
-        
-        test_float()
+        test_int_division()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -64,6 +64,12 @@ final class huge_numbersTests: XCTestCase {
         XCTAssert(integer * -2 == -result_multiplication)
         XCTAssert(second_integer * 2 == -result_multiplication)
         XCTAssert(second_integer * -2 == result_multiplication)
+    }
+    private func test_int_division() {
+        let integer:HugeInt = HugeInt("518")
+        let number:HugeInt = HugeInt("4")
+        let (result, result_remainder):([UInt8], [UInt8]) = HugeInt.divide(bigger_numbers: integer.numbers, smaller_numbers: number.numbers)
+        print("test_int_division;result=" + result.description + ";result_remainder=" + result_remainder.description)
     }
     
     private func test_float() {

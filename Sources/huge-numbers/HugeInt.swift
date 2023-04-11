@@ -456,6 +456,46 @@ internal extension HugeInt {
 /*
  Division // TODO: support
  */
+public extension HugeInt {
+    static func divide(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> (result: [UInt8], result_remainder: [UInt8]) { // TODO: finish
+        var bigger_numbers_reversed:[UInt8] = bigger_numbers.reversed()
+        let result_count:Int = bigger_numbers.count - smaller_numbers.count + 1
+        var result:[HugeInt] = [HugeInt].init(repeating: HugeInt("0"), count: result_count)
+        var result_remainder:[UInt8] = [UInt8].init(repeating: 0, count: 0)
+        
+        let divisor:HugeInt = HugeInt(is_negative: false, smaller_numbers)
+        print("HugeInt;divide;divisor=\(divisor)")
+        
+        var index:Int = 0, remainder:Int = 0
+        while index < result_count {
+            var target_bigger_number:[UInt8] = bigger_numbers_reversed[0...index].map({ $0 })
+            target_bigger_number.insert(contentsOf: (0..<remainder).map({ _ in 0 }), at: 0)
+            let bigger_number:HugeInt = HugeInt(is_negative: false, target_bigger_number)
+            
+            var maximum_divisions:UInt8
+            if bigger_number >= divisor {
+                maximum_divisions = UInt8(index == 0 ? 1 : index * 10)
+                while bigger_number >= (maximum_divisions+1) * divisor {
+                    maximum_divisions += 1
+                }
+            } else {
+                maximum_divisions = 1
+            }
+            let difference:HugeInt = divisor * maximum_divisions, remainder:HugeInt = bigger_number - difference, remainder_numbers_reversed:[UInt8] = remainder.numbers.reversed()
+            result[index] = remainder
+            var bigger_number_index:Int = 0
+            while bigger_number_index < index {
+                bigger_numbers_reversed[bigger_number_index] -= remainder_numbers_reversed[bigger_number_index]
+                bigger_number_index += 1
+            }
+            print("HugeInt;divide;index=" + index.description + ";bigger_number=\(bigger_number);maximum_divisions=\(maximum_divisions);difference=\(difference);remainder=\(remainder)")
+            
+            index += 1
+        }
+        print("HugeInt;divide;result=" + result.description)
+        return (result.flatMap({ $0.numbers }), result_remainder)
+    }
+}
 /*
  Multiplicative inverse // TODO: support
  */

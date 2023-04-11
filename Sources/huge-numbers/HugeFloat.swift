@@ -22,7 +22,12 @@ public struct HugeFloat : Hashable, Comparable {
         self.post_decimal_number = post_decimal_number
         self.exponent = exponent
     }
+    
     public init(_ string: String) {
+        self.init(string: string)
+    }
+    /// This init is only here because Xcode cannot link the ambiguous version.
+    public init(string: String) {
         let values:[Substring] = string.split(separator: ".")
         let target_pre_decimal_number:Substring = values[0]
         var target_post_decimal_number:Substring = values.get(1) ?? "0"
@@ -58,6 +63,7 @@ public struct HugeFloat : Hashable, Comparable {
         }
     }
     
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     public init(_ float: any FloatingPoint) {
         self.init(String(describing: float))
     }
@@ -65,6 +71,9 @@ public struct HugeFloat : Hashable, Comparable {
         self.init(String(describing: integer))
     }
     
+    var represented_float : Float {
+        return Float(description) ?? 0
+    }
     var description : String {
         return (is_negative ? "-" : "") + literal_description
     }
@@ -98,6 +107,7 @@ public extension HugeFloat {
     static func == (left: HugeFloat, right: HugeInt) -> Bool {
         return left == right.to_float
     }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func == (left: HugeFloat, right: any FloatingPoint) -> Bool {
         return left == HugeFloat(right)
     }
@@ -146,6 +156,7 @@ public extension HugeFloat {
     static func + (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left + right.to_float
     }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func + (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
         return left + HugeFloat(right)
     }
@@ -184,6 +195,7 @@ public extension HugeFloat {
     static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left * right.to_float
     }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func * (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
         return left * HugeFloat(right)
     }
