@@ -8,9 +8,10 @@
 import Foundation
 
 // TODO: expand functionality
+/// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable {
-    public static var pi_default_precision:HugeInt = HugeInt("1000")
-    public static func pi(precision: HugeInt = pi_default_precision) -> HugeFloat { // TODO: finish
+    
+    public static func pi(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: finish
         let (division_result, division_remainder):(HugeInt, HugeRemainder) = 180 / precision
         return HugeFloat("0") // TODO: add trig arithmetic
     }
@@ -120,7 +121,7 @@ public struct HugeFloat : Hashable, Comparable {
     public func to_radians() -> HugeFloat {
         return self * 0.01745329252
     }
-    public func to_degrees(precision: HugeInt = pi_default_precision) -> HugeFloat { // TODO: support trig arithemtic
+    public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithemtic
         return self * (180 / HugeFloat.pi(precision: precision))
     }
 }
@@ -260,4 +261,23 @@ public extension HugeFloat {
     static func / (left: any FloatingPoint, right: HugeFloat) -> HugeFloat {
         return HugeFloat(left) / right
     }
+}
+
+/*
+ Trigonometry // TODO: support
+ */
+/// - Parameters:
+///     - x: number in degrees
+public func sin(_ x: HugeFloat) -> HugeFloat { // TODO: finish
+    return x / 90
+}
+/// - Parameters:
+///     - x: number in degrees
+public func cos(_ x: HugeFloat) -> HugeFloat { // TODO: finish
+    return x
+}
+/// - Parameters:
+///     - x: number in degrees
+public func tan(_ x: HugeFloat) -> HugeFloat { // TODO: finish
+    return x
 }

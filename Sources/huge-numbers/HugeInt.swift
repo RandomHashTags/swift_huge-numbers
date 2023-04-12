@@ -10,6 +10,7 @@ import Foundation
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable {
     
+    public static var default_precision:HugeInt = HugeInt("1000")
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     
     public private(set) var is_negative:Bool
@@ -430,25 +431,26 @@ internal extension HugeInt {
     }
     /// Finds the net of two 8-bit number arrays.
     /// - Returns: the net of the two arrays, in reverse order.
-    static func subtract(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
-        let array_count:Int = bigger_numbers.count
+    static func subtract(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] { // TODO: fix (10_000 - 9045 == 1065)
         let smaller_numbers_length:Int = smaller_numbers.count
-        let result_count:Int = array_count
+        let result_count:Int = bigger_numbers.count
         var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
         
         var index:Int = 0, bigger_numbers_copy:[UInt8] = bigger_numbers
         while index < smaller_numbers_length {
             let smaller_number:UInt8 = smaller_numbers[index]
             var bigger_number:UInt8 = bigger_numbers_copy[index]
-            if bigger_number < smaller_number {
-                let next_index:Int = index + 1
+            var next_index:Int = index + 1
+            while bigger_number < smaller_number {
                 var next_value:UInt8 = bigger_numbers_copy[next_index]
                 if next_value != 0 {
                     next_value -= 1
+                } else { // TODO: fix
                 }
                 bigger_numbers_copy[next_index] = next_value
                 result[next_index] = next_value
                 bigger_number += 10
+                next_index += 1
             }
             result[index] = bigger_number - smaller_number
             index += 1
@@ -533,31 +535,13 @@ internal extension HugeInt {
  Division (https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
  */
 public extension HugeInt {
-    static func / (left: HugeInt, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
-        return divide(dividend: left, divisor: right)
-    }
-    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder) {
-        return left / HugeInt(right)
-    }
-    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
-        return HugeInt(left) / right
-    }
-    
-    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder {
-        let (result, remainder):(HugeInt, HugeRemainder) = HugeInt.divide(dividend: left, divisor: right)
-        left.is_negative = result.is_negative
-        left.numbers = result.numbers
-        return remainder
-    }
-    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder {
-        return left /= HugeInt(right)
-    }
-}
-internal extension HugeInt {
-    static func divide(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+    static func / (dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
+        return get_maximum_divisions(dividend: dividend, divisor: divisor)
+    }
+    static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
         var maximum_divisions:UInt8 = 0
         var next_value:HugeInt = divisor
         while dividend >= next_value {
@@ -566,7 +550,24 @@ internal extension HugeInt {
         }
         let subtracted_value:HugeInt = next_value - divisor
         let remainder:HugeInt = dividend - subtracted_value
-        return (HugeInt(maximum_divisions-1), HugeRemainder(dividend: remainder, divisor: divisor))
+        return (maximum_divisions == 0 ? HugeInt.zero : HugeInt(maximum_divisions-1), HugeRemainder(dividend: remainder, divisor: divisor))
+    }
+    
+    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder) {
+        return left / HugeInt(right)
+    }
+    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+        return HugeInt(left) / right
+    }
+    
+    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder {
+        let (result, remainder):(HugeInt, HugeRemainder) = left / right
+        left.is_negative = result.is_negative
+        left.numbers = result.numbers
+        return remainder
+    }
+    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder {
+        return left /= HugeInt(right)
     }
 }
 /*
@@ -581,9 +582,14 @@ internal extension HugeInt {
 /*
  Trigonometry // TODO: support
  */
-internal extension HugeInt {
-    static func sin(integer: HugeInt) { // TODO: finish
-    }
-    static func cos(integer: HugeInt) { // TODO: finish
-    }
+/*
+public func sin(_ x: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) { // TODO: finish
+    return x
 }
+public func cos(_ x: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) { // TODO: finish
+    return x
+}
+public func tan(_ x: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) { // TODO: finish
+    return x
+}
+*/
