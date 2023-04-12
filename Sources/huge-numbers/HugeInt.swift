@@ -431,7 +431,7 @@ internal extension HugeInt {
     }
     /// Finds the net of two 8-bit number arrays.
     /// - Returns: the net of the two arrays, in reverse order.
-    static func subtract(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] { // TODO: fix (10_000 - 9045 == 1065)
+    static func subtract(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
         let smaller_numbers_length:Int = smaller_numbers.count
         let result_count:Int = bigger_numbers.count
         var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
@@ -440,15 +440,32 @@ internal extension HugeInt {
         while index < smaller_numbers_length {
             let smaller_number:UInt8 = smaller_numbers[index]
             var bigger_number:UInt8 = bigger_numbers_copy[index]
-            var next_index:Int = index + 1
             while bigger_number < smaller_number {
+                var next_index:Int = index + 1
                 var next_value:UInt8 = bigger_numbers_copy[next_index]
                 if next_value != 0 {
                     next_value -= 1
-                } else { // TODO: fix
+                    bigger_numbers_copy[next_index] = next_value
+                    result[next_index] = next_value
+                } else {
+                    var offset:Int = 0
+                    while next_value == 0 {
+                        next_value = bigger_numbers_copy[next_index + offset]
+                        offset += 1
+                    }
+                    var offset_index:Int = next_index + offset - 1
+                    while offset_index > 0 {
+                        bigger_numbers_copy[offset_index] -= 1
+                        result[offset_index] = 9
+                        offset_index -= 1
+                        let value:UInt8 = UInt8(offset_index == 0 ? 9 : offset_index > 0 ? 10 : 0)
+                        if offset_index >= 0 {
+                            bigger_numbers_copy[offset_index] += value
+                            result[offset_index] += value
+                        }
+                    }
+                    next_value = bigger_numbers_copy[next_index]
                 }
-                bigger_numbers_copy[next_index] = next_value
-                result[next_index] = next_value
                 bigger_number += 10
                 next_index += 1
             }
