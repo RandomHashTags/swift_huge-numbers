@@ -19,7 +19,8 @@ public struct HugeDecimal : Hashable {
         self.repeating_numbers = repeating_numbers
     }
     
+    /// The number the digits represent.
     public var description : String {
-        return value.description
+        return value.description + (is_repeating ? String(repeating_numbers.reversed().map({ $0.repeating_symbol })) : "")
     }
 }
