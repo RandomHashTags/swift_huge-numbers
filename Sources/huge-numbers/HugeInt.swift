@@ -100,13 +100,16 @@ public extension HugeInt {
         guard left.is_negative == right.is_negative else {
             return left.is_negative && !right.is_negative
         }
-        let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
+        var left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
         guard left_numbers.count == right_numbers.count else {
             return left_numbers.count < right_numbers.count
         }
+        left_numbers = left_numbers.reversed()
+        right_numbers = right_numbers.reversed()
         for index in 0..<left_numbers.count {
-            if left_numbers[index] < right_numbers[index] {
-                return true
+            let left_number:UInt8 = left_numbers[index], right_number:UInt8 = right_numbers[index]
+            if left_number != right_number {
+                return left_number < right_number
             }
         }
         return false
@@ -123,13 +126,16 @@ public extension HugeInt {
         guard left.is_negative == right.is_negative else {
             return left.is_negative && !right.is_negative
         }
-        let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
+        var left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
         guard left_numbers.count == right_numbers.count else {
             return left_numbers.count > right_numbers.count
         }
+        left_numbers = left_numbers.reversed()
+        right_numbers = right_numbers.reversed()
         for index in 0..<left_numbers.count {
-            if left_numbers[index] > right_numbers[index] {
-                return true
+            let left_number:UInt8 = left_numbers[index], right_number:UInt8 = right_numbers[index]
+            if left_number != right_number {
+                return left_number > right_number
             }
         }
         return false
@@ -163,19 +169,16 @@ public extension HugeInt {
         }
         left_numbers = left_numbers.reversed()
         right_numbers = right_numbers.reversed()
-        var index:Int = 0
-        let left_numbers_count:Int = left_numbers.count
-        while index < left_numbers_count {
+        for index in 0..<left_numbers.count {
             let left_number:UInt8 = left_numbers[index], right_number:UInt8 = right_numbers[index]
             if left_number != right_number {
                 return left_number <= right_number
             }
-            index += 1
         }
         return true
     }
     static func <= (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left < HugeInt(right)
+        return left <= HugeInt(right)
     }
     static func <= (left: any BinaryInteger, right: HugeInt) -> Bool {
         return HugeInt(left) <= right
@@ -192,14 +195,11 @@ public extension HugeInt {
         }
         left_numbers = left_numbers.reversed()
         right_numbers = right_numbers.reversed()
-        var index:Int = 0
-        let left_numbers_count:Int = left_numbers.count
-        while index < left_numbers_count {
+        for index in 0..<left_numbers.count {
             let left_number:UInt8 = left_numbers[index], right_number:UInt8 = right_numbers[index]
             if left_number != right_number {
                 return left_number >= right_number
             }
-            index += 1
         }
         return true
     }
@@ -497,7 +497,7 @@ internal extension HugeInt {
     /// - Parameters:
     ///     - bigger_numbers: An array of 8-bit numbers in reverse order. This array's count should be bigger than or equal to `smaller_numbers` array count.
     ///     - smaller_numbers: An array of 8-bit numbers in reverse order. This array's count should be less than or equal to `bigger_numbers` array count.
-    /// - Returns: the product of the two 8-bit number arrays, in reversed order.
+    /// - Returns: the product of the two 8-bit number arrays, in reverse order.
     static func multiply(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
         let array_count:Int = bigger_numbers.count
         let smaller_numbers_length:Int = smaller_numbers.count, smaller_numbers_length_minus_one:Int = smaller_numbers_length-1

@@ -24,10 +24,12 @@ final class huge_numbersTests: XCTestCase {
         XCTAssert(integer >= integer)
         XCTAssert(integer <= integer)
         
-        XCTAssert(11 >= 4)
-        XCTAssert(11 >= 8)
-        XCTAssert((11 >= 12) == false)
-        XCTAssert(11 >= 11)
+        let eleven:HugeInt = HugeInt("11")
+        XCTAssert(eleven >= 4)
+        XCTAssert(eleven >= 8)
+        XCTAssert((eleven >= 12) == false)
+        XCTAssert(eleven >= eleven)
+        XCTAssert(HugeInt("111") < HugeInt("220"))
         
         XCTAssert(second_integer < integer)
         XCTAssert(second_integer <= integer)
