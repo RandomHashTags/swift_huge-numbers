@@ -34,9 +34,9 @@ public struct HugeRemainder : Hashable, Comparable {
         let zero:HugeInt = HugeInt.zero, zero_remainder:HugeRemainder = HugeRemainder.zero
         var result:[UInt8] = [UInt8].init(repeating: 255, count: precision_int)
         var result_remainders:[HugeRemainder] = [HugeRemainder].init(repeating: HugeRemainder.zero, count: precision_int)
-        var repeated_value:[UInt8]! = nil
+        var repeated_value:[UInt8]? = nil
         var remaining_dividend:HugeInt = dividend, remaining_remainder:HugeRemainder = HugeRemainder(dividend: zero, divisor: zero)
-        var index:Int = 0, repeating:Bool = false
+        var index:Int = 0
         let values_index:Int = max(dividend.length, divisor.length)
     while_loop: while index < precision_int && (remaining_dividend != zero || remaining_remainder != zero_remainder) && remaining_dividend <= divisor {
             remaining_dividend *= 10
@@ -48,7 +48,6 @@ public struct HugeRemainder : Hashable, Comparable {
             if index >= values_index, let indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
                 for target_index in indexes {
                     if maximum_divisions_int == result[target_index+1] && remaining_remainder == result_remainders[target_index] {
-                        repeating = true
                         repeated_value = result[target_index..<index].map({ $0 })
                         result = result[0..<target_index].map({ $0 })
                         break while_loop
@@ -59,10 +58,10 @@ public struct HugeRemainder : Hashable, Comparable {
             result_remainders[index] = remaining_remainder
             index += 1
         }
-        if !repeating {
+        if repeated_value == nil {
             result.removeLast(precision_int-index)
         }
-        return HugeDecimal(value: HugeInt(is_negative: false, result.reversed()), is_repeating: repeating, repeating_numbers: repeating ? repeated_value.reversed() : [])
+        return HugeDecimal(value: HugeInt(is_negative: false, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
     private func get_indexes_of(value: UInt8, array: [UInt8], set_value: UInt8) -> [Int]? {
         guard let first_index:Int = array.firstIndex(of: value) else { return nil }

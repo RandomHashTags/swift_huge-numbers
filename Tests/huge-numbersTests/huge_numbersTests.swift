@@ -151,22 +151,22 @@ final class huge_numbersTests: XCTestCase {
     private func test_decimal() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeDecimal = remainder.to_decimal()
-        var expected_result:HugeDecimal = HugeDecimal(value: HugeInt("5"), is_repeating: false, repeating_numbers: [])
+        var expected_result:HugeDecimal = HugeDecimal(value: HugeInt("5"))
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "4")
         result = remainder.to_decimal()
-        expected_result = HugeDecimal(value: HugeInt("25"), is_repeating: false, repeating_numbers: [])
+        expected_result = HugeDecimal(value: HugeInt("25"))
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "10")
         result = remainder.to_decimal()
-        expected_result = HugeDecimal(value: HugeInt("1"), is_repeating: false, repeating_numbers: [])
+        expected_result = HugeDecimal(value: HugeInt("1"))
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "1005")
         result = remainder.to_decimal()
-        expected_result = HugeDecimal(value: HugeInt("0", remove_leading_zeros: false), is_repeating: true, repeating_numbers: [8, 9, 3, 0, 2, 9, 5, 1, 8, 6, 3, 6, 2, 7, 4, 5, 0, 9, 8, 1, 2, 6, 5, 7, 8, 4, 2, 0, 5, 9, 9, 0, 0])
+        expected_result = HugeDecimal(value: HugeInt("0", remove_leading_zeros: false), repeating_numbers: [8, 9, 3, 0, 2, 9, 5, 1, 8, 6, 3, 6, 2, 7, 4, 5, 0, 9, 8, 1, 2, 6, 5, 7, 8, 4, 2, 0, 5, 9, 9, 0, 0])
         XCTAssert(result == expected_result, "test_decimal;result_precision=\(result);expected_result=\(expected_result)")
         XCTAssert(result.description.elementsEqual(expected_result.description), "test_decimal;result.description=" + result.description + ";expected_result.description=" + expected_result.description)
     }
