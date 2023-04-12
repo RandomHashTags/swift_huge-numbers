@@ -9,6 +9,9 @@ import Foundation
 
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable {
+    
+    public static var zero:HugeInt = HugeInt(is_negative: false, [])
+    
     public private(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.
     public private(set) var numbers:[UInt8]
@@ -48,7 +51,7 @@ public struct HugeInt : Hashable, Comparable {
         return numbers.count == 0
     }
     public var to_float : HugeFloat {
-        return HugeFloat(pre_decimal_number: self, post_decimal_number: HugeInt("0"), exponent: 0)
+        return HugeFloat(pre_decimal_number: self, post_decimal_number: HugeInt.zero, exponent: 0)
     }
     public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
@@ -67,6 +70,14 @@ public struct HugeInt : Hashable, Comparable {
     public mutating func multiply(by value: HugeInt) -> HugeInt {
         self *= value
         return self
+    }
+    
+    public mutating func dividing(by value: HugeInt) -> HugeInt {
+        let _:HugeRemainder = self /= value
+        return self
+    }
+    public mutating func divide_with_remainder(by value: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+        return (self, self /= value)
     }
 }
 
@@ -492,9 +503,22 @@ public extension HugeInt {
     static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
         return HugeInt(left) / right
     }
+    
+    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder {
+        let (result, remainder):(HugeInt, HugeRemainder) = HugeInt.divide(dividend: left, divisor: right)
+        left.is_negative = result.is_negative
+        left.numbers = result.numbers
+        return remainder
+    }
+    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder {
+        return left /= HugeInt(right)
+    }
 }
 internal extension HugeInt {
-    static func divide(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) { // TODO: fix | only works if the dividend is greater than the divisor
+    static func divide(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+        guard dividend >= divisor else {
+            return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
+        }
         var maximum_divisions:UInt8 = 0
         var next_value:HugeInt = divisor
         while dividend >= next_value {

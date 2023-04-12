@@ -90,13 +90,19 @@ final class huge_numbersTests: XCTestCase {
         number = HugeInt("89345")
         (result, result_remainder) = integer / number
         XCTAssert(result == HugeInt("38") && result_remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "test_int_division;result=" + result.description + ";remainder=" + result_remainder.description)
+        
+        integer = HugeInt("13")
+        let remainder:HugeRemainder = integer /= 6
+        XCTAssert(integer == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"))
     }
     
     private func test_float() {
         let float:HugeFloat = HugeFloat("3.1415926535e-10")
         XCTAssert(float.literal_description.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
+        XCTAssert(HugeFloat("3r1/4") == HugeFloat(pre_decimal_number: HugeInt("3"), post_decimal_number: HugeInt.zero, exponent: 0, remainder: HugeRemainder(dividend: "1", divisor: "4")))
         
+        test_float_addition()
         test_float_multiplication()
     }
     private func test_float_addition() {

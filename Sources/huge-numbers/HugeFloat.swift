@@ -63,6 +63,12 @@ public struct HugeFloat : Hashable, Comparable {
                 pre_decimal_number = HugeInt(target_pre_decimal_number)
                 post_decimal_number = HugeInt(target_post_decimal_number)
             }
+        } else if let _:Range<Substring.Index> = string.rangeOfCharacter(from: ["r"]) {
+            let values:[Substring] = string.split(separator: "r"), remainder_string:[Substring] = values[1].split(separator: "/")
+            pre_decimal_number = HugeInt(values[0])
+            post_decimal_number = HugeInt.zero
+            exponent = 0
+            remainder = HugeRemainder(dividend: HugeInt(remainder_string[0]), divisor: HugeInt(remainder_string[1]))
         } else {
             pre_decimal_number = HugeInt(target_pre_decimal_number)
             target_post_decimal_number.remove_trailing_zeros()
@@ -86,7 +92,13 @@ public struct HugeFloat : Hashable, Comparable {
         return (is_negative ? "-" : "") + literal_description
     }
     public var literal_description : String {
-        return pre_decimal_number.literal_description + "." + post_decimal_number.literal_description
+        let suffix:String
+        if let remainder:HugeRemainder = remainder {
+            suffix = "r" + remainder.description
+        } else {
+            suffix = "." + post_decimal_number.literal_description
+        }
+        return pre_decimal_number.literal_description + suffix
     }
     
     public var description_simplified : String {
@@ -141,10 +153,18 @@ public extension HugeFloat {
     }
 }
 /*
+ prefixes
+ */
+public extension HugeFloat {
+    static prefix func - (value: HugeFloat) -> HugeFloat {
+        return HugeFloat(pre_decimal_number: -value.pre_decimal_number, post_decimal_number: value.post_decimal_number, exponent: value.exponent, remainder: value.remainder)
+    }
+}
+/*
  Addition
  */
 public extension HugeFloat {
-    static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+    static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: fix (fails tests)
         let left_post_number:HugeInt = left.post_decimal_number, right_post_number:HugeInt = right.post_decimal_number
         let result_decimal_places:Int = max(left_post_number.length, right_post_number.length)
         
