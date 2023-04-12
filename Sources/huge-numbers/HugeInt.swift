@@ -480,29 +480,30 @@ internal extension HugeInt {
     }
 }
 /*
- Division
+ Division (https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
  */
 public extension HugeInt {
-    static func / (left: HugeInt, right: HugeInt) -> (result: HugeInt, remainder: HugeInt) {
-        let (result, remainder):([UInt8], [UInt8]) = divide(bigger_numbers: left.numbers, smaller_numbers: right.numbers)
-        return (HugeInt(is_negative: false, result), HugeInt(is_negative: false, remainder))
+    static func / (left: HugeInt, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+        return divide(dividend: left, divisor: right)
+    }
+    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder) {
+        return left / HugeInt(right)
+    }
+    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+        return HugeInt(left) / right
     }
 }
 internal extension HugeInt {
-    static func divide(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> (result: [UInt8], result_remainder: [UInt8]) {
-        let dividend:HugeInt = HugeInt(is_negative: false, bigger_numbers)
-        let divisor:HugeInt = HugeInt(is_negative: false, smaller_numbers)
-        //print("HugeInt;divide2;dividend=" + dividend.description + ";divisor=" + divisor.description)
-        var maximum_divisions:UInt8 = 1
-        var next_value:HugeInt = divisor * 2
+    static func divide(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) { // TODO: fix | only works if the dividend is greater than the divisor
+        var maximum_divisions:UInt8 = 0
+        var next_value:HugeInt = divisor
         while dividend >= next_value {
             maximum_divisions += 1
-            next_value += divisor
+            next_value = divisor * maximum_divisions
         }
-        let subtracted_value:HugeInt = (divisor * maximum_divisions)
+        let subtracted_value:HugeInt = next_value - divisor
         let remainder:HugeInt = dividend - subtracted_value
-        //print("result=" + HugeInt(maximum_divisions).description + ";remainder=" + remainder.description)
-        return (HugeInt(maximum_divisions).numbers, remainder.numbers)
+        return (HugeInt(maximum_divisions-1), HugeRemainder(dividend: remainder, divisor: divisor))
     }
 }
 /*
@@ -517,3 +518,9 @@ internal extension HugeInt {
 /*
  Trigonometry // TODO: support
  */
+internal extension HugeInt {
+    static func sin(integer: HugeInt) { // TODO: finish
+    }
+    static func cos(integer: HugeInt) { // TODO: finish
+    }
+}

@@ -9,18 +9,26 @@ import Foundation
 
 // TODO: expand functionality
 public struct HugeFloat : Hashable, Comparable {
+    public static var pi_default_precision:HugeInt = HugeInt("1000")
+    public static func pi(precision: HugeInt = pi_default_precision) -> HugeFloat { // TODO: finish
+        let (division_result, division_remainder):(HugeInt, HugeRemainder) = 180 / precision
+        return HugeFloat("0") // TODO: add trig arithmetic
+    }
+    
     private var pre_decimal_number:HugeInt
     private var post_decimal_number:HugeInt
     private var exponent:Int
+    private var remainder:HugeRemainder? = nil
     
     public var is_negative : Bool {
         return pre_decimal_number.is_negative
     }
     
-    public init(pre_decimal_number: HugeInt, post_decimal_number: HugeInt, exponent: Int) {
+    public init(pre_decimal_number: HugeInt, post_decimal_number: HugeInt, exponent: Int, remainder: HugeRemainder? = nil) {
         self.pre_decimal_number = pre_decimal_number
         self.post_decimal_number = post_decimal_number
         self.exponent = exponent
+        self.remainder = remainder
     }
     
     public init(_ string: String) {
@@ -71,17 +79,17 @@ public struct HugeFloat : Hashable, Comparable {
         self.init(String(describing: integer))
     }
     
-    var represented_float : Float {
+    public var represented_float : Float {
         return Float(description) ?? 0
     }
-    var description : String {
+    public var description : String {
         return (is_negative ? "-" : "") + literal_description
     }
-    var literal_description : String {
+    public var literal_description : String {
         return pre_decimal_number.literal_description + "." + post_decimal_number.literal_description
     }
     
-    var description_simplified : String {
+    public var description_simplified : String {
         var description:String = literal_description
         if pre_decimal_number == 0 {
             description.removeFirst()
@@ -95,6 +103,13 @@ public struct HugeFloat : Hashable, Comparable {
             description.remove_trailing_zeros()
         }
         return (is_negative ? "-" : "") + description + (exponent != 0 ? "e" + String(describing: exponent) : "")
+    }
+    
+    public func to_radians() -> HugeFloat {
+        return self * 0.01745329252
+    }
+    public func to_degrees(precision: HugeInt = pi_default_precision) -> HugeFloat { // TODO: support trig arithemtic
+        return self * (180 / HugeFloat.pi(precision: precision))
     }
 }
 /*
@@ -201,5 +216,28 @@ public extension HugeFloat {
     }
     static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
         return left * HugeFloat(right)
+    }
+}
+/*
+ Division
+ */
+public extension HugeFloat {
+    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
+        let left_post_number:HugeInt = left.post_decimal_number, right_post_number:HugeInt = right.post_decimal_number
+        let left_post_number_length:Int = left_post_number.length, right_post_number_length:Int = right_post_number.length
+        
+        let post_number:HugeInt
+        if left_post_number_length == right_post_number_length {
+            //post_number = left_post_number / right_post_number
+        }
+        return HugeFloat("0")
+    }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
+    static func / (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
+        return left / HugeFloat(right)
+    }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
+    static func / (left: any FloatingPoint, right: HugeFloat) -> HugeFloat {
+        return HugeFloat(left) / right
     }
 }
