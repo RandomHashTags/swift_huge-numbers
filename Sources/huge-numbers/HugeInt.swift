@@ -448,7 +448,7 @@ internal extension HugeInt {
                     bigger_numbers_copy[next_index] = next_value
                     result[next_index] = next_value
                 } else {
-                    var offset:Int = 0
+                    var offset:Int = 1
                     while next_value == 0 {
                         next_value = bigger_numbers_copy[next_index + offset]
                         offset += 1

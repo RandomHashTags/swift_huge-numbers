@@ -166,8 +166,8 @@ final class huge_numbersTests: XCTestCase {
         
         
         remainder = HugeRemainder(dividend: "1", divisor: "1005")
-        result = remainder.to_decimal()
-        expected_result = HugeDecimal(value: HugeInt("00099502487562189"), is_repeating: false, repeating_numbers: [])
+        result = remainder.to_decimal(precision: HugeInt("17"))
+        expected_result = HugeDecimal(value: HugeInt("00099502487562189", remove_leading_zeros: false), is_repeating: false, repeating_numbers: [])
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
     }
 }
