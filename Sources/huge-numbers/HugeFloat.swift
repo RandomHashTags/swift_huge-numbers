@@ -61,7 +61,7 @@ public struct HugeFloat : Hashable, Comparable {
                 post_decimal_number = HugeInt(is_negative: false, post_numbers)
             } else {
                 pre_decimal_number = HugeInt(target_pre_decimal_number)
-                post_decimal_number = HugeInt(target_post_decimal_number)
+                post_decimal_number = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
             }
         } else if let _:Range<Substring.Index> = string.rangeOfCharacter(from: ["r"]) {
             let values:[Substring] = string.split(separator: "r"), remainder_string:[Substring] = values[1].split(separator: "/")
@@ -72,7 +72,7 @@ public struct HugeFloat : Hashable, Comparable {
         } else {
             pre_decimal_number = HugeInt(target_pre_decimal_number)
             target_post_decimal_number.remove_trailing_zeros()
-            post_decimal_number = HugeInt(target_post_decimal_number)
+            post_decimal_number = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
             exponent = 0
         }
     }
@@ -167,12 +167,12 @@ public extension HugeFloat {
     static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
         let bigger_pre_int:HugeInt = left.pre_decimal_number, smaller_pre_int:HugeInt = right.pre_decimal_number
         var (bigger_post_int, smaller_post_int, _):(HugeInt, HugeInt, Bool) = HugeInt.get_bigger_int(left: left.post_decimal_number, right: right.post_decimal_number)
-        let bigger_post_length:Int = bigger_post_int.length, smaller_post_length:Int = smaller_post_int.length
-        let result_decimal_count:Int = bigger_post_length
+        let result_decimal_count:Int = bigger_post_int.length
         
-        if bigger_post_length != result_decimal_count {
+        while bigger_post_int.length != result_decimal_count {
             bigger_post_int.numbers.insert(0, at: 0)
-        } else if smaller_post_length != result_decimal_count {
+        }
+        while smaller_post_int.length != result_decimal_count {
             smaller_post_int.numbers.insert(0, at: 0)
         }
         
@@ -181,7 +181,7 @@ public extension HugeFloat {
         
         let moved_decimal_count:Int = post_decimal_result.length - result_decimal_count
         if moved_decimal_count > 0 {
-            let moved_decimals:[UInt8] = post_decimal_result.numbers[moved_decimal_count..<post_decimal_result.numbers.count].map({ $0 })
+            let moved_decimals:[UInt8] = post_decimal_result.numbers.reversed()[0..<moved_decimal_count].map({ $0 })
             pre_decimal_result = HugeInt(is_negative: false, HugeInt.add(left: pre_decimal_result.numbers, right: moved_decimals).result)
             post_decimal_result.numbers.removeLast(moved_decimal_count)
             post_decimal_result.remove_trailing_zeros()

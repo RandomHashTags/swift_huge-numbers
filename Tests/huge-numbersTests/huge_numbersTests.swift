@@ -106,32 +106,32 @@ final class huge_numbersTests: XCTestCase {
         test_float_multiplication()
     }
     private func test_float_addition() {
-        let float:HugeFloat = HugeFloat(3.5)
+        let float:HugeFloat = HugeFloat("3.5")
         var result:HugeFloat = float + 1
-        var expected_result:HugeFloat = HugeFloat(4.5)
+        var expected_result:HugeFloat = HugeFloat("4.5")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
         
-        result = float + 1.5
-        expected_result = HugeFloat(5)
+        result = float + HugeFloat("1.5")
+        expected_result = HugeFloat("5")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
         
-        result = float + 2.7
-        expected_result = HugeFloat(6.2)
+        result = float + HugeFloat("2.7")
+        expected_result = HugeFloat("6.2")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
         
-        result = float + 10.16
-        expected_result = HugeFloat(13.66)
+        result = float + HugeFloat("10.16")
+        expected_result = HugeFloat("13.66")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
         
-        result = float + 196.555
-        expected_result = HugeFloat(200.055)
+        result = float + HugeFloat("196.555")
+        expected_result = HugeFloat("200.055")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)") // TODO: fix (fails test)
     }
     private func test_float_multiplication() {
         var float:HugeFloat = HugeFloat("1.7959")
         var um:Int = 2
         var result:HugeFloat = float * um
-        var expected_result:HugeFloat = HugeFloat(3.5918)
+        var expected_result:HugeFloat = HugeFloat("3.5918")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
         float = HugeFloat("19385436.795909235895")

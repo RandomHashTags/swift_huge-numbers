@@ -20,9 +20,11 @@ public struct HugeInt : Hashable, Comparable {
         self.is_negative = is_negative
         self.numbers = numbers
     }
-    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T) {
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true) {
         var target_string:T = string
-        target_string.remove_leading_zeros()
+        if remove_leading_zeros {
+            target_string.remove_leading_zeros()
+        }
         if target_string.isEmpty {
             is_negative = false
             numbers = []
