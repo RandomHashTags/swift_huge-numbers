@@ -164,29 +164,22 @@ public extension HugeFloat {
  Addition
  */
 public extension HugeFloat {
-    static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: fix (fails tests)
+    static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        let left_pre_number:HugeInt = left.pre_decimal_number, right_pre_number:HugeInt = right.pre_decimal_number
         let left_post_number:HugeInt = left.post_decimal_number, right_post_number:HugeInt = right.post_decimal_number
-        let result_decimal_places:Int = max(left_post_number.length, right_post_number.length)
+        let result_decimal_count:Int = max(left_post_number.length, right_post_number.length)
         
-        var left_numbers:[UInt8] = left_post_number.numbers
-        left_numbers.append(contentsOf: left.pre_decimal_number.numbers)
+        var pre_decimal_result:HugeInt = left_pre_number + right_pre_number
+        var post_decimal_result:HugeInt = left_post_number + right_post_number
         
-        var right_numbers:[UInt8] = right_post_number.numbers
-        right_numbers.append(contentsOf: right.pre_decimal_number.numbers)
-        
-        var (result, left_is_bigger):([UInt8], Bool) = HugeInt.add(left: left_numbers, right: right_numbers) // TODO: fix
-        
-        let is_negative:Bool = left.is_negative == !right.is_negative
-        let pre_decimal_numbers:[UInt8] = result.dropFirst(result_decimal_places).map({ $0 })
-        let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
-        
-        while result.first == 0 {
-            result.removeFirst()
+        let moved_decimal_count:Int = post_decimal_result.length - result_decimal_count
+        if moved_decimal_count > 0 {
+            let moved_decimals:[UInt8] = post_decimal_result.numbers[moved_decimal_count..<post_decimal_result.numbers.count].map({ $0 })
+            pre_decimal_result = HugeInt(is_negative: false, HugeInt.add(left: pre_decimal_result.numbers, right: moved_decimals).result)
+            post_decimal_result.numbers.removeLast(moved_decimal_count)
+            post_decimal_result.remove_trailing_zeros()
         }
-        let post_decimal_numbers:[UInt8] = result[result_decimal_places...].map({ $0 })
-        let post_decimal_number:HugeInt = HugeInt(is_negative: false, post_decimal_numbers)
-        
-        return HugeFloat(pre_decimal_number: pre_decimal_number, post_decimal_number: post_decimal_number, exponent: 0) // TODO: fix exponent
+        return HugeFloat(pre_decimal_number: pre_decimal_result, post_decimal_number: post_decimal_result, exponent: 0)
     }
     static func + (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left + right.to_float
