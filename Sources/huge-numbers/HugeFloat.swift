@@ -165,12 +165,19 @@ public extension HugeFloat {
  */
 public extension HugeFloat {
     static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let left_pre_number:HugeInt = left.pre_decimal_number, right_pre_number:HugeInt = right.pre_decimal_number
-        let left_post_number:HugeInt = left.post_decimal_number, right_post_number:HugeInt = right.post_decimal_number
-        let result_decimal_count:Int = max(left_post_number.length, right_post_number.length)
+        let bigger_pre_int:HugeInt = left.pre_decimal_number, smaller_pre_int:HugeInt = right.pre_decimal_number
+        var (bigger_post_int, smaller_post_int, _):(HugeInt, HugeInt, Bool) = HugeInt.get_bigger_int(left: left.post_decimal_number, right: right.post_decimal_number)
+        let bigger_post_length:Int = bigger_post_int.length, smaller_post_length:Int = smaller_post_int.length
+        let result_decimal_count:Int = bigger_post_length
         
-        var pre_decimal_result:HugeInt = left_pre_number + right_pre_number
-        var post_decimal_result:HugeInt = left_post_number + right_post_number
+        if bigger_post_length != result_decimal_count {
+            bigger_post_int.numbers.insert(0, at: 0)
+        } else if smaller_post_length != result_decimal_count {
+            smaller_post_int.numbers.insert(0, at: 0)
+        }
+        
+        var pre_decimal_result:HugeInt = bigger_pre_int + smaller_pre_int
+        var post_decimal_result:HugeInt = bigger_post_int + smaller_post_int
         
         let moved_decimal_count:Int = post_decimal_result.length - result_decimal_count
         if moved_decimal_count > 0 {

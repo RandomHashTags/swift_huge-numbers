@@ -220,6 +220,14 @@ public extension HugeInt {
  Misc
  */
 internal extension HugeInt {
+    static func get_bigger_int(left: HugeInt, right: HugeInt) -> (bigger_int: HugeInt, smaller_int: HugeInt, left_is_bigger: Bool) {
+        let (_, _, left_is_bigger):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
+        if left_is_bigger {
+            return (left, right, true)
+        } else {
+            return (right, left, false)
+        }
+    }
     static func get_bigger_numbers(left: HugeInt, right: HugeInt) -> (bigger_numbers: [UInt8], smaller_numbers: [UInt8], left_is_bigger: Bool) {
         let left_is_negative:Bool = left.is_negative, left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
         if left_is_negative == right.is_negative {
