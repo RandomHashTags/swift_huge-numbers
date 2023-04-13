@@ -37,8 +37,15 @@ public struct HugeInt : Hashable, Comparable {
         }
     }
     
+    public init<T: StringProtocol & RangeReplaceableCollection>(is_negative: Bool, _ string: T) {
+        self.init(string)
+        self.is_negative = is_negative
+    }
     public init(is_negative: Bool, _ numbers: ArraySlice<UInt8>) {
         self.init(is_negative: is_negative, Array(numbers))
+    }
+    public init(is_negative: Bool, _ integer: any BinaryInteger) {
+        self.init(is_negative: is_negative, String(describing: integer))
     }
     public init(_ integer: any BinaryInteger) {
         self.init(String(describing: integer))
@@ -226,6 +233,9 @@ public extension HugeInt {
  Misc
  */
 internal extension HugeInt {
+    static func left_int_is_bigger(left: HugeInt, right: HugeInt) -> Bool {
+        return get_bigger_int(left: left, right: right).left_is_bigger
+    }
     static func get_bigger_int(left: HugeInt, right: HugeInt) -> (bigger_int: HugeInt, smaller_int: HugeInt, left_is_bigger: Bool) {
         let (_, _, left_is_bigger):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
         if left_is_bigger {
@@ -565,6 +575,7 @@ public extension HugeInt {
         return get_maximum_divisions(dividend: dividend, divisor: divisor)
     }
     static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
+        let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         var maximum_divisions:UInt8 = 0
         var next_value:HugeInt = divisor
         while dividend >= next_value {
@@ -574,7 +585,7 @@ public extension HugeInt {
         guard maximum_divisions > 0 else { return (HugeInt.zero, nil) }
         let subtracted_value:HugeInt = next_value - divisor
         let remainder:HugeInt = dividend - subtracted_value
-        return (HugeInt(maximum_divisions-1), remainder.is_zero ? nil : HugeRemainder(dividend: remainder, divisor: divisor))
+        return (HugeInt(is_negative: is_negative, maximum_divisions-1), remainder.is_zero ? nil : HugeRemainder(dividend: remainder, divisor: divisor))
     }
     
     static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder?) {

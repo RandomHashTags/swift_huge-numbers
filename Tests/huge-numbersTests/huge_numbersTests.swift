@@ -13,6 +13,8 @@ final class huge_numbersTests: XCTestCase {
         //try await test_benchmarks()
         test_int()
         test_float()
+        test_remainder()
+        test_decimal()
         test_pi()
     }
     
@@ -137,7 +139,6 @@ extension huge_numbersTests {
         test_int_subtraction()
         test_int_multiplication()
         test_int_division()
-        test_decimal()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -252,8 +253,34 @@ extension huge_numbersTests {
     private func test_float_division() {
         var float:HugeFloat = HugeFloat("60")
         var result:HugeFloat = float / 90
-        var expected_result:HugeFloat = HugeFloat("0.4")
-        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        var expected_result:HugeFloat = HugeFloat("0r2/3")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result.description);expected_result=\(expected_result.description)")
+    }
+}
+
+extension huge_numbersTests {
+    private func test_remainder() {
+        test_remainder_subtraction()
+    }
+    private func test_remainder_subtraction() {
+        var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
+        var result:HugeRemainder = remainder - HugeRemainder(dividend: "1", divisor: "4")
+        var expected_result:HugeRemainder = HugeRemainder(dividend: "2", divisor: "8")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeRemainder(dividend: "1", divisor: "4") - remainder
+        expected_result = HugeRemainder(dividend: "-2", divisor: "8")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
+        
+        remainder = HugeRemainder(dividend: "1", divisor: "2")
+        result = remainder - remainder
+        expected_result = HugeRemainder(dividend: "0", divisor: "2")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
+        
+        remainder = HugeRemainder(dividend: "1", divisor: "5")
+        result = remainder - HugeInt("1")
+        expected_result = HugeRemainder(dividend: "-4", divisor: "5")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
     }
 }
 
