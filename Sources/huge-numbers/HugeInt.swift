@@ -12,6 +12,7 @@ public struct HugeInt : Hashable, Comparable {
     
     public static var default_precision:HugeInt = HugeInt("1000")
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
+    public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
     public private(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.

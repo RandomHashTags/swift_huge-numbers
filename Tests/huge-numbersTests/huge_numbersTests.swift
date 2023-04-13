@@ -271,8 +271,15 @@ extension huge_numbersTests {
 
 extension huge_numbersTests {
     private func test_remainder() {
+        test_remainder_addition()
         test_remainder_subtraction()
         test_remainder_multiplication()
+    }
+    private func test_remainder_addition() {
+        var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
+        var result:HugeRemainder = remainder + HugeRemainder(dividend: "1", divisor: "4")
+        var expected_result:HugeRemainder = HugeRemainder(dividend: "6", divisor: "8")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
     }
     private func test_remainder_subtraction() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
@@ -290,8 +297,8 @@ extension huge_numbersTests {
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "5")
-        result = remainder - HugeInt("1")
-        expected_result = HugeRemainder(dividend: "-4", divisor: "5")
+        result = remainder - HugeInt("2")
+        expected_result = HugeRemainder(dividend: "-3", divisor: "5")
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
     }
     private func test_remainder_multiplication() {

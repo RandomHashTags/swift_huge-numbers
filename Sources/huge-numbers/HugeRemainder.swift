@@ -128,13 +128,36 @@ internal extension HugeRemainder {
     }
 }
 /*
+ Addition
+ */
+public extension HugeRemainder {
+    static func + (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
+        let (common_denominator, are_equal, left_divisor_is_smaller, left_multiplier, right_multiplier):(HugeInt, Bool, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+        if are_equal {
+            return HugeRemainder(dividend: left.dividend + right.dividend, divisor: common_denominator)
+        } else {
+            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let dividend:HugeInt
+            if left_divisor_is_smaller {
+                dividend = (left_dividend * left_multiplier!) + (right_dividend * right_multiplier!)
+            } else {
+                dividend = (right_dividend * right_multiplier!) + (left_dividend * left_multiplier!)
+            }
+            return HugeRemainder(dividend: dividend, divisor: common_denominator)
+        }
+    }
+    static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
+        return left + HugeRemainder(dividend: right, divisor: HugeInt.one)
+    }
+}
+/*
  Subtraction
  */
 public extension HugeRemainder {
     static func - (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
         let (common_denominator, are_equal, left_divisor_is_smaller, left_multiplier, right_multiplier):(HugeInt, Bool, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
         if are_equal {
-            return HugeRemainder(dividend: left.dividend-right.dividend, divisor: common_denominator)
+            return HugeRemainder(dividend: left.dividend - right.dividend, divisor: common_denominator)
         } else {
             let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
             let dividend:HugeInt
@@ -147,7 +170,7 @@ public extension HugeRemainder {
         }
     }
     static func - (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
-        return left - HugeRemainder(dividend: right, divisor: right * right)
+        return left - HugeRemainder(dividend: right, divisor: HugeInt.one)
     }
 }
 /*
