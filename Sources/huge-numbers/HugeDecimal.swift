@@ -16,9 +16,16 @@ public struct HugeDecimal : Hashable {
         self.value = value
         self.repeating_numbers = repeating_numbers
     }
+    public init(_ string: String, repeating_numbers: [UInt8]? = nil) {
+        self.init(value: HugeInt(string), repeating_numbers: repeating_numbers)
+    }
     
     /// The number the digits represent.
     public var description : String {
-        return value.description + (repeating_numbers?.reversed().map({ $0.repeating_symbol }).description ?? "")
+        if let repeating_numbers:[UInt8] = repeating_numbers {
+            return value.description + String(repeating_numbers.reversed().map({ $0.repeating_symbol }))
+        } else {
+            return value.description
+        }
     }
 }

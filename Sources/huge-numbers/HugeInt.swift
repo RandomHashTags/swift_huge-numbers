@@ -19,7 +19,7 @@ public struct HugeInt : Hashable, Comparable {
     
     public init(is_negative: Bool, _ numbers: [UInt8]) {
         self.is_negative = is_negative
-        self.numbers = numbers
+        self.numbers = numbers.count == 1 && numbers[0] == 0 ? [] : numbers
     }
     public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true) {
         var target_string:T = string
@@ -37,6 +37,9 @@ public struct HugeInt : Hashable, Comparable {
         }
     }
     
+    public init(is_negative: Bool, _ numbers: ArraySlice<UInt8>) {
+        self.init(is_negative: is_negative, Array(numbers))
+    }
     public init(_ integer: any BinaryInteger) {
         self.init(String(describing: integer))
     }
@@ -85,10 +88,10 @@ public struct HugeInt : Hashable, Comparable {
     }
     
     public mutating func dividing(by value: HugeInt) -> HugeInt {
-        let _:HugeRemainder = self /= value
+        let _:HugeRemainder? = self /= value
         return self
     }
-    public mutating func divide_with_remainder(by value: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+    public mutating func divide_with_remainder(by value: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         return (self, self /= value)
     }
 }
@@ -552,38 +555,42 @@ internal extension HugeInt {
  Division (https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
  */
 public extension HugeInt {
-    static func / (dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+    static func / (dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
+        if divisor == HugeInt.zero {
+            return (HugeInt.zero, nil)
+        }
         return get_maximum_divisions(dividend: dividend, divisor: divisor)
     }
-    static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+    static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         var maximum_divisions:UInt8 = 0
         var next_value:HugeInt = divisor
         while dividend >= next_value {
             maximum_divisions += 1
             next_value = divisor * maximum_divisions
         }
+        guard maximum_divisions > 0 else { return (HugeInt.zero, nil) }
         let subtracted_value:HugeInt = next_value - divisor
         let remainder:HugeInt = dividend - subtracted_value
-        return (maximum_divisions == 0 ? HugeInt.zero : HugeInt(maximum_divisions-1), HugeRemainder(dividend: remainder, divisor: divisor))
+        return (HugeInt(maximum_divisions-1), remainder.is_zero ? nil : HugeRemainder(dividend: remainder, divisor: divisor))
     }
     
-    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder) {
+    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder?) {
         return left / HugeInt(right)
     }
-    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder) {
+    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         return HugeInt(left) / right
     }
     
-    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder {
-        let (result, remainder):(HugeInt, HugeRemainder) = left / right
+    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder? {
+        let (result, remainder):(HugeInt, HugeRemainder?) = left / right
         left.is_negative = result.is_negative
         left.numbers = result.numbers
         return remainder
     }
-    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder {
+    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder? {
         return left /= HugeInt(right)
     }
 }

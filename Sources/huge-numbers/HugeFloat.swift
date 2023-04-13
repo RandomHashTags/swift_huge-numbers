@@ -10,10 +10,13 @@ import Foundation
 // TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable {
+    public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
     
-    public static func pi(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: finish
-        let (division_result, division_remainder):(HugeInt, HugeRemainder) = 180 / precision
-        return HugeFloat("0") // TODO: add trig arithmetic
+    public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
+        let (division_result, division_remainder):(HugeInt, HugeRemainder?) = 180 / precision
+        print("HugeFloat;pi;division_result=" + division_result.description + ";division_remainder=" + (division_remainder?.description ?? "nil"))
+        let float:HugeFloat = HugeFloat(pre_decimal_number: division_result, post_decimal_number: HugeInt.zero, exponent: 0, remainder: division_remainder)
+        return precision * sin(float)
     }
     
     private var pre_decimal_number:HugeInt
@@ -182,7 +185,7 @@ public extension HugeFloat {
         
         let moved_decimal_count:Int = post_decimal_result.length - result_decimal_count
         if moved_decimal_count > 0 {
-            let moved_decimals:[UInt8] = post_decimal_result.numbers.reversed()[0..<moved_decimal_count].map({ $0 })
+            let moved_decimals:[UInt8] = Array(post_decimal_result.numbers.reversed()[0..<moved_decimal_count])
             pre_decimal_result = HugeInt(is_negative: false, HugeInt.add(left: pre_decimal_result.numbers, right: moved_decimals).result)
             post_decimal_result.numbers.removeLast(moved_decimal_count)
             post_decimal_result.remove_trailing_zeros()
@@ -217,19 +220,22 @@ public extension HugeFloat {
         var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers)
         
         let is_negative:Bool = left.is_negative == !right.is_negative
-        let pre_decimal_numbers:[UInt8] = result[result_decimal_places...].map({ $0 })
+        let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
         let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
         
         while result.first == 0 {
             result.removeFirst()
         }
-        let post_decimal_numbers:[UInt8] = result[0..<result_decimal_places].map({ $0 })
+        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<result_decimal_places]
         let post_decimal_number:HugeInt = HugeInt(is_negative: false, post_decimal_numbers)
         
         return HugeFloat(pre_decimal_number: pre_decimal_number, post_decimal_number: post_decimal_number, exponent: 0) // TODO: fix exponent
     }
     static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left * right.to_float
+    }
+    static func * (left: HugeInt, right: HugeFloat) -> HugeFloat {
+        return left.to_float * right
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func * (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
@@ -243,15 +249,13 @@ public extension HugeFloat {
  Division
  */
 public extension HugeFloat {
-    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
-        let left_post_number:HugeInt = left.post_decimal_number, right_post_number:HugeInt = right.post_decimal_number
-        let left_post_number_length:Int = left_post_number.length, right_post_number_length:Int = right_post_number.length
-        
-        let post_number:HugeInt
-        if left_post_number_length == right_post_number_length {
-            //post_number = left_post_number / right_post_number
-        }
-        return HugeFloat("0")
+    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        print("HugeFloat;/;left=" + left.description + ";right=" + right.description)
+        let (pre_result, pre_remainder):(HugeInt, HugeRemainder?) = left.pre_decimal_number / left.pre_decimal_number
+        let (post_result, post_remainder):(HugeInt, HugeRemainder?) = left.post_decimal_number / right.post_decimal_number
+        print("HugeFloat;/;pre_result=" + pre_result.description + ";pre_remainder=\(pre_remainder)")
+        print("HugeFloat;/;post_result=" + post_result.description + ";post_remainder=\(post_remainder)")
+        return HugeFloat(pre_decimal_number: post_result, post_decimal_number: HugeInt.zero, exponent: 0, remainder: post_remainder)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func / (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
@@ -268,8 +272,10 @@ public extension HugeFloat {
  */
 /// - Parameters:
 ///     - x: number in degrees
-public func sin(_ x: HugeFloat) -> HugeFloat { // TODO: finish
-    return x / 90
+public func sin(_ x: HugeFloat, precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: finish
+    let result:HugeFloat = x / 90
+    print("HugeFloat;sin;x=" + x.description + ";result=" + result.description)
+    return result
 }
 /// - Parameters:
 ///     - x: number in degrees
