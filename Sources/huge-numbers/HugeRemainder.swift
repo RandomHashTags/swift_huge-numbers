@@ -166,4 +166,18 @@ public extension HugeRemainder {
     static func * (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
         return HugeRemainder(dividend: left.dividend * right, divisor: left.divisor)
     }
+    
+    static func *= (left: inout HugeRemainder, right: HugeRemainder) {
+        left.dividend *= right.dividend
+        left.divisor *= right.divisor
+    }
+    static func *= (left: inout HugeRemainder, right: HugeInt) {
+        left.dividend *= right
+    }
+}
+/*
+ Division
+ */
+public extension HugeRemainder {
+    
 }

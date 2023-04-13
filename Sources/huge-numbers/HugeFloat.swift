@@ -133,7 +133,7 @@ public struct HugeFloat : Hashable, Comparable {
  */
 public extension HugeFloat {
     static func == (left: HugeFloat, right: HugeFloat) -> Bool {
-        return left.is_negative == right.is_negative && left.exponent == right.exponent && left.pre_decimal_number == right.pre_decimal_number && left.post_decimal_number == right.post_decimal_number
+        return left.is_negative == right.is_negative && left.exponent == right.exponent && left.pre_decimal_number == right.pre_decimal_number && left.post_decimal_number == right.post_decimal_number && left.remainder == right.remainder
     }
     static func == (left: HugeFloat, right: HugeInt) -> Bool {
         return left == right.to_float
@@ -223,10 +223,12 @@ public extension HugeFloat {
         let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
         let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
         
+        var removed_zeroes:Int = 0
         while result.first == 0 {
             result.removeFirst()
+            removed_zeroes += 1
         }
-        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<result_decimal_places]
+        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<result_decimal_places-removed_zeroes]
         let post_decimal_number:HugeInt = HugeInt(is_negative: false, post_decimal_numbers)
         
         return HugeFloat(pre_decimal_number: pre_decimal_number, post_decimal_number: post_decimal_number, exponent: 0) // TODO: fix exponent
@@ -244,6 +246,13 @@ public extension HugeFloat {
     static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
         return left * HugeFloat(right)
     }
+    
+    static func *= (left: inout HugeFloat, right: HugeFloat) { // TODO: optimize
+        left = left * right
+    }
+    static func *= (left: inout HugeFloat, right: HugeInt) { // TODO: optimize
+        left = left * right.to_float
+    }
 }
 /*
  Division
@@ -253,6 +262,7 @@ public extension HugeFloat {
         print("HugeFloat;/;left=" + left.description + ";right=" + right.description)
         let (pre_result, pre_remainder):(HugeInt, HugeRemainder?) = left.pre_decimal_number / right.pre_decimal_number
         let (post_result, post_remainder):(HugeInt, HugeRemainder?) = left.post_decimal_number / right.post_decimal_number
+        print("HugeFloat;/;post_result=\(post_result);post_remainder=\(post_remainder)")
         return HugeFloat(pre_decimal_number: pre_result + post_result, post_decimal_number: HugeInt.zero, exponent: 0, remainder: post_remainder)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
