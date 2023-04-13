@@ -179,5 +179,8 @@ public extension HugeRemainder {
  Division
  */
 public extension HugeRemainder {
-    
+    static func / (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
+        let reciprocal:HugeRemainder = HugeRemainder(dividend: right.divisor, divisor: right.dividend)
+        return left * reciprocal
+    }
 }

@@ -259,10 +259,8 @@ public extension HugeFloat {
  */
 public extension HugeFloat {
     static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
-        print("HugeFloat;/;left=" + left.description + ";right=" + right.description)
         let (pre_result, pre_remainder):(HugeInt, HugeRemainder?) = left.pre_decimal_number / right.pre_decimal_number
         let (post_result, post_remainder):(HugeInt, HugeRemainder?) = left.post_decimal_number / right.post_decimal_number
-        print("HugeFloat;/;post_result=\(post_result);post_remainder=\(post_remainder)")
         return HugeFloat(pre_decimal_number: pre_result + post_result, post_decimal_number: HugeInt.zero, exponent: 0, remainder: post_remainder)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
