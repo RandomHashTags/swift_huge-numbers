@@ -606,13 +606,21 @@ public extension HugeInt {
     }
 }
 /*
+ Percent
+ */
+public extension HugeInt {
+    static func % (left: HugeInt, right: HugeInt) -> HugeInt {
+        return (left / right).remainder?.dividend ?? HugeInt.zero
+    }
+    static func % (left: HugeInt, right: any BinaryInteger) -> HugeInt {
+        return left % HugeInt(right)
+    }
+}
+/*
  Multiplicative inverse // TODO: support
  */
 /*
  Square root // TODO: support
- */
-/*
- Percent // TODO: support
  */
 /*
  Trigonometry // TODO: support

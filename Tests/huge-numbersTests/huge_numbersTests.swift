@@ -139,6 +139,7 @@ extension huge_numbersTests {
         test_int_subtraction()
         test_int_multiplication()
         test_int_division()
+        test_int_percent()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -201,6 +202,16 @@ extension huge_numbersTests {
         let remainder:HugeRemainder? = integer /= 6
         XCTAssert(integer == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"))
     }
+    private func test_int_percent() {
+        var integer:HugeInt = HugeInt("100")
+        var result:HugeInt = integer % HugeInt("10")
+        var expected_result:HugeInt = HugeInt.zero
+        XCTAssert(result == expected_result, "test_int_percent;result=\(result);expected_result=\(expected_result)")
+        
+        result = integer % HugeInt("40")
+        expected_result = HugeInt("20")
+        XCTAssert(result == expected_result, "test_int_percent;result=\(result);expected_result=\(expected_result)")
+    }
 }
 
 extension huge_numbersTests {
@@ -261,6 +272,7 @@ extension huge_numbersTests {
 extension huge_numbersTests {
     private func test_remainder() {
         test_remainder_subtraction()
+        test_remainder_multiplication()
     }
     private func test_remainder_subtraction() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
@@ -280,6 +292,12 @@ extension huge_numbersTests {
         remainder = HugeRemainder(dividend: "1", divisor: "5")
         result = remainder - HugeInt("1")
         expected_result = HugeRemainder(dividend: "-4", divisor: "5")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
+    }
+    private func test_remainder_multiplication() {
+        var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
+        var result:HugeRemainder = remainder * HugeRemainder(dividend: "5", divisor: "6")
+        var expected_result:HugeRemainder = HugeRemainder(dividend: "5", divisor: "12")
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
     }
 }
