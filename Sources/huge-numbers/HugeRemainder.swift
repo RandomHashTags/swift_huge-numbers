@@ -45,16 +45,22 @@ public struct HugeRemainder : Hashable, Comparable {
             remaining_dividend -= subtracted_value
             remaining_remainder = remainder ?? HugeRemainder(dividend: remaining_dividend, divisor: divisor)
             let maximum_divisions_int:UInt8 = maximum_divisions.to_int()!
-            //print("index=" + index.description + ";maximum_divisions_int=" + maximum_divisions.description + ";remaining_remainder=" + remaining_remainder.description)
-            if let indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
-                //print("indexes=" + indexes.description)
-                for target_index in indexes {
-                    if maximum_divisions_int == result[target_index] && remaining_remainder == result_remainders[target_index] { // TODO: fix (check if next number is the same as well)
-                        repeated_value = Array(result[target_index..<index])
-                        result = result[0..<target_index]
-                        //print("returned with target_index " + target_index.description)
+            if let same_max_division_indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
+                var index_of_same_max_division:Int = 0
+                for same_max_division_index in same_max_division_indexes {
+                    if remaining_remainder == result_remainders[same_max_division_index] {
+                        var included_previous_values:Int = 0
+                        for previous_index in 0..<index_of_same_max_division {
+                            if maximum_divisions_int == result[same_max_division_indexes[previous_index]] {
+                                included_previous_values += 1
+                            }
+                        }
+                        let starting_index:Int = same_max_division_index - included_previous_values + 1
+                        repeated_value = Array(result[starting_index..<index])
+                        result = result[0..<starting_index]
                         break while_loop
                     }
+                    index_of_same_max_division += 1
                 }
             }
             result[index] = maximum_divisions_int
@@ -70,8 +76,6 @@ public struct HugeRemainder : Hashable, Comparable {
         } else {
             result = result[0..<index]
         }
-        //print("result1=\(result)")
-        //print("repeated_value1=\(repeated_value)")
         return HugeDecimal(value: HugeInt(is_negative: false, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
     private func get_indexes_of(value: UInt8, array: ArraySlice<UInt8>, set_value: UInt8) -> [Int]? {
