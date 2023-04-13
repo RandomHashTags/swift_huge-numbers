@@ -132,6 +132,11 @@ extension huge_numbersTests {
         XCTAssert(HugeInt("111") < HugeInt("220"))
         XCTAssert(!(HugeInt("222") < HugeInt("103")))
         
+        XCTAssert(HugeInt("5") > HugeInt("-5"))
+        XCTAssert(HugeInt("5") >= HugeInt("-5"))
+        XCTAssert(HugeInt("-5") < HugeInt("5"))
+        XCTAssert(HugeInt("-5") <= HugeInt("5"))
+        
         XCTAssert(second_integer < integer)
         XCTAssert(second_integer <= integer)
         
@@ -287,6 +292,10 @@ extension huge_numbersTests {
         var expected_result:HugeRemainder = HugeRemainder(dividend: "2", divisor: "8")
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeRemainder(dividend: "5", divisor: "15") - HugeRemainder(dividend: "10", divisor: "15")
+        expected_result = HugeRemainder(dividend: "-5", divisor: "15")
+        XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
+        
         result = HugeRemainder(dividend: "1", divisor: "4") - remainder
         expected_result = HugeRemainder(dividend: "-2", divisor: "8")
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
@@ -298,7 +307,7 @@ extension huge_numbersTests {
         
         remainder = HugeRemainder(dividend: "1", divisor: "5")
         result = remainder - HugeInt("2")
-        expected_result = HugeRemainder(dividend: "-3", divisor: "5")
+        expected_result = HugeRemainder(dividend: "-9", divisor: "5")
         XCTAssert(result == expected_result, "test_remainder;result=\(result);expected_result=\(expected_result)")
     }
     private func test_remainder_multiplication() {

@@ -10,7 +10,9 @@ import Foundation
 public struct HugeRemainder : Hashable, Comparable {
     public static var zero:HugeRemainder = HugeRemainder(dividend: HugeInt.zero, divisor: HugeInt.zero)
     
+    /// The number on the top.
     public private(set) var dividend:HugeInt
+    /// The number on the bottom, which we divide the top number by.
     public private(set) var divisor:HugeInt
     
     public init(dividend: HugeInt, divisor: HugeInt) {
@@ -109,21 +111,12 @@ public extension HugeRemainder {
  Misc
  */
 internal extension HugeRemainder {
-    static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, are_equal: Bool, left_divisor_is_smaller: Bool, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
+    static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, are_equal: Bool, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
         let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
         if left_divisor == right_divisor {
-            return (left_divisor, true, false, nil, nil)
+            return (left_divisor, true, nil, nil)
         } else {
-            let left_divisor_is_smaller:Bool = !HugeInt.left_int_is_bigger(left: left_divisor, right: right_divisor)
-            let left_multiplier:HugeInt, right_multiplier:HugeInt
-            if left_divisor_is_smaller {
-                left_multiplier = right_divisor
-                right_multiplier = left_divisor
-            } else {
-                left_multiplier = left_divisor
-                right_multiplier = right_divisor
-            }
-            return (left_divisor * right_divisor, false, left_divisor_is_smaller, left_multiplier, right_multiplier)
+            return (left_divisor * right_divisor, false, right_divisor, left_divisor)
         }
     }
 }
@@ -132,18 +125,13 @@ internal extension HugeRemainder {
  */
 public extension HugeRemainder {
     static func + (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        let (common_denominator, are_equal, left_divisor_is_smaller, left_multiplier, right_multiplier):(HugeInt, Bool, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+        let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
         if are_equal {
             return HugeRemainder(dividend: left.dividend + right.dividend, divisor: common_denominator)
         } else {
             let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-            let dividend:HugeInt
-            if left_divisor_is_smaller {
-                dividend = (left_dividend * left_multiplier!) + (right_dividend * right_multiplier!)
-            } else {
-                dividend = (right_dividend * right_multiplier!) + (left_dividend * left_multiplier!)
-            }
-            return HugeRemainder(dividend: dividend, divisor: common_denominator)
+            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+            return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
         }
     }
     static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
@@ -155,18 +143,13 @@ public extension HugeRemainder {
  */
 public extension HugeRemainder {
     static func - (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        let (common_denominator, are_equal, left_divisor_is_smaller, left_multiplier, right_multiplier):(HugeInt, Bool, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+        let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
         if are_equal {
             return HugeRemainder(dividend: left.dividend - right.dividend, divisor: common_denominator)
         } else {
             let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-            let dividend:HugeInt
-            if left_divisor_is_smaller {
-                dividend = (left_dividend * left_multiplier!) - (right_dividend * right_multiplier!)
-            } else {
-                dividend = (right_dividend * right_multiplier!) - (left_dividend * left_multiplier!)
-            }
-            return HugeRemainder(dividend: dividend, divisor: common_denominator)
+            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+            return HugeRemainder(dividend: left_result - right_result, divisor: common_denominator)
         }
     }
     static func - (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
