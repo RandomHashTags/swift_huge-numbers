@@ -147,6 +147,7 @@ extension huge_numbersTests {
         test_int_division()
         test_int_factorial()
         test_int_percent()
+        test_int_square_root()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -224,10 +225,50 @@ extension huge_numbersTests {
         var expected_result:HugeInt = HugeInt.zero
         XCTAssert(result == expected_result, "test_int_percent;result=\(result);expected_result=\(expected_result)")
         
-        
         result = integer % HugeInt("40")
         expected_result = HugeInt("20")
         XCTAssert(result == expected_result, "test_int_percent;result=\(result);expected_result=\(expected_result)")
+    }
+    private func test_int_square_root() {
+        var integer:HugeInt = HugeInt("7921")
+        var result:HugeFloat = sqrt(integer)
+        var expected_result:HugeFloat = HugeFloat("89")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("9")
+        result = sqrt(integer)
+        expected_result = HugeFloat("3")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("64")
+        result = sqrt(integer)
+        expected_result = HugeFloat("8")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("2025")
+        result = sqrt(integer)
+        expected_result = HugeFloat("45")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("1444")
+        result = sqrt(integer)
+        expected_result = HugeFloat("38")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("5184")
+        result = sqrt(integer)
+        expected_result = HugeFloat("72")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("8281")
+        result = sqrt(integer)
+        expected_result = HugeFloat("91")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("24336")
+        result = sqrt(integer)
+        expected_result = HugeFloat("156")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
     }
 }
 

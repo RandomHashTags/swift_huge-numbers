@@ -14,7 +14,8 @@ public struct HugeFloat : Hashable, Comparable {
     public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
-        let degrees:HugeDecimal = (180 / (precision * 1_000_000)).to_decimal()
+        let total_precision:HugeInt = precision * 1_000_000
+        let degrees:HugeDecimal = (180 / total_precision).to_decimal()
         print("HugeFloat;pi;degrees=" + degrees.description)
         /*let four:HugeFloat = HugeFloat("4")
         var pi:HugeFloat = HugeFloat("3")

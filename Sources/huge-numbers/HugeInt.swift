@@ -567,8 +567,56 @@ public extension HugeInt {
  Multiplicative inverse // TODO: support
  */
 /*
- Square root // TODO: support
+ Square root
  */
+public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support negative numbers or remainders
+    let numbers:[UInt8] = x.numbers
+    let ending_root_1:UInt8, ending_root_2:UInt8
+    switch numbers.first! {
+    case 0:
+        ending_root_1 = 10
+        ending_root_2 = 10
+        break
+    case 1:
+        ending_root_1 = 1
+        ending_root_2 = 9
+        break
+    case 4:
+        ending_root_1 = 2
+        ending_root_2 = 8
+        break
+    case 6:
+        ending_root_1 = 4
+        ending_root_2 = 6
+        break
+    case 9:
+        ending_root_1 = 3
+        ending_root_2 = 7
+        break
+    default:
+        ending_root_1 = 5
+        ending_root_2 = 5
+        break
+    }
+    if numbers.count <= 2 {
+        let result:UInt8 = ending_root_1 * ending_root_1 == x.to_int() ? ending_root_1 : ending_root_2
+        return HugeFloat(result)
+    }
+    let first_numbers:Int = Int(numbers.reversed()[0..<numbers.count-2].map({ String(describing: $0) }).joined())!
+    let first_result:Int = get_closest_sqrt_number(first_numbers)
+    let second_value:Int = first_result * (first_result + 1)
+    let second_result:UInt8 = first_numbers < second_value ? ending_root_1 : ending_root_2
+    return HugeFloat(UInt64(String(describing: first_result) + String(describing: second_result))!)
+}
+private func get_closest_sqrt_number(_ number: Int) -> Int {
+    for index in 4...1_000 {
+        let squared:Int = index * index
+        if number < squared {
+            return index-1
+        }
+    }
+    return 0
+}
 /*
  Trigonometry // TODO: support
  */
