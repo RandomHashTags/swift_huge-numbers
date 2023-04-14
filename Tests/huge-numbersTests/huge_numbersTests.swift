@@ -245,6 +245,16 @@ extension huge_numbersTests {
         expected_result = HugeFloat("8")
         XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
         
+        integer = HugeInt("100")
+        result = sqrt(integer)
+        expected_result = HugeFloat("10")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("10000")
+        result = sqrt(integer)
+        expected_result = HugeFloat("100")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
         integer = HugeInt("2025")
         result = sqrt(integer)
         expected_result = HugeFloat("45")
@@ -268,6 +278,11 @@ extension huge_numbersTests {
         integer = HugeInt("24336")
         result = sqrt(integer)
         expected_result = HugeFloat("156")
+        XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+        
+        integer = HugeInt("80")
+        result = sqrt(integer)
+        expected_result = HugeFloat("8")
         XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
     }
 }

@@ -79,7 +79,8 @@ public struct HugeFloat : Hashable, Comparable {
                 decimal = HugeDecimal(value: HugeInt(is_negative: false, post_numbers))
             } else {
                 integer = HugeInt(target_pre_decimal_number)
-                decimal = HugeDecimal(value: HugeInt(target_post_decimal_number, remove_leading_zeros: false))
+                let decimal_value:HugeInt = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
+                decimal = decimal_value.is_zero ? nil : HugeDecimal(value: decimal_value)
             }
         } else if let _:Range<Substring.Index> = string.rangeOfCharacter(from: ["r"]) {
             let values:[Substring] = string.split(separator: "r"), remainder_string:[Substring] = values[1].split(separator: "/")
@@ -89,7 +90,8 @@ public struct HugeFloat : Hashable, Comparable {
         } else {
             integer = HugeInt(target_pre_decimal_number)
             target_post_decimal_number.remove_trailing_zeros()
-            decimal = HugeDecimal(value: HugeInt(target_post_decimal_number, remove_leading_zeros: false))
+            let decimal_value:HugeInt = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
+            decimal = decimal_value.is_zero ? nil : HugeDecimal(value: decimal_value)
         }
     }
     
@@ -203,7 +205,9 @@ public extension HugeFloat {
             post_decimal_result.numbers.removeLast(moved_decimal_count)
             post_decimal_result.remove_trailing_zeros()
         }
-        return HugeFloat(integer: pre_decimal_result, decimal: HugeDecimal(value: post_decimal_result))
+        var decimal_value:HugeDecimal! = HugeDecimal(value: post_decimal_result)
+        decimal_value = decimal_value == HugeDecimal.zero ? nil : decimal_value
+        return HugeFloat(integer: pre_decimal_result, decimal: decimal_value)
     }
     static func + (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left + right.to_float

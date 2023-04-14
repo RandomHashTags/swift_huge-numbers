@@ -574,9 +574,13 @@ public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support neg
     let ending_root_1:UInt8, ending_root_2:UInt8
     switch numbers.first! {
     case 0:
-        ending_root_1 = 10
-        ending_root_2 = 10
-        break
+        if x == HugeInt.zero {
+            return HugeFloat(integer: HugeInt.zero)
+        } else if let closest:Int = x.to_int() { // TODO: fix
+            return HugeFloat(get_closest_sqrt_number(closest))
+        } else {
+            return HugeFloat(integer: HugeInt.zero) // TODO: fix
+        }
     case 1:
         ending_root_1 = 1
         ending_root_2 = 9
