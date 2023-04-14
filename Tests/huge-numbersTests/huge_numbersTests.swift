@@ -20,11 +20,12 @@ final class huge_numbersTests: XCTestCase {
     
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, *) else { return }
-        let slice:ArraySlice<UInt8> = ArraySlice.init(repeating: 1, count: 1000)
-        try await benchmark_compare_is_faster(key1: "ArraySlice.map", {
-            slice.map({ $0 })
-        }, key2: "Array.init(ArraySlice)", code2: {
-            Array(slice)
+        let dividend:HugeInt = HugeInt("12345"), divisor:HugeInt = HugeInt("3")
+        //let dividend_remainder:HugeRemainder = dividend.to_remainder, divisor_remainder:HugeRemainder = divisor.to_remainder
+        try await benchmark_compare_is_faster(key1: "current division", {
+            let float:HugeRemainder = dividend / divisor
+        }, key2: "new division", code2: {
+            let float:HugeRemainder = dividend.to_remainder / divisor.to_remainder
         })
     }
 }
@@ -149,8 +150,10 @@ extension huge_numbersTests {
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
         let second_integer:HugeInt = HugeInt("99999999999239579")
-        XCTAssert(integer.adding(second_integer) == HugeInt("93385729350357265385"), "test_int_addition;integer=\(integer)")
-        XCTAssert(integer.adding(HugeInt("-1")) == HugeInt("93385729350357265384"))
+        integer += second_integer
+        XCTAssert(integer == HugeInt("93385729350357265385"), "test_int_addition;integer=\(integer)")
+        integer += -1
+        XCTAssert(integer == HugeInt("93385729350357265384"))
         
         integer += 1
         XCTAssert(integer == HugeInt("93385729350357265385"), "test_int_addition;integer=\(integer)")
@@ -161,10 +164,10 @@ extension huge_numbersTests {
     private func test_int_subtraction() {
         var integer:HugeInt = HugeInt("82372958")
         let second_integer:HugeInt = HugeInt("82372959")
-        var result:HugeInt = integer.subtract(second_integer)
+        var result:HugeInt = integer - second_integer
         var expected_result:HugeInt = HugeInt("-1")
         XCTAssert(result == expected_result, "test_int_subtraction;result=\(result);expected_result=\(expected_result)")
-        XCTAssert(integer.subtract(integer) - 1 == expected_result, "test_int_subtraction;result=\(result);expected_result=\(expected_result)")
+        XCTAssert(integer - integer - 1 == expected_result, "test_int_subtraction;result=\(result);expected_result=\(expected_result)")
         
         result -= 1
         expected_result = HugeInt("-2")
@@ -189,23 +192,24 @@ extension huge_numbersTests {
         XCTAssert(second_integer * -2 == result_multiplication)
     }
     private func test_int_division() {
-        var integer:HugeInt = HugeInt("518")
-        var number:HugeInt = HugeInt("4")
-        var (result, result_remainder):(HugeInt, HugeRemainder?) = integer / number
-        XCTAssert(result == HugeInt("129") && result_remainder == HugeRemainder(dividend: "2", divisor: "4"), "test_int_division;result=" + result.description + ";remainder=" + (result_remainder?.description ?? "nil"))
+        var dividend:HugeInt = HugeInt("518")
+        var (result, remainder):(HugeInt, HugeRemainder?) = (dividend / HugeInt("4")).to_int
+        XCTAssert(result == HugeInt("129") && remainder == HugeRemainder(dividend: "2", divisor: "4"), "test_int_division;result=" + result.description + ";remainder=" + (remainder?.description ?? "nil"))
         
-        (result, result_remainder) = HugeInt("18") / HugeInt("9")
-        XCTAssert(result == HugeInt("2") && result_remainder == nil, "test_int_division;result=" + result.description + ";remainder=" + (result_remainder?.description ?? "nil"))
+        (result, remainder) = (HugeInt("18") / HugeInt("9")).to_int
+        XCTAssert(result == HugeInt("2") && remainder == nil, "test_int_division;result=" + result.description + ";remainder=" + (remainder?.description ?? "nil"))
         
-        (result, result_remainder) = HugeInt("36") / HugeInt("7")
-        XCTAssert(result == HugeInt("5") && result_remainder == HugeRemainder(dividend: "1", divisor: "7"), "test_int_division;result=" + result.description + ";remainder=" + (result_remainder?.description ?? "nil"))
+        (result, remainder) = (HugeInt("36") / HugeInt("7")).to_int
+        XCTAssert(result == HugeInt("5") && remainder == HugeRemainder(dividend: "1", divisor: "7"), "test_int_division;result=" + result.description + ";remainder=" + (remainder?.description ?? "nil"))
         
-        (result, result_remainder) = HugeInt("3460987") / HugeInt("89345")
-        XCTAssert(result == HugeInt("38") && result_remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "test_int_division;result=" + result.description + ";remainder=" + (result_remainder?.description ?? "nil"))
+        (result, remainder) = (HugeInt("3460987") / HugeInt("89345")).to_int
+        XCTAssert(result == HugeInt("38") && remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "test_int_division;result=" + result.description + ";remainder=" + (remainder?.description ?? "nil"))
         
-        integer = HugeInt("13")
-        let remainder:HugeRemainder? = integer /= 6
-        XCTAssert(integer == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"))
+        dividend = HugeInt("13")
+        (result, remainder) = (dividend / 6).to_int
+        XCTAssert(result == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"))
+        
+        (result, remainder) = (HugeInt("12345") / HugeInt("3")).to_int
     }
     private func test_int_percent() {
         var integer:HugeInt = HugeInt("100")
@@ -224,7 +228,7 @@ extension huge_numbersTests {
         let float:HugeFloat = HugeFloat("3.1415926535e-10")
         XCTAssert(float.literal_description.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
-        XCTAssert(HugeFloat("3r1/4") == HugeFloat(pre_decimal_number: HugeInt("3"), post_decimal_number: HugeInt.zero, exponent: 0, remainder: HugeRemainder(dividend: "1", divisor: "4")))
+        XCTAssert(HugeFloat("3r1/4") == HugeFloat(integer: HugeInt("3"), remainder: HugeRemainder(dividend: "1", divisor: "4")))
         
         test_float_addition()
         test_float_multiplication()
@@ -273,8 +277,8 @@ extension huge_numbersTests {
     private func test_float_division() {
         var float:HugeFloat = HugeFloat("60")
         var result:HugeFloat = float / 90
-        var expected_result:HugeFloat = HugeFloat("0r2/3")
-        XCTAssert(result == expected_result, "test_float_division;result=\(result.description);expected_result=\(expected_result.description)")
+        var expected_result:HugeFloat = HugeFloat("0r60/90")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
     }
 }
 

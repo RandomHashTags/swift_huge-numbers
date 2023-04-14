@@ -22,6 +22,9 @@ public struct HugeRemainder : Hashable, Comparable {
     public init(dividend: String, divisor: String) {
         self.init(dividend: HugeInt(dividend), divisor: HugeInt(divisor))
     }
+    public init(dividend: HugeInt, divisor: String) {
+        self.init(dividend: dividend, divisor: HugeInt(divisor))
+    }
     
     public var description : String {
         return dividend.description + "/" + divisor.description
@@ -29,6 +32,13 @@ public struct HugeRemainder : Hashable, Comparable {
     
     public var is_zero : Bool {
         return dividend == HugeInt.zero
+    }
+    public var to_int : (result: HugeInt, remainder: HugeRemainder?) {
+        return HugeInt.get_maximum_divisions(dividend: dividend, divisor: divisor)
+    }
+    public var to_float : HugeFloat {
+        let (test1, test2):(HugeInt, HugeRemainder?) = to_int
+        return HugeFloat(integer: test1, decimal: HugeDecimal.zero, remainder: test2)
     }
     
     public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
@@ -101,6 +111,36 @@ public extension HugeRemainder {
         let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
         return left_divisor == right_divisor ? left.dividend < right.dividend : false // TODO: fix
     }
+    
+    func is_less_than(_ value: HugeRemainder?) -> Bool {
+        if let value:HugeRemainder = value {
+            return self < value
+        } else {
+            return true
+        }
+    }
+    func is_less_than_or_equal_to(_ value: HugeRemainder?) -> Bool {
+        if let value:HugeRemainder = value {
+            return self <= value
+        } else {
+            return true
+        }
+    }
+    
+    func is_greater_than(_ value: HugeRemainder?) -> Bool {
+        if let value:HugeRemainder = value {
+            return self > value
+        } else {
+            return true
+        }
+    }
+    func is_greater_than_or_equal_to(_ value: HugeRemainder?) -> Bool {
+        if let value:HugeRemainder = value {
+            return self >= value
+        } else {
+            return true
+        }
+    }
 }
 public extension HugeRemainder {
     static func == (left: HugeRemainder, right: HugeRemainder) -> Bool {
@@ -165,6 +205,10 @@ public extension HugeRemainder {
     }
     static func * (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
         return HugeRemainder(dividend: left.dividend * right, divisor: left.divisor)
+    }
+    
+    static func * (left: HugeRemainder, right: any BinaryInteger) -> HugeRemainder {
+        return left * HugeRemainder(dividend: HugeInt(right), divisor: HugeInt.one)
     }
     
     static func *= (left: inout HugeRemainder, right: HugeRemainder) {

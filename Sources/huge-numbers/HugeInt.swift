@@ -68,7 +68,10 @@ public struct HugeInt : Hashable, Comparable {
         return numbers.count == 0
     }
     public var to_float : HugeFloat {
-        return HugeFloat(pre_decimal_number: self, post_decimal_number: HugeInt.zero, exponent: 0)
+        return HugeFloat(integer: self)
+    }
+    public var to_remainder : HugeRemainder {
+        return HugeRemainder(dividend: self, divisor: HugeInt.one)
     }
     public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
@@ -78,29 +81,6 @@ public struct HugeInt : Hashable, Comparable {
         while numbers.first == 0 {
             numbers.removeFirst()
         }
-    }
-    
-    public mutating func adding(_ value: HugeInt) -> HugeInt {
-        self += value
-        return self
-    }
-    
-    public mutating func subtract(_ value: HugeInt) -> HugeInt {
-        self -= value
-        return self
-    }
-    
-    public mutating func multiply(by value: HugeInt) -> HugeInt {
-        self *= value
-        return self
-    }
-    
-    public mutating func dividing(by value: HugeInt) -> HugeInt {
-        let _:HugeRemainder? = self /= value
-        return self
-    }
-    public mutating func divide_with_remainder(by value: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
-        return (self, self /= value)
     }
 }
 
@@ -566,44 +546,39 @@ internal extension HugeInt {
  Division (https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
  */
 public extension HugeInt {
-    static func / (dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
-        guard dividend >= divisor else {
-            return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
-        }
-        if divisor == HugeInt.zero {
-            return (HugeInt.zero, nil)
-        }
-        return get_maximum_divisions(dividend: dividend, divisor: divisor)
+    static func / (dividend: HugeInt, divisor: HugeInt) -> HugeRemainder {
+        return dividend.to_remainder / divisor.to_remainder
     }
     static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
-        var maximum_divisions:UInt8 = 0
+        var maximum_divisions:UInt64 = 0
         var next_value:HugeInt = divisor
         while dividend >= next_value {
             maximum_divisions += 1
             next_value = divisor * maximum_divisions
         }
-        guard maximum_divisions > 0 else { return (HugeInt.zero, nil) }
+        guard maximum_divisions > 0 else {
+            return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
+        }
         let subtracted_value:HugeInt = next_value - divisor
         let remainder:HugeInt = dividend - subtracted_value
         return (HugeInt(is_negative: is_negative, maximum_divisions-1), remainder.is_zero ? nil : HugeRemainder(dividend: remainder, divisor: divisor))
     }
     
-    static func / (left: HugeInt, right: any BinaryInteger) -> (result: HugeInt, remainder: HugeRemainder?) {
+    static func / (left: HugeInt, right: any BinaryInteger) -> HugeRemainder {
         return left / HugeInt(right)
     }
-    static func / (left: any BinaryInteger, right: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
+    static func / (left: any BinaryInteger, right: HugeInt) -> HugeRemainder {
         return HugeInt(left) / right
     }
     
-    static func /= (left: inout HugeInt, right: HugeInt) -> HugeRemainder? {
-        let (result, remainder):(HugeInt, HugeRemainder?) = left / right
-        left.is_negative = result.is_negative
-        left.numbers = result.numbers
-        return remainder
+    static func /= (left: inout HugeInt, right: HugeInt) {
+        let float:HugeFloat = (left / right).to_float
+        left.is_negative = float.is_negative
+        left.numbers = float.integer.numbers
     }
-    static func /= (left: inout HugeInt, right: any BinaryInteger) -> HugeRemainder? {
-        return left /= HugeInt(right)
+    static func /= (left: inout HugeInt, right: any BinaryInteger) {
+        left /= HugeInt(right)
     }
 }
 /*
@@ -611,7 +586,7 @@ public extension HugeInt {
  */
 public extension HugeInt {
     static func % (left: HugeInt, right: HugeInt) -> HugeInt {
-        return (left / right).remainder?.dividend ?? HugeInt.zero
+        return (left / right).to_int.remainder?.dividend ?? HugeInt.zero
     }
     static func % (left: HugeInt, right: any BinaryInteger) -> HugeInt {
         return left % HugeInt(right)
