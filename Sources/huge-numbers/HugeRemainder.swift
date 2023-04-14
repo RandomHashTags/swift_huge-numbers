@@ -150,6 +150,11 @@ public extension HugeRemainder {
 /*
  Misc
  */
+public extension HugeRemainder {
+    static prefix func - (value: HugeRemainder) -> HugeRemainder {
+        return HugeRemainder(dividend: -value.dividend, divisor: value.divisor)
+    }
+}
 internal extension HugeRemainder {
     static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, are_equal: Bool, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
         let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
@@ -183,14 +188,7 @@ public extension HugeRemainder {
  */
 public extension HugeRemainder {
     static func - (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-        if are_equal {
-            return HugeRemainder(dividend: left.dividend - right.dividend, divisor: common_denominator)
-        } else {
-            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-            return HugeRemainder(dividend: left_result - right_result, divisor: common_denominator)
-        }
+        return left + -right
     }
     static func - (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
         return left - HugeRemainder(dividend: right, divisor: HugeInt.one)

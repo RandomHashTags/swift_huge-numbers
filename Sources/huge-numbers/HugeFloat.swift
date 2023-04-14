@@ -11,12 +11,22 @@ import Foundation
 /// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable {
     public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
+    public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
         
         let decimal:HugeDecimal = (180 / (precision * 1_000_000)).to_decimal()
         print("HugeFloat;pi;decimal=" + decimal.description)
         let (test1, test2) = decimal + HugeDecimal(value: HugeInt("999964"))
+        
+        /*var n:HugeFloat = HugeFloat("1")
+        var pi:HugeFloat = HugeFloat("0")
+        for _ in 0..<5 {
+            pi = pi + (4/n)
+            n = n + 2
+            pi = pi - (4/n)
+            n = n + 2
+        }*/
         
         return HugeFloat("0")
         let (division_result, division_remainder):(HugeInt, HugeRemainder?) = (180 / (precision * 1_000_000)).to_int
@@ -97,20 +107,20 @@ public struct HugeFloat : Hashable, Comparable {
         return Float(description) ?? 0
     }
     public var description : String {
-        return (is_negative ? "-" : "") + literal_description
+        return (is_negative ? "-" : "") + description_literal
     }
-    public var literal_description : String {
+    public var description_literal : String {
         let suffix:String
         if let remainder:HugeRemainder = remainder {
             suffix = "r" + remainder.description
         } else {
-            suffix = "." + (decimal?.literal_description ?? "0")
+            suffix = "." + (decimal?.description_literal ?? "0")
         }
-        return integer.literal_description + suffix
+        return integer.description_literal + suffix
     }
     
     public var description_simplified : String {
-        var description:String = literal_description
+        var description:String = description_literal
         if integer == 0 {
             description.removeFirst()
             description.removeFirst()
@@ -206,6 +216,14 @@ public extension HugeFloat {
     }
     static func + (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
         return left + HugeFloat(right)
+    }
+}
+/*
+ Subtraction
+ */
+public extension HugeFloat {
+    static func - (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        return left + -right
     }
 }
 /*

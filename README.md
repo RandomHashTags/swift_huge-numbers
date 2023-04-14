@@ -6,6 +6,8 @@ This library was created to remove the decimal precision limitation on floats, w
 - `HugeInt`
 - `HugeFloat`
 - addition, subtraction, multiplication, and division
+- limited special arithmetic
+  - percent (remainder)
 - infinite precision
 
 ## Current limitations

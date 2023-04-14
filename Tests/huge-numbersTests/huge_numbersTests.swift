@@ -226,11 +226,12 @@ extension huge_numbersTests {
 extension huge_numbersTests {
     private func test_float() {
         let float:HugeFloat = HugeFloat("3.1415926535e-10")
-        XCTAssert(float.literal_description.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
+        XCTAssert(float.description_literal.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
         XCTAssert(HugeFloat("3r1/4") == HugeFloat(integer: HugeInt("3"), remainder: HugeRemainder(dividend: "1", divisor: "4")))
         
         test_float_addition()
+        test_float_subtraction()
         test_float_multiplication()
         test_float_division()
     }
@@ -255,6 +256,12 @@ extension huge_numbersTests {
         result = float + HugeFloat("196.555")
         expected_result = HugeFloat("200.055")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
+    }
+    private func test_float_subtraction() {
+        var float:HugeFloat = HugeFloat("9.75")
+        var result:HugeFloat = float - HugeFloat("2")
+        var expected_result:HugeFloat = HugeFloat("7.75")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_multiplication() {
         var float:HugeFloat = HugeFloat("1.7959")

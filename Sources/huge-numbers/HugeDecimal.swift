@@ -33,11 +33,11 @@ public struct HugeDecimal : Hashable, Comparable {
     }
     
     /// The number the digits represent, in reverse order.
-    public var literal_description : String {
+    public var description_literal : String {
         if let repeating_numbers:[UInt8] = repeating_numbers {
             return value.description + String(repeating_numbers.map({ $0.repeating_symbol }))
         } else {
-            return value.literal_description
+            return value.description_literal
         }
     }
     
@@ -110,7 +110,14 @@ public extension HugeDecimal {
         }
     }
 }
-
+/*
+ Misc
+ */
+public extension HugeDecimal {
+    static prefix func - (value: HugeDecimal) -> HugeDecimal {
+        return HugeDecimal(value: -value.value, repeating_numbers: value.repeating_numbers)
+    }
+}
 /*
  Addition
  */
@@ -129,6 +136,14 @@ public extension HugeDecimal {
         } else {
             return (HugeDecimal(value: result), nil)
         }
+    }
+}
+/*
+ Subtraction
+ */
+public extension HugeDecimal {
+    static func - (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
+        return left + -right
     }
 }
 /*
