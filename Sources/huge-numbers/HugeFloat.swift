@@ -13,9 +13,16 @@ public struct HugeFloat : Hashable, Comparable {
     public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
-        let (division_result, division_remainder):(HugeInt, HugeRemainder?) = (180 / precision).to_int
+        
+        let decimal:HugeDecimal = (180 / (precision * 1_000_000)).to_decimal()
+        print("HugeFloat;pi;decimal=" + decimal.description)
+        let (test1, test2) = decimal + HugeDecimal(value: HugeInt("999964"))
+        
+        return HugeFloat("0")
+        let (division_result, division_remainder):(HugeInt, HugeRemainder?) = (180 / (precision * 1_000_000)).to_int
         let float:HugeFloat = HugeFloat(integer: division_result, remainder: division_remainder)
-        return precision * sin(float)
+        let sin_result:HugeDecimal = sin(float, precision: precision)
+        return HugeFloat("0")
     }
     
     public internal(set) var integer:HugeInt
@@ -228,7 +235,8 @@ public extension HugeFloat {
             result.removeFirst()
             removed_zeroes += 1
         }
-        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<result_decimal_places-removed_zeroes]
+        let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
+        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
         let post_decimal_number:HugeInt = HugeInt(is_negative: false, post_decimal_numbers)
         
         return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: post_decimal_number))
@@ -271,16 +279,29 @@ public extension HugeFloat {
         return HugeFloat(left) / right
     }
 }
+/*
+ Percent
+ */
+public extension HugeFloat {
+    static func % (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: fix
+        let value:HugeInt = left.integer % right.integer
+        return HugeFloat(integer: value)
+    }
+    static func % (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
+        return left % HugeFloat(right)
+    }
+}
 
 /*
  Trigonometry // TODO: support
  */
 /// - Parameters:
 ///     - x: number in degrees
-public func sin(_ x: HugeFloat, precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: finish
+public func sin(_ x: HugeFloat, precision: HugeInt) -> HugeDecimal { // TODO: finish
     let result:HugeFloat = x / 90
-    print("HugeFloat;sin;x=" + x.description + ";x%360=?;result=" + result.description)
-    return result
+    let decimal:HugeDecimal = result.remainder!.to_decimal(precision: precision)
+    print("HugeFloat;sin;x=" + x.description + ";precision=" + precision.description + ";result=" + result.description + ";decimal=" + decimal.description)
+    return decimal
 }
 /// - Parameters:
 ///     - x: number in degrees

@@ -9,7 +9,7 @@ import Foundation
 
 public struct HugeDecimal : Hashable, Comparable {
     
-    public static var zero:HugeDecimal = HugeDecimal("0")
+    public static var zero:HugeDecimal = HugeDecimal(value: HugeInt.zero)
     
     public private(set) var value:HugeInt
     /// The infinitely repeating numbers, in reverse order.
@@ -19,8 +19,8 @@ public struct HugeDecimal : Hashable, Comparable {
         self.value = value
         self.repeating_numbers = repeating_numbers
     }
-    public init(_ string: String, repeating_numbers: [UInt8]? = nil) {
-        self.init(value: HugeInt(string), repeating_numbers: repeating_numbers)
+    public init(_ string: String, remove_leading_zeros: Bool = true, repeating_numbers: [UInt8]? = nil) {
+        self.init(value: HugeInt(string, remove_leading_zeros: remove_leading_zeros), repeating_numbers: repeating_numbers)
     }
     
     /// The number the digits represent.
@@ -115,7 +115,27 @@ public extension HugeDecimal {
  Addition
  */
 public extension HugeDecimal {
-    static func + (left: HugeDecimal, right: HugeDecimal) -> HugeDecimal { // TODO: finish
-        return left
+    static func + (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
+        let left_value:HugeInt = left.value, right_value:HugeInt = right.value
+        let decimal_length:Int = max(left_value.length, right_value.length)
+        var result:HugeInt = left_value + right_value, result_length:Int = result.length
+        if result_length > decimal_length {
+            let difference:Int = result_length-decimal_length
+            let quotient:HugeInt = HugeInt(is_negative: false, result.numbers[decimal_length..<result_length])
+            for _ in 0..<difference {
+                result.numbers.removeLast()
+            }
+            return (HugeDecimal(value: result), quotient)
+        } else {
+            return (HugeDecimal(value: result), nil)
+        }
+    }
+}
+/*
+ Multiplication
+ */
+public extension HugeDecimal {
+    static func * (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: finish
+        return (left, nil)
     }
 }

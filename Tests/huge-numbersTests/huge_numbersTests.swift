@@ -366,12 +366,25 @@ extension huge_numbersTests {
         expected_result = HugeDecimal(value: HugeInt.zero, repeating_numbers: [9, 9, 0, 0])
         XCTAssert(result == expected_result, "test_decimal;result_precision=\(result);expected_result=\(expected_result)")
         XCTAssert(result.description.elementsEqual(expected_result.description), "test_decimal;result.description=" + result.description + ";expected_result.description=" + expected_result.description)
+        
+        test_decimal_addition()
+    }
+    private func test_decimal_addition() {
+        var decimal:HugeDecimal = HugeDecimal("999")
+        var (result, quotient):(HugeDecimal, HugeInt?) = decimal + HugeDecimal("1")
+        var (expected_result, expected_quotient):(HugeDecimal, HugeInt?) = (HugeDecimal("000", remove_leading_zeros: false), HugeInt.one)
+        XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_addition;result=\(result);expected_result=\(expected_result);quotient=\(quotient);expected_quotient=\(expected_quotient)")
+        
+        (result, quotient) = HugeDecimal("998") + HugeDecimal("1")
+        (expected_result, expected_quotient) = (decimal, nil)
+        XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_addition;result=\(result);expected_result=\(expected_result);quotient=\(quotient);expected_quotient=\(expected_quotient)")
     }
 }
 
 extension huge_numbersTests {
     private func test_pi() {
-        let pi:HugeFloat = HugeFloat.pi(precision: HugeInt("5"))
-        print(pi.description)
+        let precision:HugeInt = HugeInt("5")
+        let pi:HugeFloat = HugeFloat.pi(precision: precision)
+        print("test_pi;pi=" + pi.description + ";precision=" + precision.description)
     }
 }
