@@ -14,24 +14,21 @@ public struct HugeFloat : Hashable, Comparable {
     public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
+        let degrees:HugeDecimal = (180 / (precision * 1_000_000)).to_decimal()
+        print("HugeFloat;pi;degrees=" + degrees.description)
+        /*let four:HugeFloat = HugeFloat("4")
+        var pi:HugeFloat = HugeFloat("3")
+        var starting_denominator:Int = 4
+        for _ in 0..<100 {
+            var value:HugeFloat = four / (HugeFloat((starting_denominator-2) * (starting_denominator-1) * starting_denominator))
+            pi = pi + value
+            starting_denominator += 2
+            value = four / (HugeFloat((starting_denominator-2) * (starting_denominator-1) * starting_denominator))
+            pi = pi - value
+            starting_denominator += 2
+        }
+        print("HugeFloat;pi=" + pi.description)*/
         
-        let decimal:HugeDecimal = (180 / (precision * 1_000_000)).to_decimal()
-        print("HugeFloat;pi;decimal=" + decimal.description)
-        let (test1, test2) = decimal + HugeDecimal(value: HugeInt("999964"))
-        
-        /*var n:HugeFloat = HugeFloat("1")
-        var pi:HugeFloat = HugeFloat("0")
-        for _ in 0..<5 {
-            pi = pi + (4/n)
-            n = n + 2
-            pi = pi - (4/n)
-            n = n + 2
-        }*/
-        
-        return HugeFloat("0")
-        let (division_result, division_remainder):(HugeInt, HugeRemainder?) = (180 / (precision * 1_000_000)).to_int
-        let float:HugeFloat = HugeFloat(integer: division_result, remainder: division_remainder)
-        let sin_result:HugeDecimal = sin(float, precision: precision)
         return HugeFloat("0")
     }
     
@@ -141,7 +138,7 @@ public struct HugeFloat : Hashable, Comparable {
         return self * 0.01745329252
     }
     public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithemtic
-        return self * (180 / HugeFloat.pi(precision: precision))
+        return self * (180 / HugeFloat.pi_100)
     }
 }
 /*
@@ -254,10 +251,10 @@ public extension HugeFloat {
             removed_zeroes += 1
         }
         let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
-        let post_decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
-        let post_decimal_number:HugeInt = HugeInt(is_negative: false, post_decimal_numbers)
+        let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
+        let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
         
-        return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: post_decimal_number))
+        return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: decimal))
     }
     static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left * right.to_float
@@ -284,7 +281,7 @@ public extension HugeFloat {
  Division
  */
 public extension HugeFloat {
-    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
+    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
         let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer).to_int
         return HugeFloat(integer: result, remainder: remainder)
     }
@@ -318,6 +315,7 @@ public extension HugeFloat {
 public func sin(_ x: HugeFloat, precision: HugeInt) -> HugeDecimal { // TODO: finish
     let result:HugeFloat = x / 90
     let decimal:HugeDecimal = result.remainder!.to_decimal(precision: precision)
+    
     print("HugeFloat;sin;x=" + x.description + ";precision=" + precision.description + ";result=" + result.description + ";decimal=" + decimal.description)
     return decimal
 }

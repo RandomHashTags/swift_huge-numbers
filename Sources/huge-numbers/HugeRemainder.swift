@@ -79,7 +79,7 @@ public struct HugeRemainder : Hashable, Comparable {
             result_remainders[index] = remaining_remainder
             index += 1
         }
-        if let repeated_value:[UInt8] {
+        if let repeated_value:[UInt8] = repeated_value {
             index = 0
             while result.first == 0 && repeated_value[index] == 0 {
                 result.removeFirst()

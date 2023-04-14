@@ -145,6 +145,7 @@ extension huge_numbersTests {
         test_int_subtraction()
         test_int_multiplication()
         test_int_division()
+        test_int_factorial()
         test_int_percent()
     }
     private func test_int_addition() {
@@ -211,11 +212,18 @@ extension huge_numbersTests {
         
         (result, remainder) = (HugeInt("12345") / HugeInt("3")).to_int
     }
+    private func test_int_factorial() {
+        var integer:HugeInt = HugeInt("5")
+        var result:HugeInt = integer.factorial()
+        var expected_result:HugeInt = HugeInt("120")
+        XCTAssert(result == expected_result, "test_int_factorial;result=\(result);expected_result=\(expected_result)")
+    }
     private func test_int_percent() {
         var integer:HugeInt = HugeInt("100")
         var result:HugeInt = integer % HugeInt("10")
         var expected_result:HugeInt = HugeInt.zero
         XCTAssert(result == expected_result, "test_int_percent;result=\(result);expected_result=\(expected_result)")
+        
         
         result = integer % HugeInt("40")
         expected_result = HugeInt("20")

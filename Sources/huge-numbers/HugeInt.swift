@@ -203,11 +203,21 @@ public extension HugeInt {
     }
 }
 /*
- prefixes
+ prefixes / postfixes
  */
 public extension HugeInt {
     static prefix func - (value: HugeInt) -> HugeInt {
         return HugeInt(is_negative: !value.is_negative, value.numbers)
+    }
+    func factorial() -> HugeInt {
+        let one:HugeInt = HugeInt.one
+        var remaining_value:HugeInt = self
+        var value:HugeInt = self
+        while remaining_value != one {
+            remaining_value -= 1
+            value *= remaining_value
+        }
+        return value
     }
 }
 /*

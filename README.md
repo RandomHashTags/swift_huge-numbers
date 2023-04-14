@@ -8,11 +8,12 @@ This library was created to remove the decimal precision limitation on floats, w
 - addition, subtraction, multiplication, and division
 - limited special arithmetic
   - percent (remainder)
+  - factorial
 - infinite precision
 
 ## Current limitations
 - `HugeFloat` is partially limited in functionality
-- no special arithmetic
+- limited special arithmetic
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.
