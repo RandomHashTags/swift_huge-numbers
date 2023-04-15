@@ -26,6 +26,9 @@ final class huge_numbersTests: XCTestCase {
         (quotient, remainder) = HugeInt.divide(dividend: HugeInt("40"), divisor: HugeInt("4"))
         XCTAssert(quotient == HugeInt("10") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
+        //(quotient, remainder) = HugeInt.divide(dividend: HugeInt("928359234"), divisor: HugeInt("18"))
+        //XCTAssert(quotient == HugeInt("51575513") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
+        
         return;
         test_int()
         test_float()
