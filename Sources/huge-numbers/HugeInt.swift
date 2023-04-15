@@ -9,7 +9,6 @@ import Foundation
 
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable {
-    
     public static var default_precision:HugeInt = HugeInt("1000")
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
@@ -75,6 +74,27 @@ public struct HugeInt : Hashable, Comparable {
     }
     public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
+    }
+    
+    public func get_factors() -> Set<HugeInt> {
+        var array:Set<HugeInt> = [self]
+        print("HugeInt;test1;self=\(self)")
+        let middle_number:HugeInt = HugeInt.get_maximum_divisions(dividend: self, divisor: HugeInt("2")).result
+        print("HugeInt;test2")
+        var number:HugeInt = HugeInt.one
+        while number <= middle_number {
+            if self % number == 0 {
+                array.insert(number)
+            }
+            number += 1
+        }
+        return array
+    }
+    public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
+        let self_array:Set<HugeInt> = get_factors()
+        let other_array:Set<HugeInt> = integer.get_factors()
+        let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
+        return array.isEmpty ? nil : array
     }
     
     public mutating func remove_trailing_zeros() {
@@ -522,11 +542,13 @@ public extension HugeInt {
     }
     static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
-        var maximum_divisions:UInt64 = 0
-        var next_value:HugeInt = divisor
+        var maximum_divisions:UInt64 = max(0, 10 * UInt64(dividend.length-divisor.length))
+        var next_value:HugeInt = divisor * (maximum_divisions != 0 ? maximum_divisions : 1)
+        print("HugeInt;get_maximum_divisions;dividend=" + dividend.description + ";divisor=" + divisor.description)
         while dividend >= next_value {
+            print("maximum_divisions=" + maximum_divisions.description + ";next_value=" + next_value.description)
             maximum_divisions += 1
-            next_value = divisor * maximum_divisions
+            next_value += divisor
         }
         guard maximum_divisions > 0 else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
@@ -552,6 +574,64 @@ public extension HugeInt {
         left /= HugeInt(right)
     }
 }
+internal extension HugeInt {
+    static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) { // TODO: finish
+        let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
+        
+        var remaining_dividend:HugeInt = dividend
+        var remaining_dividend_numbers:[UInt8] = dividend.numbers
+        var quotient_numbers:[UInt8] = [UInt8].init(repeating: 0, count: dividend.length - divisor.length + 1)
+        
+        var included_digits:Int = 1
+        var quotient_index:Int = 0
+        while remaining_dividend >= divisor {
+            print("HugeInt;divide;" + remaining_dividend.description + " >= " + divisor.description + ";included_digits=" + included_digits.description)
+            var divisible_dividend_numbers:[UInt8] = [UInt8].init(repeating: 0, count: included_digits)
+            let remaining_dividend_numbers_reversed:[UInt8] = remaining_dividend_numbers.reversed()
+            for i in 0..<included_digits {
+                divisible_dividend_numbers[i] = remaining_dividend_numbers_reversed[i]
+            }
+            while divisible_dividend_numbers.first == 0 {
+                divisible_dividend_numbers.removeFirst()
+            }
+            var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
+            if divisible_dividend >= divisor {
+                var subtracted_amount:HugeInt = HugeInt.zero
+                while divisible_dividend >= divisor {
+                    quotient_numbers[quotient_index] += 1
+                    divisible_dividend -= divisor
+                    subtracted_amount += divisor
+                }
+                remaining_dividend_numbers = HugeInt.subtract(bigger_numbers: remaining_dividend_numbers, smaller_numbers: subtracted_amount.numbers)
+                print("quotient_index=" + quotient_index.description + ";subtracted_amount=" + subtracted_amount.description + ";remaining_dividend_numbers=" + remaining_dividend_numbers.description)
+                if remaining_dividend_numbers.first == 0 {
+                    remaining_dividend_numbers.removeFirst()
+                }
+                remaining_dividend = HugeInt(is_negative: false, remaining_dividend_numbers)
+                if included_digits > 1 {
+                    included_digits -= 1
+                } else {
+                    remaining_dividend_numbers.removeFirst()
+                }
+                quotient_index += 1
+            } else {
+                included_digits += 1
+            }
+            print("HugeInt;divide;quotient_numbers=" + quotient_numbers.description)
+        }
+        var remainder:HugeRemainder? = nil
+        if remaining_dividend == HugeInt.zero {
+            
+        }
+        while quotient_numbers.last == 0 {
+            quotient_numbers.removeLast()
+        }
+        print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description + ";remaining_dividend_numbers=" + remaining_dividend_numbers.description + ";quotient_numbers=" + quotient_numbers.description)
+        
+        let quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
+        return (quotient, remainder)
+    }
+}
 /*
  Percent
  */
@@ -571,12 +651,11 @@ public extension HugeInt {
  */
 public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support negative numbers or remainders
     let numbers:[UInt8] = x.numbers
+    guard let ending_number:UInt8 = numbers.first else { return HugeFloat.zero }
     let ending_root_1:UInt8, ending_root_2:UInt8
-    switch numbers.first! {
+    switch ending_number {
     case 0:
-        if x == HugeInt.zero {
-            return HugeFloat(integer: HugeInt.zero)
-        } else if let closest:Int = x.to_int() { // TODO: fix
+        if let closest:Int = x.to_int() { // TODO: fix
             return HugeFloat(get_closest_sqrt_number(closest))
         } else {
             return HugeFloat(integer: HugeInt.zero) // TODO: fix
@@ -612,14 +691,23 @@ public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support neg
     let second_result:UInt8 = first_numbers < second_value ? ending_root_1 : ending_root_2
     return HugeFloat(UInt64(String(describing: first_result) + String(describing: second_result))!)
 }
-private func get_closest_sqrt_number(_ number: Int) -> Int {
-    for index in 4...1_000 {
+private func get_closest_sqrt_number(_ number: Int, starting_number: Int = 4) -> Int {
+    for index in starting_number...45_000 {
         let squared:Int = index * index
         if number < squared {
             return index-1
         }
     }
     return 0
+}
+public extension HugeInt {
+    func squared(amount: UInt64 = 2) -> HugeInt {
+        var result:HugeInt = self
+        for _ in 0..<amount {
+            result *= result
+        }
+        return result
+    }
 }
 /*
  Trigonometry // TODO: support

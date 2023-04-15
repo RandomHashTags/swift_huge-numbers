@@ -10,6 +10,9 @@ import Foundation
 // TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable {
+    
+    public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
+    
     public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
     public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
@@ -30,7 +33,7 @@ public struct HugeFloat : Hashable, Comparable {
         }
         print("HugeFloat;pi=" + pi.description)*/
         
-        return HugeFloat("0")
+        return HugeFloat.zero
     }
     
     public internal(set) var integer:HugeInt
@@ -38,6 +41,7 @@ public struct HugeFloat : Hashable, Comparable {
     public internal(set) var decimal:HugeDecimal? = nil
     /// This float can have a populated ``decimal`` or ``remainder``; never both, however, both can be nil.
     public internal(set) var remainder:HugeRemainder? = nil
+    // TODO: support a square root remainder
     
     public var is_negative : Bool {
         return integer.is_negative
@@ -314,15 +318,15 @@ public extension HugeFloat {
 
 /*
  Trigonometry // TODO: support
+ SOH - CAH - TOA
  */
 /// - Parameters:
-///     - x: number in degrees
-public func sin(_ x: HugeFloat, precision: HugeInt) -> HugeDecimal { // TODO: finish
-    let result:HugeFloat = x / 90
-    let decimal:HugeDecimal = result.remainder!.to_decimal(precision: precision)
-    
-    print("HugeFloat;sin;x=" + x.description + ";precision=" + precision.description + ";result=" + result.description + ";decimal=" + decimal.description)
-    return decimal
+///     - x: number in degrees. Must be between 0 and 360.
+public func sin(_ x: HugeFloat, precision: HugeInt) -> (value: HugeInt?, decimal: HugeDecimal?) { // TODO: finish
+    let result:HugeFloat = x
+    var decimal:HugeDecimal? = nil
+    print("HugeFloat;sin;x=" + x.description + ";precision=" + precision.description + ";result=" + result.description + ";decimal=\(decimal)")
+    return (nil, decimal)
 }
 /// - Parameters:
 ///     - x: number in degrees

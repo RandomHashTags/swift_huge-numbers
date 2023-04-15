@@ -101,6 +101,19 @@ public struct HugeRemainder : Hashable, Comparable {
         }
         return indexes
     }
+    
+    mutating func simplify() {
+        if divisor % dividend == 0 {
+            divisor = (divisor / dividend).to_int.result
+            dividend = HugeInt.one
+        } else {
+            print("HugeRemainder;simplify;test1")
+            if let shared_factors:Set<HugeInt> = dividend.get_shared_factors(divisor) {
+                print("HugeRemainder;shared_factors=" + shared_factors.description)
+            }
+            print("HugeRemainder;simplify;test2")
+        }
+    }
 }
 
 /*
