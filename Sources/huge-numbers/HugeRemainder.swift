@@ -33,30 +33,32 @@ public struct HugeRemainder : Hashable, Comparable {
     public var is_zero : Bool {
         return dividend == HugeInt.zero
     }
-    public var to_int : (result: HugeInt, remainder: HugeRemainder?) {
-        return HugeInt.get_maximum_divisions(dividend: dividend, divisor: divisor)
+    public var to_int : (quotient: HugeInt, remainder: HugeRemainder?) {
+        return dividend / divisor
     }
     public var to_float : HugeFloat {
         let (test1, test2):(HugeInt, HugeRemainder?) = to_int
         return HugeFloat(integer: test1, decimal: HugeDecimal.zero, remainder: test2)
     }
     
-    public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
+    /// - Warning: Using this function assumes the dividend is smaller than the divisor.
+    public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal { // TODO: fix
         let precision_int:Int = precision.to_int() ?? Int.max
         let zero:HugeInt = HugeInt.zero, zero_remainder:HugeRemainder = HugeRemainder.zero
         var result:ArraySlice<UInt8> = ArraySlice<UInt8>.init(repeating: 255, count: precision_int)
         var result_remainders:[HugeRemainder] = [HugeRemainder].init(repeating: zero_remainder, count: precision_int)
         var repeated_value:[UInt8]? = nil
-        var remaining_dividend:HugeInt = dividend, remaining_remainder:HugeRemainder = zero_remainder
+        let is_negative:Bool = dividend.is_negative
+        var remaining_dividend:HugeInt = is_negative ? -dividend : dividend, remaining_remainder:HugeRemainder = zero_remainder
         var index:Int = 0
     while_loop:
         while index < precision_int && (remaining_dividend != zero || remaining_remainder != zero_remainder) && remaining_dividend <= divisor {
             remaining_dividend *= 10
-            let (maximum_divisions, remainder):(HugeInt, HugeRemainder?) = HugeInt.get_maximum_divisions(dividend: remaining_dividend, divisor: divisor)
+            let (maximum_divisions, remainder):(HugeInt, HugeRemainder?) = remaining_dividend / divisor
             let subtracted_value:HugeInt = maximum_divisions * divisor
             remaining_dividend -= subtracted_value
             remaining_remainder = remainder ?? HugeRemainder(dividend: remaining_dividend, divisor: divisor)
-            let maximum_divisions_int:UInt8 = maximum_divisions.to_int()!
+            let maximum_divisions_int:UInt8 = maximum_divisions.to_int() ?? 0
             if let same_max_division_indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
                 var index_of_same_max_division:Int = 0
                 for same_max_division_index in same_max_division_indexes {
@@ -88,7 +90,7 @@ public struct HugeRemainder : Hashable, Comparable {
         } else {
             result = result[0..<index]
         }
-        return HugeDecimal(value: HugeInt(is_negative: false, result.reversed()), repeating_numbers: repeated_value?.reversed())
+        return HugeDecimal(value: HugeInt(is_negative: is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
     private func get_indexes_of(value: UInt8, array: ArraySlice<UInt8>, set_value: UInt8) -> [Int]? {
         guard let first_index:Int = array.firstIndex(of: value) else { return nil }
@@ -104,7 +106,7 @@ public struct HugeRemainder : Hashable, Comparable {
     
     mutating func simplify() {
         if divisor % dividend == 0 {
-            divisor = (divisor / dividend).to_int.result
+            divisor = (divisor / dividend).quotient
             dividend = HugeInt.one
         } else {
             print("HugeRemainder;simplify;test1")

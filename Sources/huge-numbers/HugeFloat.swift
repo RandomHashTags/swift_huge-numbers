@@ -17,9 +17,9 @@ public struct HugeFloat : Hashable, Comparable {
     public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
-        let total_precision:HugeInt = precision * 1_000_000
-        let degrees:HugeDecimal = (180 / total_precision).to_decimal()
-        print("HugeFloat;pi;degrees=" + degrees.description)
+        //let total_precision:HugeInt = precision * 1_000_000
+        //let degrees:HugeDecimal = (180 / total_precision).to_decimal()
+        //print("HugeFloat;pi;degrees=" + degrees.description)
         /*let four:HugeFloat = HugeFloat("4")
         var pi:HugeFloat = HugeFloat("3")
         var starting_denominator:Int = 4
@@ -291,7 +291,7 @@ public extension HugeFloat {
  */
 public extension HugeFloat {
     static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer).to_int
+        let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
         return HugeFloat(integer: result, remainder: remainder)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
