@@ -12,19 +12,19 @@ final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
         //try await test_benchmarks()
         var (quotient, remainder):(HugeInt, HugeRemainder?) = HugeInt.divide(dividend: HugeInt("25"), divisor: HugeInt("5"))
-        XCTAssert(quotient == HugeInt("5") && remainder == nil)
+        XCTAssert(quotient == HugeInt("5") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
         (quotient, remainder) = HugeInt.divide(dividend: HugeInt("448"), divisor: HugeInt("4"))
-        XCTAssert(quotient == HugeInt("112") && remainder == nil)
+        XCTAssert(quotient == HugeInt("112") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
         (quotient, remainder) = HugeInt.divide(dividend: HugeInt("44"), divisor: HugeInt("4"))
-        XCTAssert(quotient == HugeInt("11") && remainder == nil)
+        XCTAssert(quotient == HugeInt("11") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
         (quotient, remainder) = HugeInt.divide(dividend: HugeInt("8320"), divisor: HugeInt("2"))
-        XCTAssert(quotient == HugeInt("4160") && remainder == nil)
+        XCTAssert(quotient == HugeInt("4160") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
         (quotient, remainder) = HugeInt.divide(dividend: HugeInt("40"), divisor: HugeInt("4"))
-        XCTAssert(quotient == HugeInt("10") && remainder == nil)
+        XCTAssert(quotient == HugeInt("10") && remainder == nil, "quotient=\(quotient);remainder=\(remainder)")
         
         return;
         test_int()

@@ -578,14 +578,15 @@ internal extension HugeInt {
     static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) { // TODO: finish
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
-        var remaining_dividend:HugeInt = dividend
         var remaining_dividend_numbers:[UInt8] = dividend.numbers
-        var quotient_numbers:[UInt8] = [UInt8].init(repeating: 0, count: dividend.length - divisor.length + 1)
+        let result_count:Int = dividend.length - divisor.length + 1
+        var quotient_numbers:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
         
         var included_digits:Int = 1
         var quotient_index:Int = 0
-        while remaining_dividend >= divisor {
-            print("HugeInt;divide;" + remaining_dividend.description + " >= " + divisor.description + ";included_digits=" + included_digits.description)
+        var loop:Bool = true
+        while loop {
+            print("HugeInt;divide;included_digits=" + included_digits.description)
             var divisible_dividend_numbers:[UInt8] = [UInt8].init(repeating: 0, count: included_digits)
             let remaining_dividend_numbers_reversed:[UInt8] = remaining_dividend_numbers.reversed()
             for i in 0..<included_digits {
@@ -602,27 +603,29 @@ internal extension HugeInt {
                     divisible_dividend -= divisor
                     subtracted_amount += divisor
                 }
+                for _ in included_digits..<remaining_dividend_numbers.count {
+                    subtracted_amount.numbers.insert(0, at: 0)
+                }
                 remaining_dividend_numbers = HugeInt.subtract(bigger_numbers: remaining_dividend_numbers, smaller_numbers: subtracted_amount.numbers)
                 print("quotient_index=" + quotient_index.description + ";subtracted_amount=" + subtracted_amount.description + ";remaining_dividend_numbers=" + remaining_dividend_numbers.description)
                 if remaining_dividend_numbers.first == 0 {
                     remaining_dividend_numbers.removeFirst()
                 }
-                remaining_dividend = HugeInt(is_negative: false, remaining_dividend_numbers)
                 if included_digits > 1 {
                     included_digits -= 1
-                } else {
-                    remaining_dividend_numbers.removeFirst()
+                } else if remaining_dividend_numbers.count > 0 {
+                    remaining_dividend_numbers.removeLast()
                 }
                 quotient_index += 1
+                loop = remaining_dividend_numbers != (0..<remaining_dividend_numbers.count).map({ UInt8($0) })
+            } else if included_digits > remaining_dividend_numbers.count {
+                loop = false
             } else {
                 included_digits += 1
             }
-            print("HugeInt;divide;quotient_numbers=" + quotient_numbers.description)
+            print("HugeInt;divide;quotient_numbers=" + quotient_numbers.description + ";remaining_dividend_numbers=" + remaining_dividend_numbers.description)
         }
         var remainder:HugeRemainder? = nil
-        if remaining_dividend == HugeInt.zero {
-            
-        }
         while quotient_numbers.last == 0 {
             quotient_numbers.removeLast()
         }
