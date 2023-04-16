@@ -575,7 +575,8 @@ internal extension HugeInt {
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
         var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
-        var quotient_numbers:[UInt8] = [UInt8].init(repeating: 0, count: dividend.length - divisor.length + 1)
+        let result_count:Int = dividend.length - divisor.length + 1
+        var quotient_numbers:[UInt8] = [UInt8].init(repeating: 255, count: result_count)
         
         var included_digits:Int = divisor.length
         var quotient_index:Int = 0
@@ -592,6 +593,7 @@ internal extension HugeInt {
             var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
             if divisible_dividend >= divisor {
                 var subtracted_amount:HugeInt = HugeInt.zero
+                quotient_numbers[quotient_index] = 0
                 while divisible_dividend >= divisor {
                     quotient_numbers[quotient_index] += 1
                     divisible_dividend -= divisor
@@ -608,25 +610,22 @@ internal extension HugeInt {
                 if included_digits > 1 {
                     included_digits -= 1
                 }
-                if remaining_dividend < divisor {
-                    if remaining_dividend != HugeInt.zero {
-                        if quotient_index == 0 {
-                            quotient_numbers.removeLast()
-                        } else {
-                            while quotient_numbers.last == 0 {
-                                quotient_numbers.removeLast()
-                            }
-                        }
-                    }
-                }
                 quotient_index += 1
             } else {
                 included_digits += 1
             }
             //print("HugeInt;divide;included_digits=" + included_digits.description + ";quotient_numbers=" + quotient_numbers.description + ";remaining_dividend.numbers=" + remaining_dividend.numbers.description)
         }
-        let remainder:HugeRemainder? = remaining_dividend == HugeInt.zero ? nil : HugeRemainder(dividend: remaining_dividend, divisor: divisor)
+        let remainder:HugeRemainder?
+        if remaining_dividend == HugeInt.zero {
+            remainder = nil
+        } else {
+            remainder = HugeRemainder(dividend: remaining_dividend, divisor: divisor)
+        }
         //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description + ";remainder=\(remainder);remaining_dividend=" + remaining_dividend.description + ";quotient_numbers=" + quotient_numbers.description)
+        while quotient_numbers.last == 255 {
+            quotient_numbers.removeLast()
+        }
         
         let quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
         return (quotient, remainder)

@@ -190,6 +190,10 @@ extension huge_numbersTests {
         result = HugeInt("780637") - HugeInt("714760")
         expected_result = HugeInt("65877")
         XCTAssert(result == expected_result, "test_int_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeInt("200200") - HugeInt("1")
+        expected_result = HugeInt("200199")
+        XCTAssert(result == expected_result, "test_int_subtraction;result=\(result);expected_result=\(expected_result)")
     }
     private func test_int_multiplication() {
         let integer:HugeInt = HugeInt("1234567891011121314151617181920")
@@ -205,17 +209,17 @@ extension huge_numbersTests {
         var (quotient, remainder):(HugeInt, HugeRemainder?) = (HugeInt("518") / HugeInt("4"))
         XCTAssert(quotient == HugeInt("129") && remainder == HugeRemainder(dividend: "2", divisor: "4"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
-        (quotient, remainder) = (HugeInt("18") / HugeInt("9"))
+        (quotient, remainder) = HugeInt("18") / HugeInt("9")
         XCTAssert(quotient == HugeInt("2") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
-        (quotient, remainder) = (HugeInt("36") / HugeInt("7"))
+        (quotient, remainder) = HugeInt("36") / HugeInt("7")
         XCTAssert(quotient == HugeInt("5") && remainder == HugeRemainder(dividend: "1", divisor: "7"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
-        (quotient, remainder) = (HugeInt("3460987") / HugeInt("89345"))
+        (quotient, remainder) = HugeInt("3460987") / HugeInt("89345")
         XCTAssert(quotient == HugeInt("38") && remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
-        (quotient, remainder) = (HugeInt("13") / 6)
-        XCTAssert(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"))
+        (quotient, remainder) = HugeInt("13") / HugeInt("6")
+        XCTAssert(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("25") / HugeInt("5")
         XCTAssert(quotient == HugeInt("5") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
@@ -231,6 +235,9 @@ extension huge_numbersTests {
         
         (quotient, remainder) = HugeInt("40") / HugeInt("4")
         XCTAssert(quotient == HugeInt("10") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("41") / HugeInt("4")
+        XCTAssert(quotient == HugeInt("10") && remainder == HugeRemainder(dividend: "1", divisor: "4"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("928359234") / HugeInt("18")
         XCTAssert(quotient == HugeInt("51575513") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
