@@ -78,9 +78,7 @@ public struct HugeInt : Hashable, Comparable {
     
     public func get_factors() -> Set<HugeInt> {
         var array:Set<HugeInt> = [self]
-        print("HugeInt;test1;self=\(self)")
         let (middle_number, remainder):(HugeInt, HugeRemainder?) = self / HugeInt("2")
-        print("HugeInt;test2;middle_number=\(middle_number)")
         var number:HugeInt = HugeInt.one
         while number <= middle_number {
             if self % number == 0 {
@@ -421,44 +419,37 @@ internal extension HugeInt {
         let result_count:Int = bigger_numbers.count
         var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
         
-        var index:Int = 0, bigger_numbers_copy:[UInt8] = bigger_numbers
+        var index:Int = 0, remaining_numbers:[UInt8] = bigger_numbers
         while index < smaller_numbers_length {
             let smaller_number:UInt8 = smaller_numbers[index]
-            var bigger_number:UInt8 = bigger_numbers_copy[index]
-            while bigger_number < smaller_number {
+            var bigger_number:UInt8 = remaining_numbers[index]
+            if bigger_number < smaller_number {
                 var next_index:Int = index + 1
-                var next_value:UInt8 = bigger_numbers_copy[next_index]
-                if next_value != 0 {
-                    next_value -= 1
-                    bigger_numbers_copy[next_index] = next_value
-                    result[next_index] = next_value
-                } else {
-                    var offset:Int = 1
+                var next_value:UInt8 = remaining_numbers[next_index]
+                if next_value == 0 {
                     while next_value == 0 {
-                        next_value = bigger_numbers_copy[next_index + offset]
-                        offset += 1
+                        next_index += 1
+                        next_value = remaining_numbers[next_index]
                     }
-                    var offset_index:Int = next_index + offset - 1
-                    while offset_index > 0 {
-                        bigger_numbers_copy[offset_index] -= 1
-                        result[offset_index] = 9
-                        offset_index -= 1
-                        let value:UInt8 = UInt8(offset_index == 0 ? 9 : offset_index > 0 ? 10 : 0)
-                        if offset_index >= 0 {
-                            bigger_numbers_copy[offset_index] += value
-                            result[offset_index] += value
-                        }
+                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers1=" + remaining_numbers.description)
+                    remaining_numbers[next_index] -= 1
+                    next_index -= 1
+                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers2=" + remaining_numbers.description)
+                    while next_index > index {
+                        remaining_numbers[next_index] += 9
+                        next_index -= 1
                     }
-                    next_value = bigger_numbers_copy[next_index]
+                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers3=" + remaining_numbers.description)
+                } else {
+                    remaining_numbers[next_index] -= 1
                 }
                 bigger_number += 10
-                next_index += 1
             }
             result[index] = bigger_number - smaller_number
             index += 1
         }
         while index < result_count {
-            result[index] = bigger_numbers_copy[index]
+            result[index] = remaining_numbers[index]
             index += 1
         }
         return result
@@ -586,8 +577,9 @@ internal extension HugeInt {
         var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
         var quotient_numbers:[UInt8] = [UInt8].init(repeating: 0, count: dividend.length - divisor.length + 1)
         
-        var included_digits:Int = 1
+        var included_digits:Int = divisor.length
         var quotient_index:Int = 0
+        //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description)
         while remaining_dividend >= divisor {
             var divisible_dividend_numbers:[UInt8] = [UInt8].init(repeating: 0, count: included_digits)
             let remaining_dividend_numbers_reversed:[UInt8] = remaining_dividend.numbers.reversed()
@@ -615,8 +607,16 @@ internal extension HugeInt {
                 //print("quotient_index=" + quotient_index.description + ";subtracted_amount=" + subtracted_amount.description + ";remaining_dividend=" + remaining_dividend.description)
                 if included_digits > 1 {
                     included_digits -= 1
-                    if quotient_index == 0 && remaining_dividend < divisor {
-                        quotient_numbers.removeLast()
+                }
+                if remaining_dividend < divisor {
+                    if remaining_dividend != HugeInt.zero {
+                        if quotient_index == 0 {
+                            quotient_numbers.removeLast()
+                        } else {
+                            while quotient_numbers.last == 0 {
+                                quotient_numbers.removeLast()
+                            }
+                        }
                     }
                 }
                 quotient_index += 1
