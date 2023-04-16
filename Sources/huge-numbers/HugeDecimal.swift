@@ -150,7 +150,19 @@ public extension HugeDecimal {
  Multiplication
  */
 public extension HugeDecimal {
-    static func * (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: finish
-        return (left, nil)
+    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) { // TODO: finish
+        var left_integer:HugeInt = left.value, right_integer:HugeInt = right.value
+        var decimal_places:Int = 0
+        while left_integer.numbers.first == 0 {
+            left_integer.numbers.removeFirst()
+            decimal_places += 1
+        }
+        while right_integer.numbers.first == 0 {
+            right_integer.numbers.removeFirst()
+            decimal_places += 1
+        }
+        print("HugeDecimal;*;decimal_places=" + decimal_places.description + ";left_integer=" + left_integer.description + ";right_integer=" + right_integer.description)
+        var quotient:HugeInt? = nil
+        return (quotient, left)
     }
 }

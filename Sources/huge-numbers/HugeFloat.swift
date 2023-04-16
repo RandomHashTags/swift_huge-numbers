@@ -111,7 +111,15 @@ public struct HugeFloat : Hashable, Comparable {
         return Float(description) ?? 0
     }
     public var description : String {
-        return (is_negative ? "-" : "") + description_literal
+        let suffix:String
+        if let remainder:HugeRemainder = remainder {
+            suffix = "r" + remainder.description
+        } else if let decimal:HugeDecimal = decimal {
+            suffix = "." + decimal.description
+        } else {
+            suffix = ""
+        }
+        return (is_negative ? "-" : "") + integer.description + suffix
     }
     public var description_literal : String {
         let suffix:String
@@ -237,6 +245,31 @@ public extension HugeFloat {
  */
 public extension HugeFloat {
     static func * (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        return HugeFloat.multiply(left: left, right: right)
+    }
+    static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
+        return left * right.to_float
+    }
+    static func * (left: HugeInt, right: HugeFloat) -> HugeFloat {
+        return left.to_float * right
+    }
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
+    static func * (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
+        return left * HugeFloat(right)
+    }
+    static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
+        return left * HugeFloat(right)
+    }
+    
+    static func *= (left: inout HugeFloat, right: HugeFloat) { // TODO: optimize
+        left = left * right
+    }
+    static func *= (left: inout HugeFloat, right: HugeInt) { // TODO: optimize
+        left = left * right.to_float
+    }
+}
+internal extension HugeFloat {
+    static func multiply(left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: do not always convert to decimal
         let left_post_number:HugeInt = left.decimal?.value ?? left.remainder?.to_decimal().value ?? HugeInt.zero
         let right_post_number:HugeInt = right.decimal?.value ?? right.remainder?.to_decimal().value ?? HugeInt.zero
         
@@ -265,25 +298,41 @@ public extension HugeFloat {
         
         return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: decimal))
     }
-    static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
-        return left * right.to_float
-    }
-    static func * (left: HugeInt, right: HugeFloat) -> HugeFloat {
-        return left.to_float * right
-    }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func * (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
-        return left * HugeFloat(right)
-    }
-    static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left * HugeFloat(right)
-    }
-    
-    static func *= (left: inout HugeFloat, right: HugeFloat) { // TODO: optimize
-        left = left * right
-    }
-    static func *= (left: inout HugeFloat, right: HugeInt) { // TODO: optimize
-        left = left * right.to_float
+    static func multiply2(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        var decimal:HugeDecimal? = nil, remainder:HugeRemainder? = nil
+        var integer:HugeInt = left.integer * right.integer
+        if let left_remainder:HugeRemainder = left.remainder {
+            if let right_decimal:HugeDecimal = right.decimal {
+                // TODO: support?
+            } else if let right_remainder:HugeRemainder = right.remainder {
+                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * right_remainder).to_int
+                integer += quotient
+                remainder = simplified_remainder
+            } else {
+                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * integer).to_int
+                integer += quotient
+                remainder = simplified_remainder
+            }
+        } else if let left_decimal:HugeDecimal = left.decimal {
+            if let right_decimal:HugeDecimal = right.decimal {
+                let (quotient, result):(HugeInt?, HugeDecimal) = left_decimal * right_decimal
+                decimal = result
+                if let quotient:HugeInt = quotient {
+                    integer += quotient
+                }
+            } else if let right_remainder:HugeRemainder = right.remainder {
+                // TODO: support?
+            } else {
+                decimal = left_decimal
+            }
+        } else if let right_remainder:HugeRemainder = right.remainder {
+            let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (right_remainder * integer).to_int
+            integer += quotient
+            remainder = simplified_remainder
+        } else if let right_decimal:HugeDecimal = right.decimal {
+            decimal = right_decimal
+        }
+        return HugeFloat(integer: integer, decimal: decimal, remainder: remainder)
     }
 }
 /*

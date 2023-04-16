@@ -250,6 +250,10 @@ extension huge_numbersTests {
         
         (quotient, remainder) = HugeInt("14345645") / HugeInt("2")
         XCTAssert(quotient == HugeInt("7172822") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("425") / HugeInt("25")
+        XCTAssert(quotient == HugeInt("17") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
     }
     private func test_int_factorial() {
         var integer:HugeInt = HugeInt("5")
@@ -501,7 +505,6 @@ extension huge_numbersTests {
 
 extension huge_numbersTests {
     private func test_decimal() {
-        return; // TODO: fix
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeDecimal = remainder.to_decimal()
         var expected_result:HugeDecimal = HugeDecimal("5")

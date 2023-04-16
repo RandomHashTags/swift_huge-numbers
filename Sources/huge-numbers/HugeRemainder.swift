@@ -42,7 +42,7 @@ public struct HugeRemainder : Hashable, Comparable {
     }
     
     /// - Warning: Using this function assumes the dividend is smaller than the divisor.
-    public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal { // TODO: fix
+    public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
         let precision_int:Int = precision.to_int() ?? Int.max
         let zero:HugeInt = HugeInt.zero, zero_remainder:HugeRemainder = HugeRemainder.zero
         var result:ArraySlice<UInt8> = ArraySlice<UInt8>.init(repeating: 255, count: precision_int)

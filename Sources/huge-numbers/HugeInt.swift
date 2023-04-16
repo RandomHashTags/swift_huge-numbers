@@ -574,11 +574,13 @@ internal extension HugeInt {
     static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) { // TODO: finish
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
-        var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
-        let result_count:Int = dividend.length - divisor.length + 1
+        let dividend_numbers:[UInt8] = dividend.numbers
+        var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend_numbers)
+        let dividend_length:Int = dividend.length, divisor_length:Int = divisor.length
+        let result_count:Int = dividend_length - divisor_length + 1
         var quotient_numbers:[UInt8] = [UInt8].init(repeating: 255, count: result_count)
         
-        var included_digits:Int = divisor.length
+        var included_digits:Int = divisor_length
         var quotient_index:Int = 0
         //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description)
         while remaining_dividend >= divisor {
@@ -592,8 +594,9 @@ internal extension HugeInt {
             //print("HugeInt;divide;included_digits=" + included_digits.description + ";remaining_dividend_numbers=" + remaining_dividend.numbers.description + ";divisible_dividend_numbers=" + divisible_dividend_numbers.description)
             var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
             if divisible_dividend >= divisor {
-                var subtracted_amount:HugeInt = HugeInt.zero
-                quotient_numbers[quotient_index] = 0
+                divisible_dividend -= divisor
+                var subtracted_amount:HugeInt = divisor
+                quotient_numbers[quotient_index] = 1
                 while divisible_dividend >= divisor {
                     quotient_numbers[quotient_index] += 1
                     divisible_dividend -= divisor
@@ -616,18 +619,23 @@ internal extension HugeInt {
             }
             //print("HugeInt;divide;included_digits=" + included_digits.description + ";quotient_numbers=" + quotient_numbers.description + ";remaining_dividend.numbers=" + remaining_dividend.numbers.description)
         }
+        while quotient_numbers.last == 255 {
+            quotient_numbers.removeLast()
+        }
+        
+        var quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
         let remainder:HugeRemainder?
         if remaining_dividend == HugeInt.zero {
             remainder = nil
         } else {
             remainder = HugeRemainder(dividend: remaining_dividend, divisor: divisor)
         }
-        //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description + ";remainder=\(remainder);remaining_dividend=" + remaining_dividend.description + ";quotient_numbers=" + quotient_numbers.description)
-        while quotient_numbers.last == 255 {
-            quotient_numbers.removeLast()
+        let proof:HugeInt = quotient * divisor
+        if proof != dividend && (remainder == nil || (proof.is_negative ? proof - remaining_dividend : proof + remaining_dividend) != dividend) { // TODO: find alternative
+            quotient.numbers.insert(0, at: 0)
         }
-        
-        let quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
+        //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description + ";remainder=\(remainder);remaining_dividend=" + remaining_dividend.description + ";quotient_numbers=" + quotient_numbers.description)
+        quotient.is_negative = is_negative
         return (quotient, remainder)
     }
 }
@@ -648,7 +656,8 @@ public extension HugeInt {
 /*
  Square root
  */
-public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support negative numbers or remainders
+public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support remainders
+    guard x > HugeInt.zero else { return HugeFloat.zero }
     let numbers:[UInt8] = x.numbers
     guard let ending_number:UInt8 = numbers.first else { return HugeFloat.zero }
     let ending_root_1:UInt8, ending_root_2:UInt8
