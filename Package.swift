@@ -6,6 +6,7 @@ import PackageDescription
 let package = Package(
     name: "huge-numbers",
     platforms: [
+        .iOS(.v13),
         .macOS(.v10_15)
     ],
     products: [

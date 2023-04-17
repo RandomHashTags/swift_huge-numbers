@@ -10,7 +10,7 @@ import XCTest
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        //try await test_benchmarks()
+        try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -21,19 +21,18 @@ final class huge_numbersTests: XCTestCase {
     }
     
     private func test_benchmarks() async throws {
-        guard #available(macOS 13.0, *) else { return }
-        let dividend:HugeInt = HugeInt("12345"), divisor:HugeInt = HugeInt("3")
-        //let dividend_remainder:HugeRemainder = dividend.to_remainder, divisor_remainder:HugeRemainder = divisor.to_remainder
-        try await benchmark_compare_is_faster(key1: "current division", {
-            //let float:HugeRemainder = dividend / divisor
-        }, key2: "new division", code2: {
-            //let float:HugeRemainder = dividend.to_remainder / divisor.to_remainder
+        guard #available(macOS 13.0, iOS 16.0, *) else { return }
+        let half:HugeInt = HugeInt("18446744073709551615"), two:HugeInt = HugeInt("2")
+        try await benchmark_compare_is_faster(key1: "HugeInt.multiplication", {
+            let result = half * two
+        }, key2: "default multiplication", code2: {
+            let result = UInt64(18446744073709551615).multipliedReportingOverflow(by: 2)
         })
     }
 }
 
 extension huge_numbersTests {
-    @available(macOS 13.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     private func benchmark(key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
         let iteration_count:Int = 10_00
         let clock:ContinuousClock = ContinuousClock()
@@ -64,11 +63,11 @@ extension huge_numbersTests {
             let median_time_elapsed:String = get_benchmark_formatted_string(formatter: formatter, median)
             let total_time_elapsed:String = get_benchmark_formatted_string(formatter: formatter, sum)
             
-            print("SwiftSovereignStates;benchmark( " + key + "| min=" + minimum_time_elapsed + " | max=" + maximum_time_elapsed + " | median=" + median_time_elapsed + " | average=" + average_time_elapsed + " | total=" + total_time_elapsed)
+            print("huge_numbersTests;benchmark( " + key + "| min=" + minimum_time_elapsed + " | max=" + maximum_time_elapsed + " | median=" + median_time_elapsed + " | average=" + average_time_elapsed + " | total=" + total_time_elapsed)
         }
         return (key: key, min: minimum, max: maximum, median: median, average: average, total: sum)
     }
-    @available(macOS 13.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     private func benchmark_compare_is_faster(maximum_iterations: Int = 100, key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void) async throws {
         var faster_count:Int = 0, faster_average:Int64 = 0
         for _ in 1...maximum_iterations {
@@ -80,9 +79,9 @@ extension huge_numbersTests {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 20
         let average_string:String = get_benchmark_formatted_string(formatter: formatter, faster_average / Int64(maximum_iterations))
-        print("SwiftSovereignStates;benchmark_compare_is_faster;     " + key1 + " is faster " + faster_count.description + "/" + maximum_iterations.description + " on average by " + average_string)
+        print("huge_numbersTests;benchmark_compare_is_faster;     " + key1 + " is faster " + faster_count.description + "/" + maximum_iterations.description + " on average by " + average_string)
     }
-    @available(macOS 13.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     private func benchmark_compare(key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void, print_to_console: Bool = true) async throws -> (Bool, Int64) {
         async let test1 = benchmark(key: key1, code1, will_print: false)
         async let test2 = benchmark(key: key2, code2, will_print: false)
@@ -100,7 +99,7 @@ extension huge_numbersTests {
             let total_time_diff:String = get_benchmark_formatted_string(formatter: formatter, max(total1, total2) - min(total1, total2), separation_count: 20)
             
             let key:String = key1 + (1...(70-key1.count)).map({ _ in " " }).joined()
-            var string:String = "SwiftSovereignStates;benchmark_compare( " + key + "| "
+            var string:String = "huge_numbersTests;benchmark_compare( " + key + "| "
             string.append("min=" + (min1 < min2 ? "🟢" : "🔴") + "by " + minimum_time_diff)
             string.append(" | max=" + (max1 < max2 ? "🟢" : "🔴") + "by " + maximum_time_diff)
             string.append(" | median=" + (median1 < median2 ? "🟢" : "🔴") + "by " + median_time_diff)
@@ -608,7 +607,7 @@ extension huge_numbersTests {
         print("test_pi;pi=" + pi.description + ";precision=" + precision.description)*/
     }
     private func test_pi_indexes(i: Int, _ pi_digits: String, bigger_digits: String) {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, iOS 16.0, *) {
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))
             var range_index:Int = 0
             for range in ranges {
@@ -620,7 +619,7 @@ extension huge_numbersTests {
         }
     }
     private func test_pi_ranges(i: Int, _ pi_digits: String) {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, iOS 16.0, *) {
             let string_count:Int = pi_digits.count
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))
             var minimum_distance_between:Int = string_count, maximum_distance_between:Int = 0
