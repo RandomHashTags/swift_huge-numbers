@@ -8,8 +8,8 @@
 import Foundation
 
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
-public struct HugeInt : Hashable, Comparable {
-    public static var default_precision:HugeInt = HugeInt("1000")
+public struct HugeInt : Hashable, Comparable, Codable {
+    public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 0, 1])
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
@@ -51,6 +51,16 @@ public struct HugeInt : Hashable, Comparable {
         self.init(String(describing: integer))
     }
     
+    public init(from decoder: Decoder) throws {
+        let container:SingleValueDecodingContainer = try decoder.singleValueContainer()
+        let string:String = try container.decode(String.self)
+        self.init(string)
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container:SingleValueEncodingContainer = encoder.singleValueContainer()
+        try container.encode(description)
+    }
+    
     /// The amount of digits that represent this huge integer.
     public var length : Int {
         return numbers.count
@@ -76,21 +86,36 @@ public struct HugeInt : Hashable, Comparable {
         return T.init(description)
     }
     
-    public func get_factors() -> Set<HugeInt> {
-        var array:Set<HugeInt> = [self]
-        let (middle_number, remainder):(HugeInt, HugeRemainder?) = self / HugeInt("2")
-        var number:HugeInt = HugeInt.one
-        while number <= middle_number {
-            if self % number == 0 {
-                array.insert(number)
-            }
-            number += 1
-        }
-        return array
+    /// - Warning: This is very resource intensive when using a big number.
+    public func get_all_factors() async -> Set<HugeInt> {
+        let maximum:HugeInt = (self / 2).quotient
+        return await get_factors(maximum: maximum)
     }
-    public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
-        let self_array:Set<HugeInt> = get_factors()
-        let other_array:Set<HugeInt> = integer.get_factors()
+    /// - Warning: This is very resource intensive when using a big number.
+    public func get_factors(maximum: HugeInt) async -> Set<HugeInt> {
+        let this:HugeInt = self
+        var maximum:HugeInt = maximum
+        let factors:Set<HugeInt> = await withTaskGroup(of: HugeInt?.self, body: { group in
+            while maximum >= 2 {
+                let target_number:HugeInt = maximum
+                group.addTask {
+                    return this % target_number == HugeInt.zero ? target_number : nil
+                }
+                maximum -= 1
+            }
+            var array:Set<HugeInt> = [this]
+            for await integer in group {
+                if let integer:HugeInt = integer {
+                    array.insert(integer)
+                }
+            }
+            return array
+        })
+        return factors
+    }
+    /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
+    public func get_shared_factors(_ integer: HugeInt) async -> Set<HugeInt>? {
+        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors(), integer.get_factors(maximum: self))
         let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
         return array.isEmpty ? nil : array
     }
@@ -160,12 +185,6 @@ public extension HugeInt {
 public extension HugeInt {
     static func == (left: HugeInt, right: HugeInt) -> Bool {
         return left.is_negative == right.is_negative && left.numbers.count == right.numbers.count && left.numbers.elementsEqual(right.numbers) || left.is_zero && right.is_zero
-    }
-    static func == (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left == HugeInt(right)
-    }
-    static func == (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) == right
     }
 }
 public extension HugeInt {
@@ -571,7 +590,7 @@ public extension HugeInt {
 }
 internal extension HugeInt {
     /// - Warning: Using this function assumes the dividend is greater than or equal to the divisor.
-    static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) { // TODO: finish
+    static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
         let dividend_numbers:[UInt8] = dividend.numbers
@@ -708,6 +727,8 @@ private func get_closest_sqrt_number(_ number: Int, starting_number: Int = 4) ->
     return 0
 }
 public extension HugeInt {
+    /// - Parameters:
+    ///     - amount: how many times to multiply by itself.
     func squared(amount: UInt64 = 2) -> HugeInt {
         var result:HugeInt = self
         for _ in 0..<amount {

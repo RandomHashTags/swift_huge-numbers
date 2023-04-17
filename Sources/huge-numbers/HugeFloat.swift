@@ -133,7 +133,7 @@ public struct HugeFloat : Hashable, Comparable {
     
     public var description_simplified : String {
         var description:String = description_literal
-        if integer == 0 {
+        if integer == HugeInt.zero {
             description.removeFirst()
             description.removeFirst()
             var exponent:UInt64 = 1

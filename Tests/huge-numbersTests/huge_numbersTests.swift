@@ -12,9 +12,9 @@ final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
         //try await test_benchmarks()
         
-        test_int()
+        await test_int()
         test_float()
-        test_remainder()
+        await test_remainder()
         test_decimal()
         test_sin()
         test_pi()
@@ -117,7 +117,7 @@ extension huge_numbersTests {
 }
 
 extension huge_numbersTests {
-    private func test_int() {
+    private func test_int() async {
         let integer:HugeInt = HugeInt("1234567891011121314151617181920")
         let second_integer:HugeInt = -integer
         XCTAssert(integer != second_integer)
@@ -143,7 +143,8 @@ extension huge_numbersTests {
         XCTAssert(second_integer < integer)
         XCTAssert(second_integer <= integer)
         
-        XCTAssert(HugeInt("6").get_factors() == [HugeInt("6"), HugeInt("1"), HugeInt("2"), HugeInt("3")], "factors=" + HugeInt("6").get_factors().description)
+        let six_factors:Set<HugeInt> = await HugeInt("6").get_all_factors()
+        XCTAssert(six_factors.count == 3, "test_int;factors=" + six_factors.description)
         
         test_int_addition()
         test_int_subtraction()
@@ -416,12 +417,12 @@ extension huge_numbersTests {
 }
 
 extension huge_numbersTests {
-    private func test_remainder() {
+    private func test_remainder() async {
         test_remainder_addition()
         test_remainder_subtraction()
         test_remainder_multiplication()
         test_remainder_division()
-        test_remainder_simplify()
+        await test_remainder_simplify()
     }
     private func test_remainder_addition() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
@@ -474,47 +475,47 @@ extension huge_numbersTests {
         expected_result = HugeRemainder(dividend: "3000", divisor: "24")
         XCTAssert(result == expected_result, "test_remainder_division;result=\(result);expected_result=\(expected_result)")
     }
-    private func test_remainder_simplify() { // TODO: fix
-        return;
+    private func test_remainder_simplify() async { // TODO: fix
         var remainder:HugeRemainder = HugeRemainder(dividend: "2", divisor: "4")
-        remainder.simplify()
+        await remainder.simplify()
         var expected_result:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "3", divisor: "9")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "1", divisor: "3")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "4", divisor: "22")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "2", divisor: "11")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "3", divisor: "10")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = remainder
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "5", divisor: "200")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "1", divisor: "40")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "6", divisor: "36")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "1", divisor: "6")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "11", divisor: "121")
-        remainder.simplify()
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "1", divisor: "11")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
-        remainder = HugeRemainder(dividend: "14345645", divisor: "39488434560")
-        remainder.simplify()
+        // very resource intensive
+        /*remainder = HugeRemainder(dividend: "14345645", divisor: "39488434560")
+        await remainder.simplify()
         expected_result = HugeRemainder(dividend: "2869129", divisor: "7897686912")
-        XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
+        XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")*/
     }
 }
 

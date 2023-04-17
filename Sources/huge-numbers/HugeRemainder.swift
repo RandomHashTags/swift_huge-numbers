@@ -104,16 +104,16 @@ public struct HugeRemainder : Hashable, Comparable {
         return indexes
     }
     
-    mutating func simplify() {
-        if divisor % dividend == 0 {
+    /// - Warning: Using this assumes the dividend is smaller than the divisor.
+    mutating func simplify() async {
+        if divisor % dividend == HugeInt.zero {
             divisor = (divisor / dividend).quotient
             dividend = HugeInt.one
         } else {
-            print("HugeRemainder;simplify;test1")
-            if let shared_factors:Set<HugeInt> = dividend.get_shared_factors(divisor) {
-                print("HugeRemainder;shared_factors=" + shared_factors.description)
+            if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
+                dividend /= maximum_shared_factor
+                divisor /= maximum_shared_factor
             }
-            print("HugeRemainder;simplify;test2")
         }
     }
 }

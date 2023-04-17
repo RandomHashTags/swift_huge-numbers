@@ -11,6 +11,8 @@ This library was created to remove the decimal precision limitation on floats, w
 - limited special arithmetic
   - percent (remainder)
   - factorial
+  - factors & shared factors
+  - fraction simplification
   - square root
 - infinite precision
 
