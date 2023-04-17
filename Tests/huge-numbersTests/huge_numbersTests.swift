@@ -212,6 +212,9 @@ extension huge_numbersTests {
         (quotient, remainder) = HugeInt("18") / HugeInt("9")
         XCTAssert(quotient == HugeInt("2") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
+        (quotient, remainder) = HugeInt("10") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("5") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
         (quotient, remainder) = HugeInt("36") / HugeInt("7")
         XCTAssert(quotient == HugeInt("5") && remainder == HugeRemainder(dividend: "1", divisor: "7"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
@@ -232,6 +235,18 @@ extension huge_numbersTests {
         
         (quotient, remainder) = HugeInt("8320") / HugeInt("2")
         XCTAssert(quotient == HugeInt("4160") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("8330") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("4165") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("8420") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("4210") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("8520") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("4260") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
+        
+        (quotient, remainder) = HugeInt("30") / HugeInt("15")
+        XCTAssert(quotient == HugeInt("2") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("40") / HugeInt("4")
         XCTAssert(quotient == HugeInt("10") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")

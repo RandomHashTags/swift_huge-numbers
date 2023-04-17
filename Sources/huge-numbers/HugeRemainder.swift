@@ -223,7 +223,7 @@ public extension HugeRemainder {
     static func * (left: HugeRemainder, right: any BinaryInteger) -> HugeRemainder {
         return left * HugeRemainder(dividend: HugeInt(right), divisor: HugeInt.one)
     }
-    
+        
     static func *= (left: inout HugeRemainder, right: HugeRemainder) {
         left.dividend *= right.dividend
         left.divisor *= right.divisor

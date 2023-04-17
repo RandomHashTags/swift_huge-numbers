@@ -582,7 +582,6 @@ internal extension HugeInt {
         
         var included_digits:Int = divisor_length
         var quotient_index:Int = 0
-        //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description)
         while remaining_dividend >= divisor {
             var divisible_dividend_numbers:[UInt8] = [UInt8].init(repeating: 0, count: included_digits)
             let remaining_dividend_numbers_reversed:[UInt8] = remaining_dividend.numbers.reversed()
@@ -591,7 +590,6 @@ internal extension HugeInt {
                 divisible_dividend_numbers[index] = remaining_dividend_numbers_reversed[i]
                 index += 1
             }
-            //print("HugeInt;divide;included_digits=" + included_digits.description + ";remaining_dividend_numbers=" + remaining_dividend.numbers.description + ";divisible_dividend_numbers=" + divisible_dividend_numbers.description)
             var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
             if divisible_dividend >= divisor {
                 divisible_dividend -= divisor
@@ -602,39 +600,40 @@ internal extension HugeInt {
                     divisible_dividend -= divisor
                     subtracted_amount += divisor
                 }
+                quotient_index += 1
                 let remaining_dividend_numbers:[UInt8] = remaining_dividend.numbers
-                if remaining_dividend_numbers.last ?? 0 < 10 {
-                    for _ in included_digits..<remaining_dividend_numbers.count {
+                let remaining_dividend_numbers_count:Int = remaining_dividend_numbers.count
+                if remaining_dividend_numbers[remaining_dividend_numbers_count-1] < 10 {
+                    for _ in included_digits..<remaining_dividend_numbers_count {
                         subtracted_amount.numbers.insert(0, at: 0)
                     }
                 }
                 remaining_dividend -= subtracted_amount
-                //print("quotient_index=" + quotient_index.description + ";subtracted_amount=" + subtracted_amount.description + ";remaining_dividend=" + remaining_dividend.description)
+                /*if quotient_index < quotient_numbers.count && subtracted_amount.numbers[0] == 0 && remaining_dividend < divisor && quotient_numbers[quotient_index-1] != 5 && (dividend_numbers[0] == 0 || result_count == remaining_dividend_numbers_count) {
+                    quotient_numbers[quotient_index] = 0
+                    print("found zero;dividend=" + dividend.description + ";divisor=" + divisor.description + ";multiplier=" + quotient_numbers[quotient_index-1].description + ";quotient_index=" + quotient_index.description + ";result_count=" + result_count.description + ";subtracted_amount=" + subtracted_amount.description + ";remaining_dividend_numbers=" + remaining_dividend_numbers.description)
+                }*/
                 if included_digits > 1 {
                     included_digits -= 1
                 }
-                quotient_index += 1
             } else {
                 included_digits += 1
             }
-            //print("HugeInt;divide;included_digits=" + included_digits.description + ";quotient_numbers=" + quotient_numbers.description + ";remaining_dividend.numbers=" + remaining_dividend.numbers.description)
         }
         while quotient_numbers.last == 255 {
             quotient_numbers.removeLast()
         }
-        
-        var quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
         let remainder:HugeRemainder?
         if remaining_dividend == HugeInt.zero {
             remainder = nil
         } else {
             remainder = HugeRemainder(dividend: remaining_dividend, divisor: divisor)
         }
+        var quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
         let proof:HugeInt = quotient * divisor
-        if proof != dividend && (remainder == nil || (proof.is_negative ? proof - remaining_dividend : proof + remaining_dividend) != dividend) { // TODO: find alternative
+        if proof != dividend && (remainder == nil || (proof.is_negative ? proof - remaining_dividend : proof + remaining_dividend) != dividend) { // TODO: find more efficient alternative
             quotient.numbers.insert(0, at: 0)
         }
-        //print("HugeInt;divide;dividend=" + dividend.description + ";divisor=" + divisor.description + ";remainder=\(remainder);remaining_dividend=" + remaining_dividend.description + ";quotient_numbers=" + quotient_numbers.description)
         quotient.is_negative = is_negative
         return (quotient, remainder)
     }
