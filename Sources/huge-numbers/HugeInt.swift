@@ -479,9 +479,17 @@ internal extension HugeInt {
  */
 public extension HugeInt {
     static func * (left: HugeInt, right: HugeInt) -> HugeInt {
-        let numbers:[UInt8] = HugeInt.multiply(left: left.numbers, right: right.numbers)
-        let is_negative:Bool = !(left.is_negative == right.is_negative)
-        return HugeInt(is_negative: is_negative, numbers)
+        if left.is_zero || right.is_zero {
+            return HugeInt.zero
+        } else if left == HugeInt.one {
+            return right
+        } else if right == HugeInt.one {
+            return left
+        } else {
+            let numbers:[UInt8] = HugeInt.multiply(left: left.numbers, right: right.numbers)
+            let is_negative:Bool = !(left.is_negative == right.is_negative)
+            return HugeInt(is_negative: is_negative, numbers)
+        }
     }
     static func * (left: HugeInt, right: any BinaryInteger) -> HugeInt {
         return left * HugeInt(right)

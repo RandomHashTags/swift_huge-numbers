@@ -12,6 +12,7 @@ import Foundation
 public struct HugeFloat : Hashable, Comparable {
     
     public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
+    public static var one:HugeFloat = HugeFloat(integer: HugeInt.one)
     
     public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
     public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
@@ -270,33 +271,41 @@ public extension HugeFloat {
 }
 internal extension HugeFloat {
     static func multiply(left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: do not always convert to decimal
-        let left_post_number:HugeInt = left.decimal?.value ?? left.remainder?.to_decimal().value ?? HugeInt.zero
-        let right_post_number:HugeInt = right.decimal?.value ?? right.remainder?.to_decimal().value ?? HugeInt.zero
-        
-        let result_decimal_places:Int = left_post_number.length + right_post_number.length
-        
-        var left_numbers:[UInt8] = left_post_number.numbers
-        left_numbers.append(contentsOf: left.integer.numbers)
-        
-        var right_numbers:[UInt8] = right_post_number.numbers
-        right_numbers.append(contentsOf: right.integer.numbers)
-        
-        var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers)
-        
-        let is_negative:Bool = left.is_negative == !right.is_negative
-        let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
-        let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
-        
-        var removed_zeroes:Int = 0
-        while result.first == 0 {
-            result.removeFirst()
-            removed_zeroes += 1
+        if left == HugeFloat.zero || right == HugeFloat.zero {
+            return HugeFloat.zero
+        } else if left == HugeFloat.one {
+            return right
+        } else if right == HugeFloat.one {
+            return left
+        } else {
+            let left_post_number:HugeInt = left.decimal?.value ?? left.remainder?.to_decimal().value ?? HugeInt.zero
+            let right_post_number:HugeInt = right.decimal?.value ?? right.remainder?.to_decimal().value ?? HugeInt.zero
+            
+            let result_decimal_places:Int = left_post_number.length + right_post_number.length
+            
+            var left_numbers:[UInt8] = left_post_number.numbers
+            left_numbers.append(contentsOf: left.integer.numbers)
+            
+            var right_numbers:[UInt8] = right_post_number.numbers
+            right_numbers.append(contentsOf: right.integer.numbers)
+            
+            var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers)
+            
+            let is_negative:Bool = left.is_negative == !right.is_negative
+            let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
+            let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
+            
+            var removed_zeroes:Int = 0
+            while result.first == 0 {
+                result.removeFirst()
+                removed_zeroes += 1
+            }
+            let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
+            let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
+            let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
+            
+            return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: decimal))
         }
-        let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
-        let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
-        let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
-        
-        return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: decimal))
     }
     static func multiply2(left: HugeFloat, right: HugeFloat) -> HugeFloat {
         var decimal:HugeDecimal? = nil, remainder:HugeRemainder? = nil
@@ -364,7 +373,20 @@ public extension HugeFloat {
         return left % HugeFloat(right)
     }
 }
-
+/*
+ Square root
+ */
+public extension HugeFloat {
+    /// - Parameters:
+    ///     - amount: how many times to multiply by itself.
+    func squared(amount: UInt64 = 2) -> HugeFloat {
+        var result:HugeFloat = self
+        for _ in 0..<amount {
+            result *= result
+        }
+        return result
+    }
+}
 /*
  Trigonometry // TODO: support
  SOH - CAH - TOA
