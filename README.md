@@ -13,7 +13,7 @@ This library was created to remove the decimal precision limitation on floats, w
   - factorial
   - factors & shared factors
   - fraction simplification
-  - square root
+  - square root (n)
 - infinite precision
 
 ## Current limitations

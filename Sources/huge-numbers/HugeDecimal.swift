@@ -126,16 +126,15 @@ public extension HugeDecimal {
         let left_value:HugeInt = left.value, right_value:HugeInt = right.value
         let decimal_length:Int = max(left_value.length, right_value.length)
         var result:HugeInt = left_value + right_value, result_length:Int = result.length
+        var quotient:HugeInt? = nil
         if result_length > decimal_length {
-            let difference:Int = result_length-decimal_length
-            let quotient:HugeInt = HugeInt(is_negative: false, result.numbers[decimal_length..<result_length])
+            let difference:Int = result_length - decimal_length
+            quotient = HugeInt(is_negative: false, result.numbers[decimal_length..<result_length])
             for _ in 0..<difference {
                 result.numbers.removeLast()
             }
-            return (HugeDecimal(value: result), quotient)
-        } else {
-            return (HugeDecimal(value: result), nil)
         }
+        return (HugeDecimal(value: result), quotient)
     }
 }
 /*
@@ -150,19 +149,24 @@ public extension HugeDecimal {
  Multiplication
  */
 public extension HugeDecimal {
-    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) { // TODO: finish
-        var left_integer:HugeInt = left.value, right_integer:HugeInt = right.value
-        var decimal_places:Int = 0
-        while left_integer.numbers.first == 0 {
-            left_integer.numbers.removeFirst()
-            decimal_places += 1
+    static func * (left: HugeDecimal, right: HugeInt) -> (quotient: HugeInt?, result: HugeDecimal) {
+        let result_string:String = HugeDecimal.multiply(left: left.value, right: right, decimal_places: left.value.length)
+        let result:HugeFloat = HugeFloat(result_string)
+        return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
+    }
+    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) {
+        let result_string:String = HugeDecimal.multiply(left: left.value, right: right.value, decimal_places: left.value.length + right.value.length)
+        let result:HugeFloat = HugeFloat(result_string)
+        return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
+    }
+}
+internal extension HugeDecimal {
+    static func multiply(left: HugeInt, right: HugeInt, decimal_places: Int) -> String {
+        var result_string:String = (left * right).description
+        result_string.insert(".", at: result_string.index(result_string.endIndex, offsetBy: -decimal_places))
+        if result_string[result_string.startIndex] == "." {
+            result_string.insert("0", at: result_string.startIndex)
         }
-        while right_integer.numbers.first == 0 {
-            right_integer.numbers.removeFirst()
-            decimal_places += 1
-        }
-        print("HugeDecimal;*;decimal_places=" + decimal_places.description + ";left_integer=" + left_integer.description + ";right_integer=" + right_integer.description)
-        var quotient:HugeInt? = nil
-        return (quotient, left)
+        return result_string
     }
 }
