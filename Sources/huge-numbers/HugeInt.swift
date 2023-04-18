@@ -304,26 +304,32 @@ internal extension HugeInt {
  */
 public extension HugeInt {
     static func + (left: HugeInt, right: HugeInt) -> HugeInt {
-        let is_bigger:Bool, result:[UInt8], is_negative:Bool
-        let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
-        if right.is_negative {
-            if left.is_negative {
-                (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                is_negative = true
-            } else {
-                (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                is_negative = left_numbers == right_numbers ? false : !is_bigger
-            }
+        if left == HugeInt.zero {
+            return right
+        } else if right == HugeInt.zero {
+            return left
         } else {
-            if left.is_negative {
-                (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                is_negative = left_numbers == right_numbers ? false : !is_bigger
+            let is_bigger:Bool, result:[UInt8], is_negative:Bool
+            let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
+            if right.is_negative {
+                if left.is_negative {
+                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
+                    is_negative = true
+                } else {
+                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
+                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                }
             } else {
-                (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                is_negative = false
+                if left.is_negative {
+                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
+                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                } else {
+                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
+                    is_negative = false
+                }
             }
+            return HugeInt(is_negative: is_negative, result)
         }
-        return HugeInt(is_negative: is_negative, result)
     }
     static func + (left: HugeInt, right: any BinaryInteger) -> HugeInt {
         return left + HugeInt(right)
@@ -333,27 +339,34 @@ public extension HugeInt {
     }
     
     static func += (left: inout HugeInt, right: HugeInt) {
-        let is_bigger:Bool, result:[UInt8], is_negative:Bool
-        let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
-        if right.is_negative {
-            if left.is_negative {
-                (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                is_negative = true
-            } else {
-                (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                is_negative = left_numbers == right_numbers ? false : !is_bigger
-            }
+        if left == HugeInt.zero {
+            left.is_negative = right.is_negative
+            left.numbers = right.numbers
+        } else if right == HugeInt.zero {
+            return
         } else {
-            if left.is_negative {
-                (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                is_negative = left_numbers == right_numbers ? false : !is_bigger
+            let is_bigger:Bool, result:[UInt8], is_negative:Bool
+            let left_numbers:[UInt8] = left.numbers, right_numbers:[UInt8] = right.numbers
+            if right.is_negative {
+                if left.is_negative {
+                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
+                    is_negative = true
+                } else {
+                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
+                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                }
             } else {
-                (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                is_negative = false
+                if left.is_negative {
+                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
+                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                } else {
+                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
+                    is_negative = false
+                }
             }
+            left.is_negative = is_negative
+            left.numbers = result
         }
-        left.is_negative = is_negative
-        left.numbers = result
     }
     static func += (left: inout HugeInt, right: any BinaryInteger) {
         left += HugeInt(right)
@@ -689,8 +702,9 @@ public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support rem
     let ending_root_1:UInt8, ending_root_2:UInt8
     switch ending_number {
     case 0:
-        if let closest:Int = x.to_int() { // TODO: fix
-            return HugeFloat(get_closest_sqrt_number(closest))
+        if let integer:Int = x.to_int() { // TODO: fix
+            let closest:Int = get_closest_sqrt_number(integer)
+            return HugeFloat(closest)
         } else {
             return HugeFloat(integer: HugeInt.zero) // TODO: fix
         }
