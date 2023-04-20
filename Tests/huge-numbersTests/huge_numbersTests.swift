@@ -411,6 +411,21 @@ extension huge_numbersTests {
         expected_result = HugeFloat("0.00000000000000000000000000000000132521403")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat(integer: HugeInt("5"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("2")))
+        result *= HugeInt("5")
+        expected_result = HugeFloat(integer: HugeInt("27"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("2")))
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("5")
+        result *= HugeFloat(integer: HugeInt("5"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("2")))
+        expected_result = HugeFloat(integer: HugeInt("27"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("2")))
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat(integer: HugeInt("5"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("2")))
+        result *= HugeFloat(integer: HugeInt("2"), remainder: HugeRemainder(dividend: HugeInt("1"), divisor: HugeInt("4")))
+        expected_result = HugeFloat(integer: HugeInt("12"), remainder: HugeRemainder(dividend: "12", divisor: "32"))
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
     }
     private func test_float_division() {
         var float:HugeFloat = HugeFloat("60")

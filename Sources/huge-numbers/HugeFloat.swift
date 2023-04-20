@@ -270,93 +270,64 @@ public extension HugeFloat {
     }
 }
 internal extension HugeFloat {
-    static func multiply(left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: do not always convert to decimal
+    static func multiply(left: HugeFloat, right: HugeFloat) -> HugeFloat {
         if left == HugeFloat.zero || right == HugeFloat.zero {
             return HugeFloat.zero
         } else if left == HugeFloat.one {
             return right
         } else if right == HugeFloat.one {
             return left
+        } else if left.decimal != nil || right.decimal != nil {
+            return multiply_decimals(left: left, right: right)
+        } else if left.remainder != nil || right.remainder != nil {
+            return multiply_remainders(left: left, right: right)
         } else {
-            let left_post_number:HugeInt = left.decimal?.value ?? left.remainder?.to_decimal().value ?? HugeInt.zero
-            let right_post_number:HugeInt = right.decimal?.value ?? right.remainder?.to_decimal().value ?? HugeInt.zero
-            
-            let result_decimal_places:Int = left_post_number.length + right_post_number.length
-            
-            var left_numbers:[UInt8] = left_post_number.numbers
-            left_numbers.append(contentsOf: left.integer.numbers)
-            
-            var right_numbers:[UInt8] = right_post_number.numbers
-            right_numbers.append(contentsOf: right.integer.numbers)
-            
-            var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
-            
-            let is_negative:Bool = left.is_negative == !right.is_negative
-            let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
-            var pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
-            pre_decimal_number.remove_leading_zeros()
-            
-            var removed_zeroes:Int = 0
-            while result.first == 0 {
-                result.removeFirst()
-                removed_zeroes += 1
-            }
-            let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
-            let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
-            let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
-            
-            return HugeFloat(integer: pre_decimal_number, decimal: HugeDecimal(value: decimal))
+            return HugeFloat(integer: left.integer * right.integer)
         }
     }
-    static func multiply2(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        if left == HugeFloat.zero || right == HugeFloat.zero {
-            return HugeFloat.zero
-        } else if left == HugeFloat.one {
-            return right
-        } else if right == HugeFloat.one {
-            return left
-        } else {
-            var decimal:HugeDecimal? = nil, remainder:HugeRemainder? = nil
-            let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
-            var integer:HugeInt = left_integer * right_integer
-            if let left_remainder:HugeRemainder = left.remainder {
-                integer += (left_remainder * right_integer).to_int.quotient
-                
-                if let right_decimal:HugeDecimal = right.decimal {
-                    // TODO: support?
-                } else if let right_remainder:HugeRemainder = right.remainder {
-                    let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * right_remainder).to_int
-                    integer += quotient
-                    remainder = simplified_remainder
-                } else {
-                    let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * integer).to_int
-                    integer += quotient
-                    remainder = simplified_remainder
-                }
-            } else if let left_decimal:HugeDecimal = left.decimal {
-                let (quotient, remainder):(HugeInt?, HugeDecimal) = left_decimal * right_integer
-                if let quotient:HugeInt = quotient {
-                    integer += quotient
-                }
-                decimal = remainder
-                if let right_decimal:HugeDecimal = right.decimal {
-                    let (quotient, result):(HugeInt?, HugeDecimal) = left_decimal * right_decimal
-                    decimal! = result
-                    if let quotient:HugeInt = quotient {
-                        integer += quotient
-                    }
-                } else if let right_remainder:HugeRemainder = right.remainder {
-                    // TODO: support?
-                }
-            } else if let right_remainder:HugeRemainder = right.remainder {
-                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (right_remainder * integer).to_int
-                integer += quotient
-                remainder = simplified_remainder
-            } else if let right_decimal:HugeDecimal = right.decimal {
-                decimal = right_decimal
-            }
-            return HugeFloat(integer: integer, decimal: decimal, remainder: remainder)
+    static func multiply_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        let left_post_number:HugeInt = left.decimal?.value ?? HugeInt.zero
+        let right_post_number:HugeInt = right.decimal?.value ?? HugeInt.zero
+        
+        let result_decimal_places:Int = left_post_number.length + right_post_number.length
+        
+        var left_numbers:[UInt8] = left_post_number.numbers
+        left_numbers.append(contentsOf: left.integer.numbers)
+        
+        var right_numbers:[UInt8] = right_post_number.numbers
+        right_numbers.append(contentsOf: right.integer.numbers)
+        
+        var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
+        
+        let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
+        var integer:HugeInt = HugeInt(is_negative: left.is_negative == !right.is_negative, pre_decimal_numbers)
+        integer.remove_leading_zeros()
+        
+        var removed_zeroes:Int = 0
+        while result.first == 0 {
+            result.removeFirst()
+            removed_zeroes += 1
         }
+        let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
+        let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
+        let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
+        return HugeFloat(integer: integer, decimal: HugeDecimal(value: decimal))
+    }
+    static func multiply_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        let remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero
+        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        let (left_quotient, left_remainder):(HugeInt, HugeRemainder?) = (remainder * right_integer).to_int
+        let right_quotient:HugeInt, right_remainder:HugeRemainder?, multiplied_remainder:HugeRemainder?
+        if let target_right_remainder:HugeRemainder = right.remainder {
+            (right_quotient, right_remainder) = (target_right_remainder * left_integer).to_int
+            multiplied_remainder = remainder * target_right_remainder
+        } else {
+            (right_quotient, right_remainder) = (HugeInt.zero, nil)
+            multiplied_remainder = nil
+        }
+        let integer:HugeInt = (left_integer * right_integer) + left_quotient + right_quotient
+        let total_remainder:HugeRemainder = (left_remainder ?? HugeRemainder.zero) + (right_remainder ?? HugeRemainder.zero) + (multiplied_remainder ?? HugeRemainder.zero)
+        return HugeFloat(integer: integer, remainder: total_remainder == HugeRemainder.zero ? nil : total_remainder)
     }
 }
 /*

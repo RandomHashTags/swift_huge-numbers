@@ -109,11 +109,9 @@ public struct HugeRemainder : Hashable, Comparable {
         if divisor % dividend == HugeInt.zero {
             divisor = (divisor / dividend).quotient
             dividend = HugeInt.one
-        } else {
-            if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
-                dividend /= maximum_shared_factor
-                divisor /= maximum_shared_factor
-            }
+        } else if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors_parallel(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
+            dividend /= maximum_shared_factor
+            divisor /= maximum_shared_factor
         }
     }
 }
@@ -185,13 +183,19 @@ internal extension HugeRemainder {
  */
 public extension HugeRemainder {
     static func + (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-        if are_equal {
-            return HugeRemainder(dividend: left.dividend + right.dividend, divisor: common_denominator)
+        if left == HugeRemainder.zero {
+            return right
+        } else if right == HugeRemainder.zero {
+            return left
         } else {
-            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-            return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
+            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            if are_equal {
+                return HugeRemainder(dividend: left.dividend + right.dividend, divisor: common_denominator)
+            } else {
+                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+                return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
+            }
         }
     }
     static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {

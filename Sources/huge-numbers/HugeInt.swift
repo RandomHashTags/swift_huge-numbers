@@ -114,7 +114,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return factors
     }
     /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
-    public func get_shared_factors(_ integer: HugeInt) async -> Set<HugeInt>? {
+    public func get_shared_factors_parallel(_ integer: HugeInt) async -> Set<HugeInt>? {
         let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors(), integer.get_factors(maximum: self))
         let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
         return array.isEmpty ? nil : array
@@ -576,6 +576,9 @@ internal extension HugeInt {
  */
 public extension HugeInt {
     static func / (dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+        if dividend == HugeInt.zero {
+            return (HugeInt.zero, divisor == HugeInt.zero ? nil : HugeRemainder(dividend: dividend, divisor: divisor))
+        }
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
