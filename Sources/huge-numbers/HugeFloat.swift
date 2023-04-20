@@ -289,11 +289,12 @@ internal extension HugeFloat {
             var right_numbers:[UInt8] = right_post_number.numbers
             right_numbers.append(contentsOf: right.integer.numbers)
             
-            var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers)
+            var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
             
             let is_negative:Bool = left.is_negative == !right.is_negative
             let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
-            let pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
+            var pre_decimal_number:HugeInt = HugeInt(is_negative: is_negative, pre_decimal_numbers)
+            pre_decimal_number.remove_leading_zeros()
             
             var removed_zeroes:Int = 0
             while result.first == 0 {
@@ -308,40 +309,54 @@ internal extension HugeFloat {
         }
     }
     static func multiply2(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var decimal:HugeDecimal? = nil, remainder:HugeRemainder? = nil
-        var integer:HugeInt = left.integer * right.integer
-        if let left_remainder:HugeRemainder = left.remainder {
-            if let right_decimal:HugeDecimal = right.decimal {
-                // TODO: support?
-            } else if let right_remainder:HugeRemainder = right.remainder {
-                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * right_remainder).to_int
-                integer += quotient
-                remainder = simplified_remainder
-            } else {
-                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * integer).to_int
-                integer += quotient
-                remainder = simplified_remainder
-            }
-        } else if let left_decimal:HugeDecimal = left.decimal {
-            if let right_decimal:HugeDecimal = right.decimal {
-                let (quotient, result):(HugeInt?, HugeDecimal) = left_decimal * right_decimal
-                decimal = result
+        if left == HugeFloat.zero || right == HugeFloat.zero {
+            return HugeFloat.zero
+        } else if left == HugeFloat.one {
+            return right
+        } else if right == HugeFloat.one {
+            return left
+        } else {
+            var decimal:HugeDecimal? = nil, remainder:HugeRemainder? = nil
+            let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+            var integer:HugeInt = left_integer * right_integer
+            if let left_remainder:HugeRemainder = left.remainder {
+                integer += (left_remainder * right_integer).to_int.quotient
+                
+                if let right_decimal:HugeDecimal = right.decimal {
+                    // TODO: support?
+                } else if let right_remainder:HugeRemainder = right.remainder {
+                    let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * right_remainder).to_int
+                    integer += quotient
+                    remainder = simplified_remainder
+                } else {
+                    let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (left_remainder * integer).to_int
+                    integer += quotient
+                    remainder = simplified_remainder
+                }
+            } else if let left_decimal:HugeDecimal = left.decimal {
+                let (quotient, remainder):(HugeInt?, HugeDecimal) = left_decimal * right_integer
                 if let quotient:HugeInt = quotient {
                     integer += quotient
                 }
+                decimal = remainder
+                if let right_decimal:HugeDecimal = right.decimal {
+                    let (quotient, result):(HugeInt?, HugeDecimal) = left_decimal * right_decimal
+                    decimal! = result
+                    if let quotient:HugeInt = quotient {
+                        integer += quotient
+                    }
+                } else if let right_remainder:HugeRemainder = right.remainder {
+                    // TODO: support?
+                }
             } else if let right_remainder:HugeRemainder = right.remainder {
-                // TODO: support?
-            } else {
-                decimal = left_decimal
+                let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (right_remainder * integer).to_int
+                integer += quotient
+                remainder = simplified_remainder
+            } else if let right_decimal:HugeDecimal = right.decimal {
+                decimal = right_decimal
             }
-        } else if let right_remainder:HugeRemainder = right.remainder {
-            let (quotient, simplified_remainder):(HugeInt, HugeRemainder?) = (right_remainder * integer).to_int
-            integer += quotient
-            remainder = simplified_remainder
-        } else if let right_decimal:HugeDecimal = right.decimal {
-            decimal = right_decimal
+            return HugeFloat(integer: integer, decimal: decimal, remainder: remainder)
         }
-        return HugeFloat(integer: integer, decimal: decimal, remainder: remainder)
     }
 }
 /*

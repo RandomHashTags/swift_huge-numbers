@@ -10,7 +10,7 @@ import XCTest
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
+        //try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -384,28 +384,33 @@ extension huge_numbersTests {
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_subtraction() {
-        var float:HugeFloat = HugeFloat("9.75")
-        var result:HugeFloat = float - HugeFloat("2")
+        var result:HugeFloat = HugeFloat("9.75") - HugeFloat("2")
         var expected_result:HugeFloat = HugeFloat("7.75")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_multiplication() {
-        var float:HugeFloat = HugeFloat("1.7959")
-        var result:HugeFloat = float * 2
+        var result:HugeFloat = HugeFloat("1.7959") * 2
         var expected_result:HugeFloat = HugeFloat("3.5918")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
-        
-        float = HugeFloat("19385436.795909235895")
-        result = float * 9
+        result = HugeFloat("19385436.795909235895") * 9
         expected_result = HugeFloat("174468931.163183123055")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
-        float = HugeFloat("5.25")
-        result = float
+        result = HugeFloat("5.25")
         result *= HugeInt("6")
         expected_result = HugeFloat("31.5")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        let planck_constant:HugeFloat = HugeFloat("0.000000000000000000000000000000000662607015")
+        result = planck_constant * HugeFloat("1")
+        expected_result = planck_constant
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = planck_constant * HugeFloat("2")
+        expected_result = HugeFloat("0.00000000000000000000000000000000132521403")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
     }
     private func test_float_division() {
         var float:HugeFloat = HugeFloat("60")

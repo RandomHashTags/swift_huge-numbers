@@ -125,6 +125,11 @@ public struct HugeInt : Hashable, Comparable, Codable {
             numbers.removeFirst()
         }
     }
+    public mutating func remove_leading_zeros() {
+        while numbers.last == 0 {
+            numbers.removeLast()
+        }
+    }
 }
 
 /*
@@ -520,11 +525,13 @@ public extension HugeInt {
     }
 }
 internal extension HugeInt {
-    static func multiply(left: [UInt8], right: [UInt8]) -> [UInt8] {
+    static func multiply(left: [UInt8], right: [UInt8], remove_leading_zeros: Bool = true) -> [UInt8] {
         let (bigger_numbers, smaller_numbers, _):([UInt8], [UInt8], Bool) = get_bigger_numbers(left: left, right: right)
         var result:[UInt8] = HugeInt.multiply(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
-        while result.last == 0 {
-            result.removeLast()
+        if remove_leading_zeros {
+            while result.last == 0 {
+                result.removeLast()
+            }
         }
         return result
     }
