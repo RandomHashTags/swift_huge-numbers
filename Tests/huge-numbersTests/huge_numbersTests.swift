@@ -22,11 +22,11 @@ final class huge_numbersTests: XCTestCase {
     
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
-        let half:HugeInt = HugeInt("18446744073709551615"), two:HugeInt = HugeInt("2")
-        try await benchmark_compare_is_faster(key1: "HugeInt.multiplication", {
-            let result = half * two
-        }, key2: "default multiplication", code2: {
-            let result = UInt64(18446744073709551615).multipliedReportingOverflow(by: 2)
+        let left:HugeFloat = HugeFloat(integer: HugeInt("365"), remainder: HugeRemainder(dividend: "5", divisor: "6")), right:HugeFloat = HugeFloat("2")
+        try await benchmark_compare_is_faster(key1: "HugeInt.multiply", {
+            //let result = HugeFloat.multiply(left: left, right: right)
+        }, key2: "HugeInt.multiply2", code2: {
+            //let result = HugeFloat.multiply2(left: left, right: right)
         })
     }
 }

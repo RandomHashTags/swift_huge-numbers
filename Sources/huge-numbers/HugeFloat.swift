@@ -377,6 +377,7 @@ public extension HugeFloat {
  Trigonometry // TODO: support
  SOH - CAH - TOA
  */
+/*
 /// - Parameters:
 ///     - x: number in degrees. Must be between 0 and 360.
 public func sin(_ x: HugeFloat, precision: HugeInt) -> (value: HugeInt?, decimal: HugeDecimal?) { // TODO: finish
@@ -395,3 +396,4 @@ public func cos(_ x: HugeFloat) -> HugeFloat { // TODO: finish
 public func tan(_ x: HugeFloat) -> HugeFloat { // TODO: finish
     return x
 }
+*/
