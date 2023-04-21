@@ -86,13 +86,38 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return T.init(description)
     }
     
+    
     /// - Warning: This is very resource intensive when using a big number.
-    public func get_all_factors() async -> Set<HugeInt> {
+    public func get_all_factors() -> Set<HugeInt> {
         let maximum:HugeInt = (self / 2).quotient
-        return await get_factors(maximum: maximum)
+        return get_factors(maximum: maximum)
     }
     /// - Warning: This is very resource intensive when using a big number.
-    public func get_factors(maximum: HugeInt) async -> Set<HugeInt> {
+    public func get_factors(maximum: HugeInt) -> Set<HugeInt> {
+        var maximum:HugeInt = maximum
+        var array:Set<HugeInt> = [self]
+        while maximum >= 2 {
+            if self % maximum == HugeInt.zero {
+                array.insert(maximum)
+            }
+            maximum -= 1
+        }
+        return array
+    }
+    /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
+    public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
+        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = (get_all_factors(), integer.get_factors(maximum: self))
+        let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
+        return array.isEmpty ? nil : array
+    }
+    
+    /// - Warning: This is very resource intensive when using a big number.
+    public func get_all_factors_parallel() async -> Set<HugeInt> {
+        let maximum:HugeInt = (self / 2).quotient
+        return await get_factors_parallel(maximum: maximum)
+    }
+    /// - Warning: This is very resource intensive when using a big number.
+    public func get_factors_parallel(maximum: HugeInt) async -> Set<HugeInt> {
         let this:HugeInt = self
         var maximum:HugeInt = maximum
         let factors:Set<HugeInt> = await withTaskGroup(of: HugeInt?.self, body: { group in
@@ -115,7 +140,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
     }
     /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
     public func get_shared_factors_parallel(_ integer: HugeInt) async -> Set<HugeInt>? {
-        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors(), integer.get_factors(maximum: self))
+        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors_parallel(), integer.get_factors_parallel(maximum: self))
         let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
         return array.isEmpty ? nil : array
     }

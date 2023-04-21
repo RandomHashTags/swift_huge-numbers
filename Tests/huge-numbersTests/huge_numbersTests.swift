@@ -142,7 +142,7 @@ extension huge_numbersTests {
         XCTAssert(second_integer < integer)
         XCTAssert(second_integer <= integer)
         
-        let six_factors:Set<HugeInt> = await HugeInt("6").get_all_factors()
+        let six_factors:Set<HugeInt> = await HugeInt("6").get_all_factors_parallel()
         XCTAssert(six_factors.count == 3, "test_int;factors=" + six_factors.description)
         
         test_int_addition()
