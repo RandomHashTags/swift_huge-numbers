@@ -8,7 +8,7 @@ This library was created to remove the decimal precision limitation on floats, w
 - `HugeRemainder`
 - `HugeDecimal`
 - addition, subtraction, multiplication, and division
-- limited special arithmetic
+- special arithmetic
   - percent (remainder)
   - factorial
   - factors & shared factors
@@ -17,7 +17,7 @@ This library was created to remove the decimal precision limitation on floats, w
 - infinite precision
 
 ## Current limitations
-- `HugeFloat` is partially limited in functionality
+- cannot apply arithmetic to a `HugeFloat` with a `HugeDecimal` and another with a `HugeRemainder`, or vice versa
 - limited special arithmetic
 
 ## Contributing
