@@ -53,6 +53,9 @@ public struct HugeFloat : Hashable, Comparable {
         self.decimal = decimal
         self.remainder = remainder
     }
+    public init(integer: String, decimal: HugeDecimal? = nil, remainder: HugeRemainder? = nil) {
+        self.init(integer: HugeInt(integer), decimal: decimal, remainder: remainder)
+    }
     
     public init(_ string: String) {
         self.init(string: string)
