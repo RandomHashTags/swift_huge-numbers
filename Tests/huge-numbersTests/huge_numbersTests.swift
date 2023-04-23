@@ -10,10 +10,7 @@ import XCTest
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
-        
-        //test_simd()
-        return;
+        //try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -26,27 +23,10 @@ final class huge_numbersTests: XCTestCase {
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
         let left1:HugeInt = HugeInt("928352873512820358268047"), right1:HugeInt = HugeInt("928352873512820358285")
-        let left2:HugeInt2 = HugeInt2("928352873512820358268047"), right2:HugeInt2 = HugeInt2("928352873512820358285")
         try await benchmark_compare_is_faster(key1: "HugeInt1.add", {
-            let result:HugeInt = left1 + right1
+            //let result:HugeInt = left1 + right1
         }, key2: "HugeInt2.add", code2: {
-            let result:HugeInt2 = left2 + right2
         })
-    }
-    
-    private func test_simd() {
-        var test1:HugeInt2 = HugeInt2("359")
-        var test2:HugeInt2 = HugeInt2("11")
-        
-        print("test1=" + test1.numbers.description)
-        print("test2=" + test2.numbers.description)
-        
-        var result:HugeInt2 = test1 + test2
-        print("huge_numbersTests;test_simd;result.description=" + result.description)
-        
-        let left2:HugeInt2 = HugeInt2("928352873512820358268047"), right2:HugeInt2 = HugeInt2("928352873512820358285")
-        result = left2 + right2
-        print("huge_numbersTests;test_simd;result.description=" + result.description)
     }
 }
 
