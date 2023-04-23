@@ -251,6 +251,15 @@ public extension HugeFloat {
     static func + (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
         return left + HugeFloat(right)
     }
+    
+    static func += (left: inout HugeFloat, right: HugeFloat) {
+        left.integer += right.integer
+        if left.decimal != nil {
+            left.decimal! += right.decimal ?? HugeDecimal.zero
+        } else if left.remainder != nil {
+            left.remainder! += right.remainder ?? HugeRemainder.zero
+        }
+    }
 }
 /*
  Subtraction
@@ -258,6 +267,15 @@ public extension HugeFloat {
 public extension HugeFloat {
     static func - (left: HugeFloat, right: HugeFloat) -> HugeFloat {
         return left + -right
+    }
+    
+    static func -= (left: inout HugeFloat, right: HugeFloat) {
+        left.integer -= right.integer
+        if left.decimal != nil {
+            left.decimal! -= right.decimal ?? HugeDecimal.zero
+        } else if left.remainder != nil {
+            left.remainder! -= right.remainder ?? HugeRemainder.zero
+        }
     }
 }
 /*

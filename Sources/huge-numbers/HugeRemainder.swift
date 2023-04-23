@@ -210,6 +210,25 @@ public extension HugeRemainder {
     static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
         return left + HugeRemainder(dividend: right, divisor: HugeInt.one)
     }
+    
+    static func += (left: inout HugeRemainder, right: HugeRemainder) {
+        if left == HugeRemainder.zero {
+            left.dividend = right.dividend
+            left.divisor = right.divisor
+        } else if right == HugeRemainder.zero {
+            return
+        } else {
+            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            if are_equal {
+                left.dividend += right.dividend
+            } else {
+                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+                left.dividend = left_result + right_result
+                left.divisor = common_denominator
+            }
+        }
+    }
 }
 /*
  Subtraction
@@ -220,6 +239,25 @@ public extension HugeRemainder {
     }
     static func - (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
         return left - HugeRemainder(dividend: right, divisor: HugeInt.one)
+    }
+    
+    static func -= (left: inout HugeRemainder, right: HugeRemainder) {
+        if left == HugeRemainder.zero {
+            left.dividend = right.dividend
+            left.divisor = right.divisor
+        } else if right == HugeRemainder.zero {
+            return
+        } else {
+            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            if are_equal {
+                left.dividend -= right.dividend
+            } else {
+                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+                left.dividend = left_result - right_result
+                left.divisor = common_denominator
+            }
+        }
     }
 }
 /*

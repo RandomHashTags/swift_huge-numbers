@@ -122,7 +122,7 @@ public extension HugeDecimal {
  Addition
  */
 public extension HugeDecimal {
-    static func + (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
+    static func + (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: support addition of repeating numbers
         let left_value:HugeInt = left.value, right_value:HugeInt = right.value
         let decimal_length:Int = max(left_value.length, right_value.length)
         var result:HugeInt = left_value + right_value, result_length:Int = result.length
@@ -136,6 +136,10 @@ public extension HugeDecimal {
         }
         return (HugeDecimal(value: result), quotient)
     }
+    
+    static func += (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support addition of repeating numbers
+        left.value += right.value
+    }
 }
 /*
  Subtraction
@@ -143,6 +147,10 @@ public extension HugeDecimal {
 public extension HugeDecimal {
     static func - (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
         return left + -right
+    }
+    
+    static func -= (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support subtraction of repeating numbers
+        left.value -= right.value
     }
 }
 /*
