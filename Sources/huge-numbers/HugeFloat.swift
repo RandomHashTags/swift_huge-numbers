@@ -9,7 +9,7 @@ import Foundation
 
 // TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
-public struct HugeFloat : Hashable, Comparable {
+public struct HugeFloat : Hashable, Comparable, Codable {
     
     public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
     public static var one:HugeFloat = HugeFloat(integer: HugeInt.one)
@@ -109,6 +109,16 @@ public struct HugeFloat : Hashable, Comparable {
     }
     public init(_ integer: any BinaryInteger) {
         self.init(String(describing: integer))
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container:SingleValueDecodingContainer = try decoder.singleValueContainer()
+        let string:String = try container.decode(String.self)
+        self.init(string)
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container:SingleValueEncodingContainer = encoder.singleValueContainer()
+        try container.encode(description)
     }
     
     public var represented_float : Float {
