@@ -22,10 +22,11 @@ final class huge_numbersTests: XCTestCase {
     
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
-        let left1:HugeInt = HugeInt("928352873512820358268047"), right1:HugeInt = HugeInt("928352873512820358285")
-        try await benchmark_compare_is_faster(key1: "HugeInt1.add", {
-            //let result:HugeInt = left1 + right1
-        }, key2: "HugeInt2.add", code2: {
+        let left1:HugeRemainder = HugeRemainder(dividend: "5", divisor: "10"), right1:HugeRemainder = HugeRemainder(dividend: "2", divisor: "30")
+        try await benchmark_compare_is_faster(key1: "HugeRemainder.add1", {
+            let result:HugeRemainder = left1 + right1
+        }, key2: "HugeRemainder.add2", code2: {
+            //let result:HugeRemainder = HugeRemainder.add2(left: left1, right: right1)
         })
     }
 }

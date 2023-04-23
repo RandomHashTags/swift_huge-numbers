@@ -173,6 +173,15 @@ internal extension HugeRemainder {
         let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
         if left_divisor == right_divisor {
             return (left_divisor, true, nil, nil)
+        /*} else if let max_shared_factor:HugeInt = left_divisor.get_shared_factors(right_divisor)?.max() { // TODO: fix? | makes performance significantly worse, but remainder is simplified
+            let left_divisor_is_max:Bool = left_divisor == max_shared_factor
+            if left_divisor_is_max {
+                let quotient:HugeInt = (right_divisor / left_divisor).quotient
+                return (right_divisor, false, quotient, HugeInt.one)
+            } else {
+                let quotient:HugeInt = (left_divisor / right_divisor).quotient
+                return (left_divisor, false, HugeInt.one, quotient)
+            }*/
         } else {
             return (left_divisor * right_divisor, false, right_divisor, left_divisor)
         }

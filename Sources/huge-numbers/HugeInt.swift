@@ -86,7 +86,6 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return T.init(description)
     }
     
-    
     /// - Warning: This is very resource intensive when using a big number.
     public func get_all_factors() -> Set<HugeInt> {
         let maximum:HugeInt = (self / 2).quotient
@@ -107,7 +106,15 @@ public struct HugeInt : Hashable, Comparable, Codable {
     /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
     public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
         let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = (get_all_factors(), integer.get_factors(maximum: self))
-        let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
+        let bigger_array:Set<HugeInt>, smaller_array:Set<HugeInt>
+        if self_array.count > other_array.count {
+            bigger_array = self_array
+            smaller_array = other_array
+        } else {
+            bigger_array = other_array
+            smaller_array = self_array
+        }
+        let array:Set<HugeInt> = bigger_array.filter({ smaller_array.contains($0) })
         return array.isEmpty ? nil : array
     }
     
@@ -290,6 +297,9 @@ public extension HugeInt {
 /*
  Misc
  */
+func abs(_ integer: HugeInt) -> HugeInt {
+    return HugeInt(is_negative: false, integer.numbers)
+}
 internal extension HugeInt {
     static func left_int_is_bigger(left: HugeInt, right: HugeInt) -> Bool {
         return get_bigger_int(left: left, right: right).left_is_bigger
