@@ -208,7 +208,7 @@ public extension HugeFloat {
 /*
  Misc
  */
-func abs(_ float: HugeFloat) -> HugeFloat {
+public func abs(_ float: HugeFloat) -> HugeFloat {
     return HugeFloat(integer: abs(float.integer), decimal: float.decimal, remainder: float.remainder)
 }
 /*

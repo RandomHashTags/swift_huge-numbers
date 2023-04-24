@@ -297,7 +297,7 @@ public extension HugeInt {
 /*
  Misc
  */
-func abs(_ integer: HugeInt) -> HugeInt {
+public func abs(_ integer: HugeInt) -> HugeInt {
     return HugeInt(is_negative: false, integer.numbers)
 }
 internal extension HugeInt {
