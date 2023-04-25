@@ -38,7 +38,7 @@ public struct HugeRemainder : Hashable, Comparable {
     }
     public var to_float : HugeFloat {
         let (test1, test2):(HugeInt, HugeRemainder?) = to_int
-        return HugeFloat(integer: test1, decimal: HugeDecimal.zero, remainder: test2)
+        return HugeFloat(integer: test1, decimal: nil, remainder: test2)
     }
     
     /// - Warning: Using this function assumes the dividend is smaller than the divisor.
