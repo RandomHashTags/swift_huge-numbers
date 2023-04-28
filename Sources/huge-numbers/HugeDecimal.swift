@@ -45,6 +45,18 @@ public struct HugeDecimal : Hashable, Comparable {
         let divisor:String = "1" + (0..<value.length).map({ _ in "0" }).joined()
         return HugeRemainder(dividend: value, divisor: divisor)
     }
+    
+    public var distance_to_next_quotient : HugeDecimal {
+        let value_numbers:[UInt8] = value.numbers.reversed()
+        var numbers:[UInt8] = [UInt8].init(repeating: 0, count: value_numbers.count)
+        let indices:Range<Int> = value_numbers.indices
+        for index in indices {
+            let value_number:UInt8 = value_numbers[index]
+            numbers[index] = 9 - value_number
+        }
+        numbers[indices.last!] += 1
+        return HugeDecimal(value: HugeInt(is_negative: false, numbers.reversed()))
+    }
 }
 
 /*
@@ -65,7 +77,16 @@ public extension HugeDecimal {
         return left.value < HugeInt(right)
     }
     
-    
+    func is_less_than(_ value: HugeDecimal?) -> Bool {
+        guard let value:HugeDecimal = value else { return true }
+        return self < value
+    }
+    func is_less_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
+        guard let value:HugeDecimal = value else { return true }
+        return self <= value
+    }
+}
+public extension HugeDecimal {
     static func > (left: HugeDecimal, right: HugeDecimal) -> Bool {
         return left.value > right.value
     }
@@ -80,34 +101,18 @@ public extension HugeDecimal {
         return left.value >= HugeInt(right)
     }
     
-    func is_less_than(_ value: HugeDecimal?) -> Bool {
-        if let value:HugeDecimal = value {
-            return self < value
-        } else {
-            return true
-        }
-    }
-    func is_less_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
-        if let value:HugeDecimal = value {
-            return self <= value
-        } else {
-            return true
-        }
-    }
-    
     func is_greater_than(_ value: HugeDecimal?) -> Bool {
-        if let value:HugeDecimal = value {
-            return self > value
-        } else {
-            return true
-        }
+        guard let value:HugeDecimal = value else { return true }
+        return self > value
     }
     func is_greater_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
-        if let value:HugeDecimal = value {
-            return self >= value
-        } else {
-            return true
-        }
+        guard let value:HugeDecimal = value else { return true }
+        return self >= value
+    }
+}
+public extension HugeDecimal {
+    static func == (left: HugeDecimal, right: HugeDecimal) -> Bool {
+        return left.value == right.value && left.repeating_numbers == right.repeating_numbers
     }
 }
 /*
@@ -123,8 +128,14 @@ public extension HugeDecimal {
  */
 public extension HugeDecimal {
     static func + (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: support addition of repeating numbers
-        let left_value:HugeInt = left.value, right_value:HugeInt = right.value
+        var left_value:HugeInt = left.value, right_value:HugeInt = right.value
         let decimal_length:Int = max(left_value.length, right_value.length)
+        while left_value.length < decimal_length {
+            left_value.numbers.insert(0, at: 0)
+        }
+        while right_value.length < decimal_length {
+            right_value.numbers.insert(0, at: 0)
+        }
         var result:HugeInt = left_value + right_value, result_length:Int = result.length
         var quotient:HugeInt? = nil
         if result_length > decimal_length {
@@ -137,6 +148,7 @@ public extension HugeDecimal {
         return (HugeDecimal(value: result), quotient)
     }
     
+    /// - Warning: This doesn't add the resulting quotient to the `left` variable.
     static func += (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support addition of repeating numbers
         left.value += right.value
     }

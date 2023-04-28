@@ -9,7 +9,7 @@ import Foundation
 
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable, Codable {
-    public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 0, 1])
+    public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
@@ -74,7 +74,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
     public var is_zero : Bool {
-        return numbers.count == 0
+        return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
     }
     public var to_float : HugeFloat {
         return HugeFloat(integer: self)
@@ -84,6 +84,10 @@ public struct HugeInt : Hashable, Comparable, Codable {
     }
     public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
+    }
+    
+    public func all_digits_satisfy(_ transform: (UInt8) -> Bool) -> Bool {
+        return numbers.allSatisfy(transform)
     }
     
     /// - Warning: This is very resource intensive when using a big number.
@@ -503,15 +507,12 @@ internal extension HugeInt {
                         next_index += 1
                         next_value = remaining_numbers[next_index]
                     }
-                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers1=" + remaining_numbers.description)
                     remaining_numbers[next_index] -= 1
                     next_index -= 1
-                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers2=" + remaining_numbers.description)
                     while next_index > index {
                         remaining_numbers[next_index] += 9
                         next_index -= 1
                     }
-                    //print("index=" + index.description + ";next_index=" + next_index.description + ";remaining_numbers3=" + remaining_numbers.description)
                 } else {
                     remaining_numbers[next_index] -= 1
                 }

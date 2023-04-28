@@ -216,30 +216,7 @@ public func abs(_ float: HugeFloat) -> HugeFloat {
  */
 public extension HugeFloat {
     static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let bigger_pre_int:HugeInt = left.integer, smaller_pre_int:HugeInt = right.integer
-        var (bigger_post_int, smaller_post_int, _):(HugeInt, HugeInt, Bool) = HugeInt.get_bigger_int(left: left.decimal?.value ?? left.remainder?.to_decimal().value ?? HugeInt.zero, right: right.decimal?.value ?? right.remainder?.to_decimal().value ?? HugeInt.zero)
-        let result_decimal_count:Int = bigger_post_int.length
-        
-        while bigger_post_int.length != result_decimal_count {
-            bigger_post_int.numbers.insert(0, at: 0)
-        }
-        while smaller_post_int.length != result_decimal_count {
-            smaller_post_int.numbers.insert(0, at: 0)
-        }
-        
-        var pre_decimal_result:HugeInt = bigger_pre_int + smaller_pre_int
-        var post_decimal_result:HugeInt = bigger_post_int + smaller_post_int
-        
-        let moved_decimal_count:Int = post_decimal_result.length - result_decimal_count
-        if moved_decimal_count > 0 {
-            let moved_decimals:[UInt8] = Array(post_decimal_result.numbers.reversed()[0..<moved_decimal_count])
-            pre_decimal_result = HugeInt(is_negative: false, HugeInt.add(left: pre_decimal_result.numbers, right: moved_decimals).result)
-            post_decimal_result.numbers.removeLast(moved_decimal_count)
-            post_decimal_result.remove_trailing_zeros()
-        }
-        var decimal_value:HugeDecimal! = HugeDecimal(value: post_decimal_result)
-        decimal_value = decimal_value == HugeDecimal.zero ? nil : decimal_value
-        return HugeFloat(integer: pre_decimal_result, decimal: decimal_value)
+        return HugeFloat.add(left: left, right: right)
     }
     static func + (left: HugeFloat, right: HugeInt) -> HugeFloat {
         return left + right.to_float
@@ -254,11 +231,48 @@ public extension HugeFloat {
     
     static func += (left: inout HugeFloat, right: HugeFloat) {
         left.integer += right.integer
-        if left.decimal != nil {
-            left.decimal! += right.decimal ?? HugeDecimal.zero
+        if left.decimal == nil && left.remainder == nil {
+            if right.decimal != nil {
+                left.decimal = right.decimal!
+            } else if right.remainder != nil {
+                left.remainder = right.remainder!
+            }
+        } else if let decimal:HugeDecimal = left.decimal {
+            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+            let (result, quotient):(HugeDecimal, HugeInt?) = decimal + right_decimal
+            if let quotient:HugeInt = quotient {
+                left.integer += quotient
+            }
+            left.decimal = result
         } else if left.remainder != nil {
             left.remainder! += right.remainder ?? HugeRemainder.zero
         }
+    }
+}
+internal extension HugeFloat {
+    static func add(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        var target_quotient:HugeInt = left.integer + right.integer
+        var target_decimal:HugeDecimal? = nil, target_remainder:HugeRemainder? = nil
+        if left.decimal == nil && left.remainder == nil {
+            if right.decimal != nil {
+                target_decimal = right.decimal
+            } else if right.remainder != nil {
+                target_remainder = right.remainder
+            }
+        } else if let decimal:HugeDecimal = left.decimal {
+            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+            let (result, quotient):(HugeDecimal, HugeInt?) = decimal + right_decimal
+            if let quotient:HugeInt = quotient {
+                target_quotient += quotient
+            }
+            target_decimal = result
+        } else if left.remainder != nil {
+            target_remainder = left.remainder! + (right.remainder ?? HugeRemainder.zero)
+        }
+        if target_decimal == HugeDecimal.zero || target_decimal?.value.is_zero ?? false {
+            target_decimal = nil
+        }
+        return HugeFloat(integer: target_quotient, decimal: target_decimal, remainder: target_remainder)
     }
 }
 /*
@@ -271,10 +285,30 @@ public extension HugeFloat {
     
     static func -= (left: inout HugeFloat, right: HugeFloat) {
         left.integer -= right.integer
-        if left.decimal != nil {
-            left.decimal! -= right.decimal ?? HugeDecimal.zero
-        } else if left.remainder != nil {
-            left.remainder! -= right.remainder ?? HugeRemainder.zero
+        if left.decimal == nil && left.remainder == nil {
+            if right.decimal != nil {
+                left.integer -= HugeInt.one
+                left.decimal = right.decimal!.distance_to_next_quotient
+            } else if right.remainder != nil {
+                left.integer -= HugeInt.one
+                left.remainder = right.remainder!.distance_to_next_quotient
+            }
+        } else if let decimal:HugeDecimal = left.decimal {
+            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+            if decimal >= right_decimal {
+                left.decimal! -= right_decimal
+            } else {
+                left.integer -= HugeInt.one
+                left.decimal! = (decimal + right_decimal.distance_to_next_quotient).result
+            }
+        } else if let remainder:HugeRemainder = left.remainder {
+            let right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
+            if remainder.is_greater_than_or_equal_to(right_remainder) {
+                left.remainder! -= right_remainder
+            } else {
+                left.integer -= HugeInt.one
+                left.remainder! = remainder + right_remainder.distance_to_next_quotient
+            }
         }
     }
 }

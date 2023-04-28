@@ -41,6 +41,12 @@ public struct HugeRemainder : Hashable, Comparable {
         return HugeFloat(integer: test1, decimal: nil, remainder: test2)
     }
     
+    // TODO: fix
+    /// - Warning: This assumes the divisor is greater than or equal to the dividend.
+    public var distance_to_next_quotient : HugeRemainder {
+        return HugeRemainder(dividend: divisor - dividend, divisor: divisor)
+    }
+    
     /// - Warning: Using this function assumes the dividend is smaller than the divisor.
     public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
         let precision_int:Int = precision.to_int() ?? Int.max
@@ -121,38 +127,36 @@ public struct HugeRemainder : Hashable, Comparable {
  */
 public extension HugeRemainder {
     static func < (left: HugeRemainder, right: HugeRemainder) -> Bool {
-        let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
-        return left_divisor == right_divisor ? left.dividend < right.dividend : false // TODO: fix
+        var left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+        if left.divisor != right.divisor {
+            let (_, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = HugeRemainder.get_common_denominator(left: left, right: right)
+            if let left_multiplier:HugeInt = left_multiplier {
+                left_dividend *= left_multiplier
+            }
+            if let right_multiplier:HugeInt = right_multiplier {
+                right_dividend *= right_multiplier
+            }
+        }
+        return left_dividend < right_dividend
     }
     
     func is_less_than(_ value: HugeRemainder?) -> Bool {
-        if let value:HugeRemainder = value {
-            return self < value
-        } else {
-            return true
-        }
+        guard let value:HugeRemainder = value else { return true }
+        return self < value
     }
     func is_less_than_or_equal_to(_ value: HugeRemainder?) -> Bool {
-        if let value:HugeRemainder = value {
-            return self <= value
-        } else {
-            return true
-        }
+        guard let value:HugeRemainder = value else { return true }
+        return self <= value
     }
-    
+}
+public extension HugeRemainder {
     func is_greater_than(_ value: HugeRemainder?) -> Bool {
-        if let value:HugeRemainder = value {
-            return self > value
-        } else {
-            return true
-        }
+        guard let value:HugeRemainder = value else { return true }
+        return self > value
     }
     func is_greater_than_or_equal_to(_ value: HugeRemainder?) -> Bool {
-        if let value:HugeRemainder = value {
-            return self >= value
-        } else {
-            return true
-        }
+        guard let value:HugeRemainder = value else { return true }
+        return self >= value
     }
 }
 public extension HugeRemainder {
@@ -169,11 +173,10 @@ public extension HugeRemainder {
     }
 }
 internal extension HugeRemainder {
-    static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, are_equal: Bool, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
+    /// - Warning: This doesn't check if the divisors are equal.
+    static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
         let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
-        if left_divisor == right_divisor {
-            return (left_divisor, true, nil, nil)
-        /*} else if let max_shared_factor:HugeInt = left_divisor.get_shared_factors(right_divisor)?.max() { // TODO: fix? | makes performance significantly worse, but remainder is simplified
+        /*if let max_shared_factor:HugeInt = left_divisor.get_shared_factors(right_divisor)?.max() { // TODO: fix? | makes performance significantly worse, but remainder is simplified
             let left_divisor_is_max:Bool = left_divisor == max_shared_factor
             if left_divisor_is_max {
                 let quotient:HugeInt = (right_divisor / left_divisor).quotient
@@ -181,10 +184,10 @@ internal extension HugeRemainder {
             } else {
                 let quotient:HugeInt = (left_divisor / right_divisor).quotient
                 return (left_divisor, false, HugeInt.one, quotient)
-            }*/
-        } else {
-            return (left_divisor * right_divisor, false, right_divisor, left_divisor)
-        }
+            }
+        } else {*/
+            return (left_divisor * right_divisor, right_divisor, left_divisor)
+        //}
     }
 }
 /*
@@ -196,15 +199,13 @@ public extension HugeRemainder {
             return right
         } else if right == HugeRemainder.zero {
             return left
+        } else if left.divisor == right.divisor {
+            return HugeRemainder(dividend: left.dividend + right.dividend, divisor: left.divisor)
         } else {
-            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            if are_equal {
-                return HugeRemainder(dividend: left.dividend + right.dividend, divisor: common_denominator)
-            } else {
-                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-                return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
-            }
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+            return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
         }
     }
     static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
@@ -217,16 +218,14 @@ public extension HugeRemainder {
             left.divisor = right.divisor
         } else if right == HugeRemainder.zero {
             return
+        } else if left.divisor == right.divisor {
+            left.dividend += right.dividend
         } else {
-            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            if are_equal {
-                left.dividend += right.dividend
-            } else {
-                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-                left.dividend = left_result + right_result
-                left.divisor = common_denominator
-            }
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+            left.dividend = left_result + right_result
+            left.divisor = common_denominator
         }
     }
 }
@@ -247,16 +246,14 @@ public extension HugeRemainder {
             left.divisor = right.divisor
         } else if right == HugeRemainder.zero {
             return
+        } else if left.divisor == right.divisor {
+            left.dividend -= right.dividend
         } else {
-            let (common_denominator, are_equal, left_multiplier, right_multiplier):(HugeInt, Bool, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            if are_equal {
-                left.dividend -= right.dividend
-            } else {
-                let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-                let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-                left.dividend = left_result - right_result
-                left.divisor = common_denominator
-            }
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
+            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
+            left.dividend = left_result - right_result
+            left.divisor = common_denominator
         }
     }
 }

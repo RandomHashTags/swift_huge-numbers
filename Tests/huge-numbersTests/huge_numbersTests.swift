@@ -385,10 +385,39 @@ extension huge_numbersTests {
         result = float + HugeFloat("196.555")
         expected_result = HugeFloat("200.055")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3") + HugeFloat("0.25")
+        expected_result = HugeFloat("3.25")
+        XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_subtraction() {
         var result:HugeFloat = HugeFloat("9.75") - HugeFloat("2")
         var expected_result:HugeFloat = HugeFloat("7.75")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3")
+        result -= HugeFloat("0.25")
+        expected_result = HugeFloat("2.75")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3.15")
+        result -= HugeFloat("0.25")
+        expected_result = HugeFloat(integer: HugeInt("2"), decimal: HugeDecimal("90", remove_leading_zeros: false))
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3r2/10")
+        result -= HugeFloat("0r9/10")
+        expected_result = HugeFloat(integer: HugeInt("2"), remainder: HugeRemainder(dividend: "3", divisor: "10"))
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3r2/5")
+        result -= HugeFloat("0r9/10")
+        expected_result = HugeFloat(integer: HugeInt("2"), remainder: HugeRemainder(dividend: "25", divisor: "50"))
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("3")
+        result -= HugeFloat("0r2/3")
+        expected_result = HugeFloat("2r1/3")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_multiplication() {
@@ -570,22 +599,34 @@ extension huge_numbersTests {
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         XCTAssert(result.description.elementsEqual(expected_result.description), "test_decimal;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeDecimal("1234").distance_to_next_quotient
+        expected_result = HugeDecimal("8766")
+        XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeDecimal("100852").distance_to_next_quotient
+        expected_result = HugeDecimal("899148")
+        XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeDecimal("9999").distance_to_next_quotient
+        expected_result = HugeDecimal("0001", remove_leading_zeros: false)
+        XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
+        
         test_decimal_addition()
         test_decimal_subtraction()
         test_decimal_multiplication()
     }
     private func test_decimal_addition() {
         var decimal:HugeDecimal = HugeDecimal("999")
-        var (result, quotient):(HugeDecimal, HugeInt?) = decimal + HugeDecimal("1")
+        var (result, quotient):(HugeDecimal, HugeInt?) = decimal + HugeDecimal("001", remove_leading_zeros: false)
         var (expected_result, expected_quotient):(HugeDecimal, HugeInt?) = (HugeDecimal("000", remove_leading_zeros: false), HugeInt.one)
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_addition;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
         
-        (result, quotient) = HugeDecimal("998") + HugeDecimal("1")
+        (result, quotient) = HugeDecimal("998") + HugeDecimal("001", remove_leading_zeros: false)
         (expected_result, expected_quotient) = (decimal, nil)
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_addition;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
     }
     private func test_decimal_subtraction() {
-        var (result, quotient):(HugeDecimal, HugeInt?) = HugeDecimal("999") - HugeDecimal("1")
+        var (result, quotient):(HugeDecimal, HugeInt?) = HugeDecimal("999") - HugeDecimal("001", remove_leading_zeros: false)
         var (expected_result, expected_quotient):(HugeDecimal, HugeInt?) = (HugeDecimal("998"), nil)
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_subtraction;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
     }
