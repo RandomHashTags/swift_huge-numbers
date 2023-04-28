@@ -133,14 +133,14 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         } else {
             suffix = ""
         }
-        return (is_negative ? "-" : "") + integer.description + suffix
+        return integer.description + suffix
     }
     public var description_literal : String {
         let suffix:String
         if let remainder:HugeRemainder = remainder {
             suffix = "r" + remainder.description
         } else {
-            suffix = "." + (decimal?.description_literal ?? "0")
+            suffix = (decimal != nil ? "." + decimal!.description_literal : "0")
         }
         return integer.description_literal + suffix
     }
@@ -160,7 +160,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         } else {
             description.remove_trailing_zeros()
         }
-        return (is_negative ? "-" : "") + description
+        return description
     }
     
     public func to_radians() -> HugeFloat {

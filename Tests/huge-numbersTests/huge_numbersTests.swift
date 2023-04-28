@@ -351,10 +351,13 @@ extension huge_numbersTests {
 
 extension huge_numbersTests {
     private func test_float() {
-        let float:HugeFloat = HugeFloat("3.1415926535e-10")
+        var float:HugeFloat = HugeFloat("3.1415926535e-10")
         XCTAssert(float.description_literal.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
         XCTAssert(HugeFloat("3r1/4") == HugeFloat(integer: HugeInt("3"), remainder: HugeRemainder(dividend: "1", divisor: "4")))
+        float = HugeFloat("-3")
+        XCTAssert(float.description.elementsEqual("-3"), "test_float;float=\(float);float.description=" + float.description)
+        XCTAssert(float.description_simplified.elementsEqual("-3"), "test_float;float=\(float);float.description_simplified=" + float.description_simplified)
         
         test_float_addition()
         test_float_subtraction()
