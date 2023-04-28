@@ -389,10 +389,18 @@ extension huge_numbersTests {
         result = HugeFloat("3") + HugeFloat("0.25")
         expected_result = HugeFloat("3.25")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("0") + HugeFloat("-0.25")
+        expected_result = HugeFloat("-0.25")
+        XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_subtraction() {
         var result:HugeFloat = HugeFloat("9.75") - HugeFloat("2")
         var expected_result:HugeFloat = HugeFloat("7.75")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("9.75")
+        result -= HugeFloat("2")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
         
         result = HugeFloat("3")
@@ -400,10 +408,31 @@ extension huge_numbersTests {
         expected_result = HugeFloat("2.75")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("2")
+        result -= HugeFloat("2.25")
+        expected_result = HugeFloat("-0.25")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("-2")
+        result -= HugeFloat("2.25")
+        expected_result = HugeFloat("-4.25")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
         result = HugeFloat("3.15")
         result -= HugeFloat("0.25")
         expected_result = HugeFloat(integer: HugeInt("2"), decimal: HugeDecimal("90", remove_leading_zeros: false))
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("0")
+        result -= HugeFloat("9.80665")
+        expected_result = HugeFloat("-9.80665")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("0")
+        result -= HugeFloat("-2.13")
+        expected_result = HugeFloat("2.13")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
         
         result = HugeFloat("3r2/10")
         result -= HugeFloat("0r9/10")

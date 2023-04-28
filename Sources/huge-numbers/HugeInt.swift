@@ -13,7 +13,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
-    public private(set) var is_negative:Bool
+    public internal(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.
     public internal(set) var numbers:[UInt8]
     
