@@ -614,6 +614,12 @@ public extension HugeInt {
     static func / (dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
         if dividend == HugeInt.zero {
             return (HugeInt.zero, divisor == HugeInt.zero ? nil : HugeRemainder(dividend: dividend, divisor: divisor))
+        } else if divisor.numbers == [1] {
+            if divisor.is_negative {
+                return (-dividend, nil)
+            } else {
+                return (dividend, nil)
+            }
         }
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))

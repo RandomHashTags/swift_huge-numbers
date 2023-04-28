@@ -133,7 +133,7 @@ public extension HugeDecimal {
     
     /// - Warning: This doesn't add the resulting quotient to the `left` variable.
     static func += (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support addition of repeating numbers
-        left.value += right.value
+        left = HugeDecimal.add(left: left, right: right).result
     }
 }
 internal extension HugeDecimal {
@@ -167,7 +167,7 @@ public extension HugeDecimal {
     }
     
     static func -= (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support subtraction of repeating numbers
-        left.value -= right.value
+        left += -right
     }
 }
 /*
