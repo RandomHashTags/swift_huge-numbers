@@ -269,6 +269,10 @@ extension huge_numbersTests {
         (quotient, remainder) = HugeInt("425") / HugeInt("25")
         XCTAssert(quotient == HugeInt("17") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
+        
+        (quotient, remainder) = HugeInt("80665") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("40332"), "test_int_division;quotient=\(quotient);remainder=\(remainder)")
+        
     }
     private func test_int_factorial() {
         var integer:HugeInt = HugeInt("5")
@@ -489,10 +493,13 @@ extension huge_numbersTests {
         
     }
     private func test_float_division() {
-        var float:HugeFloat = HugeFloat("60")
-        var result:HugeFloat = float / 90
+        var result:HugeFloat = HugeFloat("60") / 90
         var expected_result:HugeFloat = HugeFloat("0r60/90")
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("9.80665") / HugeFloat("2")
+        expected_result = HugeFloat("4.903325")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)") // TODO: fix
     }
 }
 
@@ -619,7 +626,7 @@ extension huge_numbersTests {
         remainder = HugeRemainder(dividend: "1", divisor: "1005")
         result = remainder.to_decimal()
         expected_result = HugeDecimal(value: HugeInt.zero, repeating_numbers: [8, 9, 3, 0, 2, 9, 5, 1, 8, 6, 3, 6, 2, 7, 4, 5, 0, 9, 8, 1, 2, 6, 5, 7, 8, 4, 2, 0, 5, 9, 9, 0, 0])
-        XCTAssert(result == expected_result, "test_decimal;result_precision=\(result);expected_result=\(expected_result)")
+        XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         XCTAssert(result.description.elementsEqual(expected_result.description), "test_decimal;result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "1010")

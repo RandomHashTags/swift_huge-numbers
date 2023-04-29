@@ -426,8 +426,14 @@ internal extension HugeFloat {
  */
 public extension HugeFloat {
     static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
-        return HugeFloat(integer: result, remainder: remainder)
+        if let _:HugeDecimal = left.decimal {
+            return HugeFloat.divide_decimals(left: left, right: right)
+        } else if let _:HugeRemainder = left.remainder {
+            return HugeFloat.divide_remainders(left: left, right: right)
+        } else {
+            let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
+            return HugeFloat(integer: result, remainder: remainder)
+        }
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func / (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
@@ -436,6 +442,19 @@ public extension HugeFloat {
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func / (left: any FloatingPoint, right: HugeFloat) -> HugeFloat {
         return HugeFloat(left) / right
+    }
+}
+internal extension HugeFloat {
+    static func divide_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        let left_decimal:HugeDecimal = left.decimal!, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+        let minimum_decimal_places:Int = left_decimal.value.length + right_decimal.value.length
+        let value:HugeInt = HugeInt("1" + (0..<minimum_decimal_places).map({ _ in "0" }).joined() )
+        let left_value:HugeInt = (left * value).integer, right_value:HugeInt = (right * value).integer
+        let (quotient, remainder):(HugeInt, HugeRemainder?) = left_value / right_value
+        return HugeFloat(integer: quotient, decimal: remainder?.to_decimal())
+    }
+    static func divide_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
+        return HugeFloat.zero
     }
 }
 /*
