@@ -499,7 +499,11 @@ extension huge_numbersTests {
         
         result = HugeFloat("9.80665") / HugeFloat("2")
         expected_result = HugeFloat("4.903325")
-        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)") // TODO: fix
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("9") / HugeFloat("2.5")
+        expected_result = HugeFloat("3.6")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
     }
 }
 
