@@ -453,8 +453,11 @@ internal extension HugeFloat {
         let (quotient, remainder):(HugeInt, HugeRemainder?) = left_value / right_value
         return HugeFloat(integer: quotient, decimal: remainder?.to_decimal())
     }
-    static func divide_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: finish
-        return HugeFloat.zero
+    static func divide_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        var left_remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero, right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
+        let remainder:HugeRemainder = left_remainder.add(left.integer) / right_remainder.add(right.integer)
+        let (quotient, new_remainder):(HugeInt, HugeRemainder?) = remainder.to_int
+        return HugeFloat(integer: quotient, remainder: new_remainder)
     }
 }
 /*

@@ -47,6 +47,11 @@ public struct HugeRemainder : Hashable, Comparable {
         return HugeRemainder(dividend: divisor - dividend, divisor: divisor)
     }
     
+    public mutating func add(_ integer: HugeInt) -> HugeRemainder {
+        dividend += (integer * divisor)
+        return self
+    }
+    
     /// - Warning: Using this function assumes the dividend is smaller than the divisor.
     public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
         let precision_int:Int = precision.to_int() ?? Int.max
@@ -111,7 +116,7 @@ public struct HugeRemainder : Hashable, Comparable {
     }
     
     /// - Warning: Using this assumes the dividend is smaller than the divisor.
-    mutating func simplify() async {
+    mutating func simplify_parallel() async {
         if divisor % dividend == HugeInt.zero {
             divisor = (divisor / dividend).quotient
             dividend = HugeInt.one

@@ -504,6 +504,10 @@ extension huge_numbersTests {
         result = HugeFloat("9") / HugeFloat("2.5")
         expected_result = HugeFloat("3.6")
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("9r6/10") / HugeFloat("2r4/10")
+        expected_result = HugeFloat("4")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
     }
 }
 
@@ -568,37 +572,37 @@ extension huge_numbersTests {
     }
     private func test_remainder_simplify() async { // TODO: fix
         var remainder:HugeRemainder = HugeRemainder(dividend: "2", divisor: "4")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         var expected_result:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "3", divisor: "9")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = HugeRemainder(dividend: "1", divisor: "3")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "4", divisor: "22")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = HugeRemainder(dividend: "2", divisor: "11")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "3", divisor: "10")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = remainder
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "5", divisor: "200")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = HugeRemainder(dividend: "1", divisor: "40")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "6", divisor: "36")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = HugeRemainder(dividend: "1", divisor: "6")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "11", divisor: "121")
-        await remainder.simplify()
+        await remainder.simplify_parallel()
         expected_result = HugeRemainder(dividend: "1", divisor: "11")
         XCTAssert(remainder == expected_result, "test_remainder_simplify;remainder=\(remainder);expected_result=\(expected_result)")
         
