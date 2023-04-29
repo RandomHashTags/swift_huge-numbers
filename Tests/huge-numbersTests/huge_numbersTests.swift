@@ -10,7 +10,8 @@ import XCTest
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        //try await test_benchmarks()
+        try await test_benchmarks()
+        return;
         
         await test_int()
         test_float()
@@ -22,11 +23,12 @@ final class huge_numbersTests: XCTestCase {
     
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
-        let left1:HugeRemainder = HugeRemainder(dividend: "5", divisor: "10"), right1:HugeRemainder = HugeRemainder(dividend: "2", divisor: "30")
-        try await benchmark_compare_is_faster(key1: "HugeRemainder.add1", {
-            let result:HugeRemainder = left1 + right1
+        let left:HugeInt = HugeInt("12345"), right:HugeInt = HugeInt("54321")
+        let left_native:UInt64 = 12345, right_native:UInt64 = 54321
+        try await benchmark_compare_is_faster(key1: "HugeInt.multiply", {
+            let result:HugeInt = left * right
         }, key2: "HugeRemainder.add2", code2: {
-            //let result:HugeRemainder = HugeRemainder.add2(left: left1, right: right1)
+            let result:UInt64 = left_native * right_native
         })
     }
 }
