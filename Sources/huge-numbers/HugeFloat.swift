@@ -289,47 +289,51 @@ public extension HugeFloat {
 }
 internal extension HugeFloat {
     static func subtract(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var quotient:HugeInt = left.integer - right.integer
-        var target_decimal:HugeDecimal? = nil, target_remainder:HugeRemainder? = nil
-        if left.decimal == nil && left.remainder == nil {
-            if right.decimal != nil {
-                if left.integer.is_zero {
-                    target_decimal = right.decimal!
-                } else {
-                    if right.integer.is_zero {
-                        quotient -= HugeInt.one
-                    }
-                    if quotient.is_negative || quotient.is_zero {
-                        quotient.is_negative = true
-                        target_decimal = right.decimal!
-                    } else {
-                        target_decimal = right.decimal!.distance_to_next_quotient
-                    }
-                }
-            } else if right.remainder != nil {
-                if right.integer.is_zero { // TODO: fix ???
-                    quotient -= HugeInt.one
-                }
-                target_remainder = right.remainder!.distance_to_next_quotient
-            }
-        } else if let decimal:HugeDecimal = left.decimal {
-            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
-            if decimal >= right_decimal {
-                target_decimal = (decimal - right_decimal).result
+        guard left.is_negative == right.is_negative else {
+            let value:HugeFloat
+            if left.is_negative || left.integer.is_zero {
+                value = add(left: -left, right: right)
             } else {
-                quotient -= HugeInt.one
-                target_decimal = (decimal + right_decimal.distance_to_next_quotient).result
+                value = add(left: left, right: -right)
             }
-        } else if let remainder:HugeRemainder = left.remainder {
-            let right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
-            if remainder.is_greater_than_or_equal_to(right_remainder) {
-                target_remainder = remainder - right_remainder
-            } else {
-                quotient -= HugeInt.one
-                target_remainder = remainder + right_remainder.distance_to_next_quotient
-            }
+            return -value
         }
-        return HugeFloat(integer: quotient, decimal: target_decimal, remainder: target_remainder)
+        if left.decimal != nil || right.decimal != nil {
+            return subtract_decimals(left: left, right: right)
+        } else if left.remainder != nil || right.remainder != nil {
+            return subtract_remainders(left: left, right: right)
+        } else {
+            return HugeFloat(integer: left.integer - right.integer)
+        }
+    }
+    static func subtract_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        var quotient:HugeInt = left.integer - right.integer
+        let target_decimal:HugeDecimal
+        let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+        if left_decimal >= right_decimal {
+            target_decimal = (left_decimal - right_decimal).result
+        } else if quotient.is_zero {
+            quotient.is_negative = true
+            target_decimal = right_decimal
+        } else if quotient == left.integer {
+            quotient -= HugeInt.one
+            target_decimal = (left_decimal + right_decimal.distance_to_next_quotient).result
+        } else {
+            target_decimal = (left_decimal + right_decimal).result
+        }
+        return HugeFloat(integer: quotient, decimal: target_decimal)
+    }
+    static func subtract_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+        var quotient:HugeInt = left.integer - right.integer
+        let left_remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero, right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
+        let target_remainder:HugeRemainder?
+        if !left_remainder.is_zero && left_remainder >= right_remainder {
+            target_remainder = left_remainder - right_remainder
+        } else {
+            quotient -= HugeInt.one
+            target_remainder = left_remainder + right_remainder.distance_to_next_quotient
+        }
+        return HugeFloat(integer: quotient, remainder: target_remainder)
     }
 }
 /*

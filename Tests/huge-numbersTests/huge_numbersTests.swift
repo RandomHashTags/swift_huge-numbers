@@ -432,6 +432,10 @@ extension huge_numbersTests {
         expected_result = HugeFloat("-9.80665")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
         
+        result -= HugeFloat("9.80665")
+        expected_result = HugeFloat(integer: "-19", decimal: HugeDecimal("61330", remove_leading_zeros: false))
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
+        
         result = HugeFloat("0")
         result -= HugeFloat("-2.13")
         expected_result = HugeFloat("2.13")
