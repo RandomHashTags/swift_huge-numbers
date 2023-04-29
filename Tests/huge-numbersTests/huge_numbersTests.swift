@@ -23,12 +23,12 @@ final class huge_numbersTests: XCTestCase {
     
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
-        let left:HugeInt = HugeInt("12345"), right:HugeInt = HugeInt("54321")
-        let left_native:UInt64 = 12345, right_native:UInt64 = 54321
-        try await benchmark_compare_is_faster(key1: "HugeInt.multiply", {
-            let result:HugeInt = left * right
-        }, key2: "HugeRemainder.add2", code2: {
-            let result:UInt64 = left_native * right_native
+        let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
+        let left_native:Float = 12345.678, right_native:Float = 54321.012
+        try await benchmark_compare_is_faster(key1: "HugeFloat.multiply", {
+            let result:HugeFloat = left / right
+        }, key2: "Float.multiply", code2: {
+            let result:Float = left_native / right_native
         })
     }
 }
@@ -36,7 +36,7 @@ final class huge_numbersTests: XCTestCase {
 extension huge_numbersTests {
     @available(macOS 13.0, iOS 16.0, *)
     private func benchmark(key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
-        let iteration_count:Int = 10_00
+        let iteration_count:Int = 10
         let clock:ContinuousClock = ContinuousClock()
         let _:Duration = try await clock.measure(code)
         var timings:[Int64] = [Int64]()
