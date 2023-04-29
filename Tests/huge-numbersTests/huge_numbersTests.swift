@@ -10,8 +10,8 @@ import XCTest
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
-        return;
+        //try await test_benchmarks()
+        //return;
         
         await test_int()
         test_float()

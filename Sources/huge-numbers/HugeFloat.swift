@@ -451,7 +451,7 @@ public extension HugeFloat {
 internal extension HugeFloat {
     static func divide_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
         let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
-        let minimum_decimal_places:Int = left_decimal.value.length + right_decimal.value.length
+        let minimum_decimal_places:Int = max(left_decimal.value.length, right_decimal.value.length)
         let value:HugeInt = HugeInt("1" + (0..<minimum_decimal_places).map({ _ in "0" }).joined() )
         let left_value:HugeInt = (left * value).integer, right_value:HugeInt = (right * value).integer
         let (quotient, remainder):(HugeInt, HugeRemainder?) = left_value / right_value
