@@ -163,6 +163,19 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         return description
     }
     
+    public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
+        var numbers:[UInt8] = integer.numbers
+        let decimals:[UInt8] = decimal?.value.numbers.reversed() ?? []
+        for i in 0..<amount {
+            numbers.insert(decimals.get(i) ?? 0, at: 0)
+        }
+        return HugeFloat(integer: HugeInt(is_negative: false, numbers))
+    }
+    
+    public func divide_by(_ value: HugeFloat, precision: HugeInt) -> HugeFloat {
+        return HugeFloat.divide(left: self, right: value, precision: precision)
+    }
+    
     public func to_radians() -> HugeFloat {
         return self * 0.01745329252
     }
@@ -430,14 +443,7 @@ internal extension HugeFloat {
  */
 public extension HugeFloat {
     static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        if left.decimal != nil || right.decimal != nil {
-            return HugeFloat.divide_decimals(left: left, right: right)
-        } else if left.remainder != nil || right.remainder != nil {
-            return HugeFloat.divide_remainders(left: left, right: right)
-        } else {
-            let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
-            return HugeFloat(integer: result, remainder: remainder)
-        }
+        return HugeFloat.divide(left: left, right: right, precision: HugeInt.default_precision)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func / (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
@@ -449,13 +455,22 @@ public extension HugeFloat {
     }
 }
 internal extension HugeFloat {
-    static func divide_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
+    static func divide(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat {
+        if left.decimal != nil || right.decimal != nil {
+            return HugeFloat.divide_decimals(left: left, right: right, precision: precision)
+        } else if left.remainder != nil || right.remainder != nil {
+            return HugeFloat.divide_remainders(left: left, right: right)
+        } else {
+            let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
+            return HugeFloat(integer: result, remainder: remainder)
+        }
+    }
+    static func divide_decimals(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat {
         let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
         let minimum_decimal_places:Int = max(left_decimal.value.length, right_decimal.value.length)
-        let value:HugeInt = HugeInt("1" + (0..<minimum_decimal_places).map({ _ in "0" }).joined() )
-        let left_value:HugeInt = (left * value).integer, right_value:HugeInt = (right * value).integer
+        let left_value:HugeInt = left.multiply_decimal_by_ten(minimum_decimal_places).integer, right_value:HugeInt = right.multiply_decimal_by_ten(minimum_decimal_places).integer
         let (quotient, remainder):(HugeInt, HugeRemainder?) = left_value / right_value
-        return HugeFloat(integer: quotient, decimal: remainder?.to_decimal())
+        return HugeFloat(integer: quotient, decimal: remainder?.to_decimal(precision: precision))
     }
     static func divide_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
         var left_remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero, right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero

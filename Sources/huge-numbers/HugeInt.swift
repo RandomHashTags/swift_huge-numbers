@@ -10,6 +10,9 @@ import Foundation
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable, Codable {
     public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
+    public static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
+    public static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
+    
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
@@ -88,6 +91,25 @@ public struct HugeInt : Hashable, Comparable, Codable {
     
     public func all_digits_satisfy(_ transform: (UInt8) -> Bool) -> Bool {
         return numbers.allSatisfy(transform)
+    }
+    public mutating func multiplied_by_ten(_ amount: Int) -> HugeInt {
+        let array:[UInt8] = [UInt8].init(repeating: 0, count: abs(amount))
+        if amount > 0 {
+            numbers.insert(contentsOf: array, at: 0)
+        } else {
+            numbers.insert(contentsOf: array, at: numbers.count-1)
+        }
+        return self
+    }
+    public func multiply_by_ten(_ amount: Int) -> HugeInt {
+        let array:[UInt8] = [UInt8].init(repeating: 0, count: abs(amount))
+        var numbers:[UInt8] = numbers
+        if amount > 0 {
+            numbers.insert(contentsOf: array, at: 0)
+        } else {
+            numbers.insert(contentsOf: array, at: numbers.count-1)
+        }
+        return HugeInt(is_negative: false, array)
     }
     
     /// - Warning: This is very resource intensive when using a big number.
@@ -585,23 +607,25 @@ internal extension HugeInt {
         var small_number_index:Int = 0
         while small_number_index < smaller_numbers_length {
             let smaller_number:UInt8 = smaller_numbers[small_number_index]
-            var big_number_index:Int = 0, remainder:UInt8 = 0
-            var small_number_result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
-            while big_number_index < array_count {
-                let bigger_number:UInt8 = bigger_numbers.get(big_number_index) ?? 0
-                let calculated_value:UInt8 = smaller_number * bigger_number
-                let total_value:UInt8 = calculated_value + remainder
-                remainder = total_value / 10
-                let ending_result:UInt8 = total_value - (remainder * 10)
-                small_number_result[small_number_index + big_number_index] = ending_result
-                big_number_index += 1
+            if smaller_number != 0 {
+                var big_number_index:Int = 0, remainder:UInt8 = 0
+                var small_number_result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
+                while big_number_index < array_count {
+                    let bigger_number:UInt8 = bigger_numbers.get(big_number_index) ?? 0
+                    let calculated_value:UInt8 = smaller_number * bigger_number
+                    let total_value:UInt8 = calculated_value + remainder
+                    remainder = total_value / 10
+                    let ending_result:UInt8 = total_value - (remainder * 10)
+                    small_number_result[small_number_index + big_number_index] = ending_result
+                    big_number_index += 1
+                }
+                if remainder > 0 {
+                    let ending_index:Int = small_number_index == smaller_numbers_length_minus_one ? result_count_minus_one : small_number_index + big_number_index
+                    small_number_result[ending_index] = remainder
+                    remainder = 0
+                }
+                result = HugeInt.add(bigger_numbers: result, smaller_numbers: small_number_result)
             }
-            if remainder > 0 {
-                let ending_index:Int = small_number_index == smaller_numbers_length_minus_one ? result_count_minus_one : small_number_index + big_number_index
-                small_number_result[ending_index] = remainder
-                remainder = 0
-            }
-            result = HugeInt.add(bigger_numbers: result, smaller_numbers: small_number_result)
             small_number_index += 1
         }
         return result

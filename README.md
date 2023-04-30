@@ -27,13 +27,17 @@ iMac19,1 - macOS 13.3.1 - Xcode 14.3 - Swift 5.8 - 1.47 TB free of 2TB - 3.6 GHz
 
 **benchmark calculator located in `huge_numbersTests`**
 ### Compared to native
-The table below displays the nanoseconds longer it took this library to calculate the result than native arithmetic.
+The tables below display the nanoseconds longer it took this library to calculate the result than native arithmetic.
 
-\***native calculation overflows; only compared to partial calculatation**
-|Version      |Unit             |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
+\***native calculation overflows; only compared to partial calculation**
+#### `HugeInt`
+|Version      |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
+|:------------|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|
+|1.0.6        |8237502387529357 |397653549738     |~2,800           |~2,400           |~43,000\*        |~225,000         |
+#### `HugeFloat`
+|Version      |Precision        |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
 |:------------|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|
-|1.0.6        |`HugeInt`        |8237502387529357 |397653549738     |~2,800           |~2,400           |~43,000\*        |~225,000         |
-|1.0.6        |`HugeFloat`      |12345.678        |54321.012        |~8,200           |~8,300           |~24,000          |~13,000,000      |
+|1.0.6        |100              |12345.678        |54321.012        |~8,200           |~8,300           |~24,000          |~13,000,000      |
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.
