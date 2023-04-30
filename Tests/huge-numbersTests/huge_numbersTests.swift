@@ -71,7 +71,7 @@ extension huge_numbersTests {
         let left:HugeInt = HugeInt(left_native), right:HugeInt = HugeInt(right_native)
         try await benchmark_compare_is_faster(key1: "HugeInt.divide", {
             let (_, _):(HugeInt, HugeRemainder?) = left / right
-        }, key2: "HugeInt.divide", code2: {
+        }, key2: "UInt64.divide", code2: {
             let _:UInt64 = left_native.dividedReportingOverflow(by: right_native).partialValue
         })
     }

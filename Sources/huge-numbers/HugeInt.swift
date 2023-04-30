@@ -16,6 +16,12 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
     public static var one:HugeInt = HugeInt(is_negative: false, [1])
     
+    public static func random(in range: Range<HugeInt>) -> HugeInt {
+        let minimum_integer:UInt64 = range.lowerBound.to_int()!, maximum_integer:UInt64 = range.upperBound.to_int()!
+        let number:UInt64 = UInt64.random(in: minimum_integer...maximum_integer)
+        return HugeInt(number)
+    }
+    
     public internal(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.
     public internal(set) var numbers:[UInt8]
@@ -92,6 +98,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public func all_digits_satisfy(_ transform: (UInt8) -> Bool) -> Bool {
         return numbers.allSatisfy(transform)
     }
+    
     public mutating func multiplied_by_ten(_ amount: Int) -> HugeInt {
         let array:[UInt8] = [UInt8].init(repeating: 0, count: abs(amount))
         if amount > 0 {
@@ -593,10 +600,12 @@ internal extension HugeInt {
         }
         return result
     }
+    // TODO: optimize | n * log(n)
     /// Multiplies two 8-bit number arrays together.
     /// - Parameters:
-    ///     - bigger_numbers: An array of 8-bit numbers in reverse order. This array's count should be bigger than or equal to `smaller_numbers` array count.
-    ///     - smaller_numbers: An array of 8-bit numbers in reverse order. This array's count should be less than or equal to `bigger_numbers` array count.
+    ///     - bigger_numbers: An array of 8-bit numbers in reverse order. This array's size should be bigger than or equal to _smaller_numbers_ size.
+    ///     - smaller_numbers: An array of 8-bit numbers in reverse order. This array's size should be less than or equal to _bigger_numbers_ size.
+    /// - Complexity: O(_n_ \* _m_), where _n_ is the _bigger\_numbers_ size, and _m_ is the _smaller\_numbers_ size.
     /// - Returns: the product of the two 8-bit number arrays, in reverse order.
     static func multiply(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
         let array_count:Int = bigger_numbers.count
@@ -650,24 +659,6 @@ public extension HugeInt {
         }
         return HugeInt.divide(dividend: dividend, divisor: divisor)
     }
-    /*static func get_maximum_divisions(dividend: HugeInt, divisor: HugeInt) -> (result: HugeInt, remainder: HugeRemainder?) {
-        let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
-        var maximum_divisions:UInt64 = max(0, 10 * UInt64(dividend.length-divisor.length))
-        var next_value:HugeInt = divisor * (maximum_divisions != 0 ? maximum_divisions : 1)
-        let dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
-        print("HugeInt;get_maximum_divisions;dividend=" + dividend.description + ";divisor=" + divisor.description)
-        while dividend >= next_value {
-            //print("maximum_divisions=" + maximum_divisions.description + ";next_value=" + next_value.description)
-            maximum_divisions += 1
-            next_value += divisor
-        }
-        guard maximum_divisions > 0 else {
-            return (HugeInt(is_negative: is_negative, "0"), HugeRemainder(dividend: dividend, divisor: divisor))
-        }
-        let subtracted_value:HugeInt = next_value - divisor
-        let remainder:HugeInt = dividend - subtracted_value
-        return (HugeInt(is_negative: is_negative, maximum_divisions-1), remainder.is_zero ? nil : HugeRemainder(dividend: remainder, divisor: divisor))
-    }*/
     
     static func / (left: HugeInt, right: any BinaryInteger) -> (quotient: HugeInt, remainder: HugeRemainder?) {
         return left / HugeInt(right)
@@ -677,9 +668,7 @@ public extension HugeInt {
     }
     
     static func /= (left: inout HugeInt, right: HugeInt) {
-        let quotient:HugeInt = (left / right).quotient
-        left.is_negative = quotient.is_negative
-        left.numbers = quotient.numbers
+        left = (left / right).quotient
     }
     static func /= (left: inout HugeInt, right: any BinaryInteger) {
         left /= HugeInt(right)
