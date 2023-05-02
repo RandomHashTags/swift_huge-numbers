@@ -355,7 +355,6 @@ extension huge_numbersTests {
         (quotient, remainder) = HugeInt("425") / HugeInt("25")
         XCTAssert(quotient == HugeInt("17") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
-        
         (quotient, remainder) = HugeInt("80665") / HugeInt("2")
         XCTAssert(quotient == HugeInt("40332"), "test_int_division;quotient=\(quotient);remainder=\(remainder)")
         
@@ -484,8 +483,12 @@ extension huge_numbersTests {
         expected_result = HugeFloat("-0.25")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
         
-        result = HugeFloat("0.005") + HugeFloat("0.000000000000000000002")
-        expected_result = HugeFloat("0.005000000000000000002")
+        result = HugeFloat("2.005") + HugeFloat("0.000000000000000000002")
+        expected_result = HugeFloat("2.005000000000000000002")
+        XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat.zero + HugeFloat("5.25")
+        expected_result = HugeFloat("5.25")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_subtraction() {
@@ -612,6 +615,11 @@ extension huge_numbersTests {
         result = HugeFloat("69.42").multiply_by_ten(-3)
         expected_result = HugeFloat("0.06942")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("1000").multiply_decimal_by_ten(-3)
+        expected_result = HugeFloat("1")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
     }
     private func test_float_division() {
         var result:HugeFloat = HugeFloat("60") / 90

@@ -201,6 +201,11 @@ public struct HugeFloat : Hashable, Comparable, Codable {
                     for _ in 0..<absolute_amount-numbers_count {
                         decimals.append(0)
                     }
+                } else {
+                    for _ in 0..<absolute_amount {
+                        numbers.removeFirst()
+                    }
+                    decimals = nil
                 }
             }
         } else {
