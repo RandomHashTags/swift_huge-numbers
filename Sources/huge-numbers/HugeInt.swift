@@ -736,7 +736,7 @@ internal extension HugeInt {
                         bruh.removeLast()
                     }
                 }
-                if bruh.last == 0 {
+                while bruh.last == 0 {
                     if quotient_index < result_count {
                         quotient_numbers[quotient_index] = 0
                         quotient_index += 1

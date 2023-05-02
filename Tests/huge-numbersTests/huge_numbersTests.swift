@@ -356,8 +356,10 @@ extension huge_numbersTests {
         XCTAssert(quotient == HugeInt("17") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("80665") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("40332"), "test_int_division;quotient=\(quotient);remainder=\(remainder)")
+        XCTAssert(quotient == HugeInt("40332") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
         
+        (quotient, remainder) = HugeInt("1000") / HugeInt("2")
+        XCTAssert(quotient == HugeInt("500") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
     }
     private func test_int_factorial() {
         var integer:HugeInt = HugeInt("5")
@@ -636,6 +638,10 @@ extension huge_numbersTests {
         
         result = HugeFloat("9r6/10") / HugeFloat("2r4/10")
         expected_result = HugeFloat("4")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("1000") / HugeFloat("2")
+        expected_result = HugeFloat("500")
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
     }
 }
