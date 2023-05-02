@@ -483,6 +483,10 @@ extension huge_numbersTests {
         result = HugeFloat("0") + HugeFloat("-0.25")
         expected_result = HugeFloat("-0.25")
         XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("0.005") + HugeFloat("0.000000000000000000002")
+        expected_result = HugeFloat("0.005000000000000000002")
+        XCTAssert(result == expected_result, "test_float_addition;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_subtraction() {
         var result:HugeFloat = HugeFloat("9.75") - HugeFloat("2")

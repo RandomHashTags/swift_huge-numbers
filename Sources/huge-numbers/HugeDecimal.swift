@@ -154,6 +154,9 @@ internal extension HugeDecimal {
             for _ in 0..<difference {
                 result.numbers.removeLast()
             }
+        } else if result_length < decimal_length {
+            let array:[UInt8] = [UInt8].init(repeating: 0, count: decimal_length - result_length)
+            result.numbers.append(contentsOf: array)
         }
         return (HugeDecimal(value: result), quotient)
     }
