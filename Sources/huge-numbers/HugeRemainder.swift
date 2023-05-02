@@ -81,7 +81,9 @@ public struct HugeRemainder : Hashable, Comparable {
                             }
                         }
                         let starting_index:Int = same_max_division_index - included_previous_values + 1
-                        repeated_value = Array(result[starting_index..<index])
+                        if starting_index != index {
+                            repeated_value = Array(result[starting_index..<index])
+                        }
                         result = result[0..<starting_index]
                         break while_loop
                     }

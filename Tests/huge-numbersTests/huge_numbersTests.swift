@@ -589,6 +589,25 @@ extension huge_numbersTests {
         expected_result = HugeFloat("10.50")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("69").multiply_by_ten(1)
+        expected_result = HugeFloat("690")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("69").multiply_by_ten(-1)
+        expected_result = HugeFloat("-69")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+
+        result = HugeFloat("69").multiply_by_ten(-2)
+        expected_result = HugeFloat("-690")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("69.42").multiply_by_ten(3)
+        expected_result = HugeFloat("69420")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("69.42").multiply_by_ten(-3)
+        expected_result = HugeFloat("0.06942")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_division() {
         var result:HugeFloat = HugeFloat("60") / 90

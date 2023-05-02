@@ -163,13 +163,56 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         return description
     }
     
-    public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
-        var numbers:[UInt8] = integer.numbers
-        let decimals:[UInt8] = decimal?.value.numbers.reversed() ?? []
-        for i in 0..<amount {
-            numbers.insert(decimals.get(i) ?? 0, at: 0)
+    /// Optimized version of multiplication when multiplying by 10. Using this function also respects the decimal and remainder.
+    public func multiply_by_ten(_ amount: Int) -> HugeFloat {
+        if self == HugeFloat.zero {
+            return HugeFloat.zero
+        } else if decimal != nil {
+            return multiply_decimal_by_ten(amount)
+        } else if remainder != nil { // TODO: finish
+            return self
+        } else {
+            let is_negative:Bool = amount < 0
+            let target_amount:Int = is_negative ? abs(amount)-1 : amount
+            var numbers:[UInt8] = integer.numbers
+            for _ in 0..<target_amount {
+                numbers.insert(0, at: 0)
+            }
+            return HugeFloat(integer: HugeInt(is_negative: is_negative == !integer.is_negative, numbers), remainder: remainder)
         }
-        return HugeFloat(integer: HugeInt(is_negative: false, numbers))
+    }
+    public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
+        let is_negative:Bool = amount < 0
+        var numbers:[UInt8] = integer.numbers
+        var decimals:[UInt8]! = decimal?.value.numbers.reversed() ?? []
+        var remaining_decimals:HugeDecimal? = nil
+        if is_negative {
+            let absolute_amount:Int = abs(amount)
+            if integer.is_zero {
+                for _ in 0..<absolute_amount {
+                    decimals.append(0)
+                }
+            } else {
+                let numbers_count:Int = numbers.count
+                if absolute_amount >= numbers_count {
+                    decimals = decimals.reversed()
+                    decimals.append(contentsOf: numbers)
+                    numbers = []
+                    for _ in 0..<absolute_amount-numbers_count {
+                        decimals.append(0)
+                    }
+                }
+            }
+        } else {
+            for i in 0..<amount {
+                numbers.insert(decimals.get(i) ?? 0, at: 0)
+            }
+            decimals = nil
+        }
+        if decimals != nil {
+            remaining_decimals = HugeDecimal(value: HugeInt(is_negative: false, decimals))
+        }
+        return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimals)
     }
     
     public func divide_by(_ value: HugeFloat, precision: HugeInt) -> HugeFloat {
@@ -177,7 +220,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
     }
     
     public func to_radians() -> HugeFloat {
-        return self * 0.01745329252
+        return self * HugeFloat("0.01745329252")
     }
     public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithemtic
         return self * (180 / HugeFloat.pi_100)

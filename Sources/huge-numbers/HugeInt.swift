@@ -9,8 +9,11 @@ import Foundation
 
 // TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable, Codable {
+    /// 100 decimal places.
     public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
+    /// 6 decimal places.
     public static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
+    /// 15 decimal places.
     public static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
     
     public static var zero:HugeInt = HugeInt(is_negative: false, [])
@@ -82,19 +85,24 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public var description_literal : String {
         return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
+    /// Whether of not this huge integer equals zero.
     public var is_zero : Bool {
         return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
     }
+    /// Converts this huge integer to a `HugeFloat`.
     public var to_float : HugeFloat {
         return HugeFloat(integer: self)
     }
+    /// Converts this huge integer to a `HugeRemainder`.
     public var to_remainder : HugeRemainder {
         return HugeRemainder(dividend: self, divisor: HugeInt.one)
     }
+    /// Converts this huge integer to a native integer, if possible.
     public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
     }
     
+    /// Whether of not all the digits that represent this huge integer satisfy a predicate.
     public func all_digits_satisfy(_ transform: (UInt8) -> Bool) -> Bool {
         return numbers.allSatisfy(transform)
     }
@@ -119,12 +127,15 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return HugeInt(is_negative: false, array)
     }
     
-    /// - Warning: This is very resource intensive when using a big number.
+    /// - Warning: Very resource intensive when using a big number.
     public func get_all_factors() -> Set<HugeInt> {
         let maximum:HugeInt = (self / 2).quotient
         return get_factors(maximum: maximum)
     }
-    /// - Warning: This is very resource intensive when using a big number.
+    /// - Parameters:
+    ///     - maximum: the starting number
+    /// - Complexity: O(_n_ - 1) where _n_ is equal to the _maximum_ parameter.
+    /// - Warning: Very resource intensive when using a big number.
     public func get_factors(maximum: HugeInt) -> Set<HugeInt> {
         var maximum:HugeInt = maximum
         var array:Set<HugeInt> = [self]
@@ -136,7 +147,8 @@ public struct HugeInt : Hashable, Comparable, Codable {
         }
         return array
     }
-    /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
+    /// - Warning: This function assumes self is less than or equal to `integer`.
+    /// - Warning: Very resource intensive when using big numbers.
     public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
         let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = (get_all_factors(), integer.get_factors(maximum: self))
         let bigger_array:Set<HugeInt>, smaller_array:Set<HugeInt>
@@ -151,12 +163,12 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return array.isEmpty ? nil : array
     }
     
-    /// - Warning: This is very resource intensive when using a big number.
+    /// - Warning: Very resource intensive when using a big number.
     public func get_all_factors_parallel() async -> Set<HugeInt> {
         let maximum:HugeInt = (self / 2).quotient
         return await get_factors_parallel(maximum: maximum)
     }
-    /// - Warning: This is very resource intensive when using a big number.
+    /// - Warning: Very resource intensive when using a big number.
     public func get_factors_parallel(maximum: HugeInt) async -> Set<HugeInt> {
         let this:HugeInt = self
         var maximum:HugeInt = maximum
@@ -178,7 +190,8 @@ public struct HugeInt : Hashable, Comparable, Codable {
         })
         return factors
     }
-    /// - Warning: This assumes this number is less than or equal to the given number; can be very resource intensive when using big numbers.
+    /// - Warning: This function assumes self is less than or equal to the given number.
+    /// - Warning: Very resource intensive when using big numbers.
     public func get_shared_factors_parallel(_ integer: HugeInt) async -> Set<HugeInt>? {
         let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors_parallel(), integer.get_factors_parallel(maximum: self))
         let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
@@ -316,15 +329,17 @@ public extension HugeInt {
     static prefix func - (value: HugeInt) -> HugeInt {
         return HugeInt(is_negative: !value.is_negative, value.numbers)
     }
+    /// - Complexity: O(_n_ - 1) where _n_ equals this huge integer.
+    /// - Warning: Very resource intensive when using big numbers.
     func factorial() -> HugeInt {
         let one:HugeInt = HugeInt.one
-        var remaining_value:HugeInt = self
-        var value:HugeInt = self
+        var remaining_value:HugeInt = HugeInt(is_negative: false, numbers)
+        var value:HugeInt = remaining_value
         while remaining_value != one {
             remaining_value -= 1
             value *= remaining_value
         }
-        return value
+        return HugeInt(is_negative: is_negative, value.numbers)
     }
 }
 /*
@@ -455,6 +470,7 @@ internal extension HugeInt {
         return (result, left_is_bigger)
     }
     /// Finds the sum of two 8-bit number arrays.
+    /// - Complexity: O(_n_ + _m_) where _n_ equals `small_numbers` size and _m_ equals the amount of times a remainder has to be carried over.
     /// - Returns: the sum of the two arrays, in reverse order.
     static func add(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
         let array_count:Int = bigger_numbers.count
