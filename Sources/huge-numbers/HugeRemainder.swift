@@ -118,7 +118,7 @@ public struct HugeRemainder : Hashable, Comparable {
     }
     
     /// - Warning: Using this assumes the dividend is smaller than the divisor.
-    mutating func simplify_parallel() async {
+    public mutating func simplify_parallel() async {
         if divisor % dividend == HugeInt.zero {
             divisor = (divisor / dividend).quotient
             dividend = HugeInt.one

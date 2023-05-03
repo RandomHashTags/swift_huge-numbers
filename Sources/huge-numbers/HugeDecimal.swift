@@ -11,6 +11,7 @@ public struct HugeDecimal : Hashable, Comparable {
     
     public static var zero:HugeDecimal = HugeDecimal(value: HugeInt.zero)
     
+    /// The ``HugeInt`` that represents this decimal.
     public private(set) var value:HugeInt
     /// The infinitely repeating numbers, in reverse order.
     public private(set) var repeating_numbers:[UInt8]?
@@ -41,18 +42,21 @@ public struct HugeDecimal : Hashable, Comparable {
         }
     }
     
+    /// Returns a ``HugeRemainder`` in which the decimal is the _dividend_, and the divisor is _10 to the power of decimal length plus one_.
     public var to_remainder : HugeRemainder {
-        let divisor:String = "1" + (0..<value.length).map({ _ in "0" }).joined()
+        var divisor_numbers:[UInt8] = [UInt8].init(repeating: 0, count: value.length+1)
+        divisor_numbers[divisor_numbers.count-1] = 1
+        let divisor:HugeInt = HugeInt(is_negative: value.is_negative, divisor_numbers)
         return HugeRemainder(dividend: value, divisor: divisor)
     }
     
+    /// Returns the distance to the next whole number.
     public var distance_to_next_quotient : HugeDecimal {
         let value_numbers:[UInt8] = value.numbers.reversed()
         var numbers:[UInt8] = [UInt8].init(repeating: 0, count: value_numbers.count)
         let indices:Range<Int> = value_numbers.indices
         for index in indices {
-            let value_number:UInt8 = value_numbers[index]
-            numbers[index] = 9 - value_number
+            numbers[index] = 9 - value_numbers[index]
         }
         numbers[indices.last!] += 1
         return HugeDecimal(value: HugeInt(is_negative: false, numbers.reversed()))
@@ -116,7 +120,7 @@ public extension HugeDecimal {
     }
 }
 /*
- Misc
+ prefixes / postfixes
  */
 public extension HugeDecimal {
     static prefix func - (value: HugeDecimal) -> HugeDecimal {

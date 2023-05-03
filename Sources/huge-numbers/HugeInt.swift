@@ -89,11 +89,11 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public var is_zero : Bool {
         return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
     }
-    /// Converts this huge integer to a `HugeFloat`.
+    /// Converts this huge integer to a ``HugeFloat``.
     public var to_float : HugeFloat {
         return HugeFloat(integer: self)
     }
-    /// Converts this huge integer to a `HugeRemainder`.
+    /// Converts this huge integer to a ``HugeRemainder``.
     public var to_remainder : HugeRemainder {
         return HugeRemainder(dividend: self, divisor: HugeInt.one)
     }
@@ -841,6 +841,9 @@ private func get_closest_sqrt_number(_ number: Int, starting_number: Int = 4) ->
     }
     return 0
 }
+/*
+ To the power of x
+ */
 public extension HugeInt {
     func squared() -> HugeInt {
         return to_the_power_of(2)
@@ -849,7 +852,10 @@ public extension HugeInt {
         return to_the_power_of(3)
     }
     
-    /// Multiply this number by itself _x_ amount of times.
+    /// Returns a ``HugeInt`` taken to a given power.
+    /// - Complexity: O(n) where _n_ equals _x_.
+    /// - Parameters:
+    ///     - x: the amount of times to multiply self by self.
     func to_the_power_of(_ x: UInt64) -> HugeInt {
         var result:HugeInt = self
         for _ in 1..<x {

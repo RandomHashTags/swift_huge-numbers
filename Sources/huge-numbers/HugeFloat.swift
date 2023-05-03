@@ -542,6 +542,12 @@ public extension HugeFloat {
 /*
  Square root
  */
+/*
+ To the power of x
+ */
+public func pow(_ left: HugeFloat, right: UInt64) -> HugeFloat {
+    return left.to_the_power_of(right)
+}
 public extension HugeFloat {
     func squared() -> HugeFloat {
         return to_the_power_of(2)
@@ -550,7 +556,10 @@ public extension HugeFloat {
         return to_the_power_of(3)
     }
     
-    /// Multiply this number by itself _x_ amount of times.
+    /// Returns a ``HugeFloat`` taken to a given power.
+    /// - Complexity: O(n) where _n_ equals _x_.
+    /// - Parameters:
+    ///     - x: the amount of times to multiply self by self.
     func to_the_power_of(_ x: UInt64) -> HugeFloat {
         var result:HugeFloat = self
         for _ in 1..<x {

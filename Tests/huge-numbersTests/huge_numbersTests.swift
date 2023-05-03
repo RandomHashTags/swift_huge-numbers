@@ -792,6 +792,10 @@ extension huge_numbersTests {
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
         XCTAssert(result.description.elementsEqual(expected_result.description), "test_decimal;result=\(result);expected_result=\(expected_result)")
         
+        remainder = HugeDecimal("124").to_remainder
+        var expected_remainder:HugeRemainder = HugeRemainder(dividend: "124", divisor: "1000")
+        XCTAssert(remainder == expected_remainder, "test_decimal;remainder=\(result);expected_remainder=\(expected_remainder)")
+        
         result = HugeDecimal("1234").distance_to_next_quotient
         expected_result = HugeDecimal("8766")
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
