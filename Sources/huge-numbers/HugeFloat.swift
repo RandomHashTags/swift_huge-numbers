@@ -545,7 +545,7 @@ public extension HugeFloat {
 public extension HugeFloat {
     /// - Parameters:
     ///     - amount: how many times to multiply by itself.
-    func squared(amount: UInt64 = 2) -> HugeFloat {
+    func squared(amount: UInt64 = 1) -> HugeFloat {
         var result:HugeFloat = self
         for _ in 0..<amount {
             result *= result
