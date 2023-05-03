@@ -238,6 +238,7 @@ extension huge_numbersTests {
         test_int_factorial()
         test_int_percent()
         test_int_square_root()
+        test_int_to_the_power_of()
     }
     private func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -437,6 +438,19 @@ extension huge_numbersTests {
         result = sqrt(integer)
         expected_result = HugeFloat("0")
         XCTAssert(result == expected_result, "test_int_square_root;result=\(result);expected_result=\(expected_result)")
+    }
+    private func test_int_to_the_power_of() {
+        var result:HugeInt = HugeInt("2").squared()
+        var expected_result:HugeInt = HugeInt("4")
+        XCTAssert(result == expected_result, "test_int_to_the_power_of;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeInt("3").cubed()
+        expected_result = HugeInt("27")
+        XCTAssert(result == expected_result, "test_int_to_the_power_of;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeInt("5").to_the_power_of(5)
+        expected_result = HugeInt("3125")
+        XCTAssert(result == expected_result, "test_int_to_the_power_of;result=\(result);expected_result=\(expected_result)")
     }
 }
 

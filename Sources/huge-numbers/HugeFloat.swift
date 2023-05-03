@@ -543,12 +543,18 @@ public extension HugeFloat {
  Square root
  */
 public extension HugeFloat {
-    /// - Parameters:
-    ///     - amount: how many times to multiply by itself.
-    func squared(amount: UInt64 = 1) -> HugeFloat {
+    func squared() -> HugeFloat {
+        return to_the_power_of(2)
+    }
+    func cubed() -> HugeFloat {
+        return to_the_power_of(3)
+    }
+    
+    /// Multiply this number by itself _x_ amount of times.
+    func to_the_power_of(_ x: UInt64) -> HugeFloat {
         var result:HugeFloat = self
-        for _ in 0..<amount {
-            result *= result
+        for _ in 1..<x {
+            result *= self
         }
         return result
     }

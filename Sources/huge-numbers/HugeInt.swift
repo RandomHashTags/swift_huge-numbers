@@ -842,12 +842,18 @@ private func get_closest_sqrt_number(_ number: Int, starting_number: Int = 4) ->
     return 0
 }
 public extension HugeInt {
-    /// - Parameters:
-    ///     - amount: how many times to multiply by itself.
-    func squared(amount: UInt64 = 1) -> HugeInt {
+    func squared() -> HugeInt {
+        return to_the_power_of(2)
+    }
+    func cubed() -> HugeInt {
+        return to_the_power_of(3)
+    }
+    
+    /// Multiply this number by itself _x_ amount of times.
+    func to_the_power_of(_ x: UInt64) -> HugeInt {
         var result:HugeInt = self
-        for _ in 0..<amount {
-            result *= result
+        for _ in 1..<x {
+            result *= self
         }
         return result
     }
