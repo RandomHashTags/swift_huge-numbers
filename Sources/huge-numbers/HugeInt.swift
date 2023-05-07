@@ -85,7 +85,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public var description_literal : String {
         return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
-    /// Whether of not this huge integer equals zero.
+    /// Whether or not this huge integer equals zero.
     public var is_zero : Bool {
         return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
     }
@@ -102,7 +102,7 @@ public struct HugeInt : Hashable, Comparable, Codable {
         return T.init(description)
     }
     
-    /// Whether of not all the digits that represent this huge integer satisfy a predicate.
+    /// Whether or not all the digits that represent this huge integer satisfy a predicate.
     public func all_digits_satisfy(_ transform: (UInt8) -> Bool) -> Bool {
         return numbers.allSatisfy(transform)
     }

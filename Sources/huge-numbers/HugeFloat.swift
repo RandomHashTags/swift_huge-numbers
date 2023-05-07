@@ -163,7 +163,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         return description
     }
     
-    /// Whether of not this huge float equals zero.
+    /// Whether or not this huge float equals zero.
     public var is_zero : Bool {
         return integer.is_zero && remainder == nil && (decimal == nil || decimal!.value.is_zero)
     }
