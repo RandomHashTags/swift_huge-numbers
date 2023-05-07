@@ -163,6 +163,11 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         return description
     }
     
+    /// Whether of not this huge float equals zero.
+    public var is_zero : Bool {
+        return integer.is_zero && remainder == nil && (decimal == nil || decimal!.value.is_zero)
+    }
+    
     /// Optimized version of multiplication when multiplying by 10. Using this function also respects the decimal and remainder.
     public func multiply_by_ten(_ amount: Int) -> HugeFloat {
         if self == HugeFloat.zero {
