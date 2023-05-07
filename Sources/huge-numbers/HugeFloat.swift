@@ -208,9 +208,13 @@ public struct HugeFloat : Hashable, Comparable, Codable {
                     }
                 } else {
                     for _ in 0..<absolute_amount {
+                        let target_number:UInt8 = numbers.first!
+                        decimals.append(target_number)
                         numbers.removeFirst()
                     }
-                    decimals = nil
+                    while decimals.last == 0 {
+                        decimals.removeLast()
+                    }
                 }
             }
         } else {
@@ -219,7 +223,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
             }
             decimals = nil
         }
-        if decimals != nil {
+        if decimals != nil && !decimals.isEmpty {
             remaining_decimals = HugeDecimal(value: HugeInt(is_negative: false, decimals))
         }
         return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimals)

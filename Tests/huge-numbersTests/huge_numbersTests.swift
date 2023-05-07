@@ -639,6 +639,13 @@ extension huge_numbersTests {
         expected_result = HugeFloat("1")
         XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("999999999995.8").multiply_decimal_by_ten(-9)
+        expected_result = HugeFloat("999.9999999958")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("999999999905.8").multiply_decimal_by_ten(-9)
+        expected_result = HugeFloat("999.9999999058")
+        XCTAssert(result == expected_result, "test_float_multiplication;result=\(result);expected_result=\(expected_result)")
     }
     private func test_float_division() {
         var result:HugeFloat = HugeFloat("60") / 90
