@@ -378,14 +378,15 @@ internal extension HugeFloat {
         let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
         if left_decimal >= right_decimal {
             target_decimal = (left_decimal - right_decimal).result
-        } else if quotient.is_zero {
+        } else if left.is_zero || quotient.is_zero {
             quotient.is_negative = true
             target_decimal = right_decimal
         } else if quotient == left.integer {
             quotient -= HugeInt.one
             target_decimal = (left_decimal + right_decimal.distance_to_next_quotient).result
         } else {
-            target_decimal = (left_decimal + right_decimal).result
+            quotient -= HugeInt.one
+            target_decimal = right_decimal.distance_to_next_quotient
         }
         return HugeFloat(integer: quotient, decimal: target_decimal)
     }

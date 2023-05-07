@@ -550,6 +550,9 @@ extension huge_numbersTests {
         expected_result = HugeFloat("2.13")
         XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("1000000000000") - HugeFloat("4.2")
+        expected_result = HugeFloat("999999999995.8")
+        XCTAssert(result == expected_result, "test_float_subtraction;result=\(result);expected_result=\(expected_result)")
         
         result = HugeFloat("3r2/10")
         result -= HugeFloat("0r9/10")
