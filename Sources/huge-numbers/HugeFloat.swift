@@ -208,7 +208,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
                     }
                 } else {
                     for _ in 0..<absolute_amount {
-                        let target_number:UInt8 = numbers.first!
+                        let target_number:UInt8 = numbers[0]
                         decimals.append(target_number)
                         numbers.removeFirst()
                     }

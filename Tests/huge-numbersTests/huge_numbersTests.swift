@@ -132,10 +132,11 @@ extension huge_numbersTests {
             timings.append(nanoseconds)
         }
         timings = timings.sorted(by: { $0 < $1 })
-        let minimum:Int64 = timings.first!, maximum:Int64 = timings.last!
-        let median:Int64 = timings[timings.count/2]
+        let timings_count:Int = timings.count
+        let minimum:Int64 = timings[0], maximum:Int64 = timings[timings_count-1]
+        let median:Int64 = timings[timings_count/2]
         let sum:Int64 = timings.reduce(0, +)
-        let average:Int64 = Int64( Double(sum) / Double(timings.count) )
+        let average:Int64 = Int64( Double(sum) / Double(timings_count) )
         if will_print {
             let key:String = key + (1...(80-key.count)).map({ _ in " " }).joined()
             
