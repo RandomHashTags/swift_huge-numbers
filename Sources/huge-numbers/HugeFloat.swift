@@ -165,7 +165,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
     
     /// Whether or not this huge float equals zero.
     public var is_zero : Bool {
-        return integer.is_zero && remainder == nil && (decimal == nil || decimal!.value.is_zero)
+        return integer.is_zero && (remainder == nil || remainder!.is_zero) && (decimal == nil || decimal!.value.is_zero)
     }
     
     /// Optimized version of multiplication when multiplying by 10. Using this function also respects the decimal and remainder.
@@ -236,7 +236,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
     public func to_radians() -> HugeFloat {
         return self * HugeFloat("0.01745329252")
     }
-    public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithemtic
+    public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithmetic
         return self * (180 / HugeFloat.pi_100)
     }
 }
@@ -261,14 +261,70 @@ public extension HugeFloat {
 public extension HugeFloat {
     static func < (left: HugeFloat, right: HugeFloat) -> Bool {
         guard left.is_negative == right.is_negative else {
-            return left.is_negative && !right.is_negative
+            return left.is_negative
         }
-        let left_pre_decimal_number:HugeInt = left.integer, right_pre_decimal_number:HugeInt = right.integer
-        return left_pre_decimal_number < right_pre_decimal_number || left_pre_decimal_number == right_pre_decimal_number && (left.decimal?.is_less_than(right.decimal) ?? left.remainder?.is_less_than(right.remainder) ?? true)
+        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        guard left_integer == right_integer else {
+            return left_integer < right_integer
+        }
+        if left.decimal != nil || right.decimal != nil {
+            return (left.decimal ?? HugeDecimal.zero).is_less_than(right.decimal)
+        } else if left.remainder != nil || right.remainder != nil {
+            return (left.remainder ?? HugeRemainder.zero).is_less_than(right.remainder)
+        }
+        return false
+    }
+    static func <= (left: HugeFloat, right: HugeFloat) -> Bool {
+        guard left.is_negative == right.is_negative else {
+            return left.is_negative
+        }
+        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        guard left_integer == right_integer else {
+            return left_integer <= right_integer
+        }
+        if left.decimal != nil || right.decimal != nil {
+            return (left.decimal ?? HugeDecimal.zero).is_less_than_or_equal_to(right.decimal)
+        } else if left.remainder != nil || right.remainder != nil {
+            return (left.remainder ?? HugeRemainder.zero).is_less_than_or_equal_to(right.remainder)
+        }
+        return true
+    }
+}
+public extension HugeFloat {
+    static func > (left: HugeFloat, right: HugeFloat) -> Bool {
+        guard left.is_negative == right.is_negative else {
+            return !left.is_negative
+        }
+        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        guard left_integer == right_integer else {
+            return left_integer > right_integer
+        }
+        if left.decimal != nil || right.decimal != nil {
+            return (left.decimal ?? HugeDecimal.zero).is_greater_than(right.decimal)
+        } else if left.remainder != nil || right.remainder != nil {
+            return (left.remainder ?? HugeRemainder.zero).is_greater_than(right.remainder)
+        }
+        return false
+    }
+    
+    static func >= (left: HugeFloat, right: HugeFloat) -> Bool {
+        guard left.is_negative == right.is_negative else {
+            return !left.is_negative
+        }
+        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        guard left_integer == right_integer else {
+            return left_integer >= right_integer
+        }
+        if left.decimal != nil || right.decimal != nil {
+            return (left.decimal ?? HugeDecimal.zero).is_greater_than_or_equal_to(right.decimal)
+        } else if left.remainder != nil || right.remainder != nil {
+            return (left.remainder ?? HugeRemainder.zero).is_greater_than_or_equal_to(right.remainder)
+        }
+        return true
     }
 }
 /*
- prefixes
+ prefixes / postfixes
  */
 public extension HugeFloat {
     static prefix func - (value: HugeFloat) -> HugeFloat {
@@ -510,6 +566,10 @@ public extension HugeFloat {
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     static func / (left: any FloatingPoint, right: HugeFloat) -> HugeFloat {
         return HugeFloat(left) / right
+    }
+    
+    static func /= (left: inout HugeFloat, right: HugeFloat) {
+        left = left / right
     }
 }
 internal extension HugeFloat {

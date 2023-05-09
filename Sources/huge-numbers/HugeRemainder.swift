@@ -31,7 +31,7 @@ public struct HugeRemainder : Hashable, Comparable {
     }
     
     public var is_zero : Bool {
-        return dividend == HugeInt.zero
+        return dividend.is_zero
     }
     public var to_int : (quotient: HugeInt, remainder: HugeRemainder?) {
         return dividend / divisor

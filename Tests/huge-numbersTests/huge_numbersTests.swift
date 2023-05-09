@@ -465,6 +465,17 @@ extension huge_numbersTests {
         XCTAssert(float.description.elementsEqual("-3"), "test_float;float=\(float);float.description=" + float.description)
         XCTAssert(float.description_simplified.elementsEqual("-3"), "test_float;float=\(float);float.description_simplified=" + float.description_simplified)
         
+        let five:HugeFloat = HugeFloat("5")
+        XCTAssert(!(five < five))
+        XCTAssert(!(five < -five))
+        XCTAssert(-five < five)
+        
+        XCTAssert(five <= five)
+        XCTAssert(five >= five)
+        XCTAssert(-five <= five)
+        XCTAssert(!(-five >= five))
+        XCTAssert(five >= -five)
+        
         test_float_addition()
         test_float_subtraction()
         test_float_multiplication()
