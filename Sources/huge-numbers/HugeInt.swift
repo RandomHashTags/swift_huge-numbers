@@ -706,6 +706,7 @@ internal extension HugeInt {
         
         var included_digits:Int = divisor_length
         var quotient_index:Int = 0
+        var last_subtracted_amount:HugeInt! = nil
         while remaining_dividend >= divisor {
             var divisible_dividend_numbers:[UInt8] = [UInt8].init(repeating: 0, count: included_digits)
             let remaining_dividend_numbers_reversed:[UInt8] = remaining_dividend.numbers.reversed()
@@ -717,23 +718,23 @@ internal extension HugeInt {
             var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
             if divisible_dividend >= divisor {
                 divisible_dividend -= divisor
-                var subtracted_amount:HugeInt = divisor
+                last_subtracted_amount = divisor
                 quotient_numbers[quotient_index] = 1
                 while divisible_dividend >= divisor {
                     quotient_numbers[quotient_index] += 1
                     divisible_dividend -= divisor
-                    subtracted_amount += divisor
+                    last_subtracted_amount += divisor
                 }
                 quotient_index += 1
                 let remaining_dividend_numbers:[UInt8] = remaining_dividend.numbers
                 let remaining_dividend_numbers_count:Int = remaining_dividend_numbers.count
                 if remaining_dividend_numbers[remaining_dividend_numbers_count-1] < 10 {
                     for _ in included_digits..<remaining_dividend_numbers_count {
-                        subtracted_amount.numbers.insert(0, at: 0)
+                        last_subtracted_amount.numbers.insert(0, at: 0)
                     }
                 }
                 
-                var bruh:[UInt8] = HugeInt.subtract(bigger_numbers: remaining_dividend_numbers, smaller_numbers: subtracted_amount.numbers)
+                var bruh:[UInt8] = HugeInt.subtract(bigger_numbers: remaining_dividend_numbers, smaller_numbers: last_subtracted_amount.numbers)
                 for _ in 0..<included_digits {
                     if bruh.last == 0 {
                         bruh.removeLast()
@@ -754,24 +755,20 @@ internal extension HugeInt {
                 included_digits += 1
             }
         }
-        while quotient_numbers.last == 255 {
-            quotient_numbers.removeLast()
-        }
-        
-        var quotient:HugeInt = HugeInt(is_negative: is_negative, quotient_numbers.reversed())
-        quotient.is_negative = is_negative
-        
         let remainder:HugeRemainder?
-        if remaining_dividend == HugeInt.zero {
+        if remaining_dividend.is_zero {
             remainder = nil
         } else {
             remainder = HugeRemainder(dividend: remaining_dividend, divisor: divisor)
-            let proof:HugeInt = quotient * divisor
-            if proof != dividend && ((proof.is_negative ? proof - remaining_dividend : proof + remaining_dividend) != dividend) { // TODO: find more efficient alternative
-                quotient.numbers.insert(0, at: 0)
+            if last_subtracted_amount.numbers.last == divisor.numbers.last && last_subtracted_amount.numbers.count == dividend_length && quotient_index < result_count {
+                quotient_numbers[quotient_index] = 0
             }
         }
-        return (quotient, remainder)
+        
+        while quotient_numbers.last == 255 {
+            quotient_numbers.removeLast()
+        }
+        return (HugeInt(is_negative: is_negative, quotient_numbers.reversed()), remainder)
     }
 }
 /*

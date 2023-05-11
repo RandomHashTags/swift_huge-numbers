@@ -57,11 +57,11 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         self.init(integer: HugeInt(integer), decimal: decimal, remainder: remainder)
     }
     
-    public init(_ string: String) {
-        self.init(string: string)
+    public init(_ string: String, remove_trailing_zeros: Bool = true) {
+        self.init(string: string, remove_trailing_zeros: remove_trailing_zeros)
     }
     /// This init is only here because Xcode cannot link the ambiguous version.
-    public init(string: String) {
+    public init(string: String, remove_trailing_zeros: Bool = true) {
         let values:[Substring] = string.split(separator: ".")
         let target_pre_decimal_number:Substring = values[0]
         var target_post_decimal_number:Substring = values.get(1) ?? "0"
@@ -69,7 +69,9 @@ public struct HugeFloat : Hashable, Comparable, Codable {
             let is_negative:Bool = target_pre_decimal_number[target_pre_decimal_number.startIndex] == "-"
             let exponent_string:Substring = target_post_decimal_number[exponent_range.upperBound..<target_post_decimal_number.endIndex]
             target_post_decimal_number = target_post_decimal_number[target_post_decimal_number.startIndex..<exponent_range.lowerBound]
-            target_post_decimal_number.remove_trailing_zeros()
+            if remove_trailing_zeros {
+                target_post_decimal_number.remove_trailing_zeros()
+            }
             let exponent:Int = Int(exponent_string)!
             if exponent < 0 {
                 integer = HugeInt(is_negative: is_negative, [])
@@ -97,9 +99,11 @@ public struct HugeFloat : Hashable, Comparable, Codable {
             remainder = HugeRemainder(dividend: HugeInt(remainder_string[0]), divisor: HugeInt(remainder_string[1]))
         } else {
             integer = HugeInt(target_pre_decimal_number)
-            target_post_decimal_number.remove_trailing_zeros()
-            let decimal_value:HugeInt = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
-            decimal = decimal_value.is_zero ? nil : HugeDecimal(value: decimal_value)
+            if remove_trailing_zeros {
+                target_post_decimal_number.remove_trailing_zeros()
+            }
+            let decimal_value:HugeDecimal = HugeDecimal(target_post_decimal_number, remove_leading_zeros: false)
+            decimal = decimal_value.is_zero ? nil : decimal_value
         }
     }
     

@@ -25,11 +25,11 @@ extension huge_numbersTests {
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
         
-        /*let left_number:[UInt8] = [1, 2, 3, 4, 5], right_number:[UInt8] = [5, 4, 3, 2, 1]
-        try await benchmark_compare_is_faster(key1: "HugeInt.add1", {
-            let _ = HugeInt.add(bigger_numbers: left_number, smaller_numbers: right_number)
-        }, key2: "HugeInt.add2", code2: {
-            let _ = HugeInt.add2(bigger_numbers: left_number, smaller_numbers: right_number)
+        /*let dividend:HugeInt = HugeInt("41"), divisor:HugeInt = HugeInt("4")
+        try await benchmark_compare_is_faster(key1: "HugeInt.divide1", {
+            let _ = HugeInt.divide(dividend: dividend, divisor: divisor)
+        }, key2: "HugeInt.divide2", code2: {
+            let _ = HugeInt.divide2(dividend: dividend, divisor: divisor)
         })*/
         
         try await test_benchmark_integer_addition()
@@ -86,7 +86,7 @@ extension huge_numbersTests {
     @available(macOS 13.0, *)
     private func test_benchmark_float_addition() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
-        let left:HugeFloat = HugeFloat(left_native), right:HugeFloat = HugeFloat(right_native)
+        let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.add", {
             let _:HugeFloat = left + right
         }, key2: "Float.add", code2: {
@@ -96,7 +96,7 @@ extension huge_numbersTests {
     @available(macOS 13.0, *)
     private func test_benchmark_float_subtraction() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
-        let left:HugeFloat = HugeFloat(left_native), right:HugeFloat = HugeFloat(right_native)
+        let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.subtract", {
             let _:HugeFloat = left - right
         }, key2: "Float.subtract", code2: {
@@ -106,7 +106,7 @@ extension huge_numbersTests {
     @available(macOS 13.0, *)
     private func test_benchmark_float_multiplication() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
-        let left:HugeFloat = HugeFloat(left_native), right:HugeFloat = HugeFloat(right_native)
+        let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.multiply", {
             let _:HugeFloat = left * right
         }, key2: "Float.multiply", code2: {
@@ -116,8 +116,8 @@ extension huge_numbersTests {
     @available(macOS 13.0, *)
     private func test_benchmark_float_division() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
-        let left:HugeFloat = HugeFloat(left_native), right:HugeFloat = HugeFloat(right_native)
-        let precision:HugeInt = HugeInt.float_precision// HugeInt("100")
+        let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
+        let precision:HugeInt = HugeInt("100")
         try await benchmark_compare_is_faster(key1: "HugeFloat.divide", {
             let _:HugeFloat = left.divide_by(right, precision: precision)
         }, key2: "Float.divide", code2: {
@@ -128,7 +128,7 @@ extension huge_numbersTests {
 
 extension huge_numbersTests {
     @available(macOS 13.0, iOS 16.0, *)
-    private func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
+    private func benchmark(iteration_count: Int = 10, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
         let clock:ContinuousClock = ContinuousClock()
         let _:Duration = try await clock.measure(code)
         var timings:[Int64] = [Int64]()
@@ -372,8 +372,7 @@ extension huge_numbersTests {
         XCTAssert(quotient == HugeInt("500") && remainder == nil, "test_int_division;quotient=\(quotient);remainder=\(String(describing: remainder))")
     }
     private func test_int_factorial() {
-        var integer:HugeInt = HugeInt("5")
-        var result:HugeInt = integer.factorial()
+        var result:HugeInt = HugeInt("5").factorial()
         var expected_result:HugeInt = HugeInt("120")
         XCTAssert(result == expected_result, "test_int_factorial;result=\(result);expected_result=\(expected_result)")
     }
@@ -686,6 +685,10 @@ extension huge_numbersTests {
         
         result = HugeFloat("1000") / HugeFloat("2")
         expected_result = HugeFloat("500")
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
+        result = HugeFloat("12345.678").divide_by(HugeFloat("54321.012"), precision: HugeInt("100"))
+        expected_result = HugeFloat("0.2272726067769135081651277041745834926639437424324863461674830358462393889127102418489552440591497080", remove_trailing_zeros: false)
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
     }
 }

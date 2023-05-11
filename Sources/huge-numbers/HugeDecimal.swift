@@ -20,7 +20,7 @@ public struct HugeDecimal : Hashable, Comparable {
         self.value = value
         self.repeating_numbers = repeating_numbers
     }
-    public init(_ string: String, remove_leading_zeros: Bool = true, repeating_numbers: [UInt8]? = nil) {
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true, repeating_numbers: [UInt8]? = nil) {
         self.init(value: HugeInt(string, remove_leading_zeros: remove_leading_zeros), repeating_numbers: repeating_numbers)
     }
     
@@ -40,6 +40,11 @@ public struct HugeDecimal : Hashable, Comparable {
         } else {
             return value.description_literal
         }
+    }
+    
+    /// Whether or not this huge decimal equals zero.
+    public var is_zero : Bool {
+        return value.is_zero && (repeating_numbers == nil || repeating_numbers!.allSatisfy({ $0 == 0 }))
     }
     
     /// Returns a ``HugeRemainder`` in which the decimal is the _dividend_, and the divisor is _10 to the power of decimal length plus one_.
