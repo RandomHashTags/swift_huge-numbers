@@ -11,7 +11,6 @@ import XCTest
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
         //try await test_benchmarks()
-        //return;
         
         await test_int()
         test_float()
@@ -25,6 +24,15 @@ final class huge_numbersTests: XCTestCase {
 extension huge_numbersTests {
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
+        
+        /*let left_number:[UInt8] = [0, 0, 5, 5, 6], right_number:[UInt8] = [0, 0, 3, 1, 6]
+        try await benchmark_compare_is_faster(key1: "get_bigger_numbers1", {
+            let _ = HugeInt.get_bigger_numbers(left: left_number, right: right_number)
+        }, key2: "get_bigger_numbers2", code2: {
+            let _ = HugeInt.get_bigger_numbers2(left: left_number, right: right_number)
+        })
+        return;*/
+        
         try await test_benchmark_integer_addition()
         try await test_benchmark_integer_subtraction()
         try await test_benchmark_integer_multiplication()

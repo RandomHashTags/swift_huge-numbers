@@ -373,10 +373,13 @@ internal extension HugeInt {
         if left_count == right_count {
             let reversed_left:[UInt8] = left.reversed(), reversed_right:[UInt8] = right.reversed()
             for index in 0..<left_count {
-                if reversed_right[index] > reversed_left[index] {
-                    return (right, left, false)
-                } else if reversed_left[index] > reversed_right[index] {
-                    return (left, right, true)
+                let left_number:UInt8 = reversed_left[index], right_number:UInt8 = reversed_right[index]
+                if left_number != right_number {
+                    if left_number > right_number {
+                        return (left, right, true)
+                    } else {
+                        return (right, left, false)
+                    }
                 }
             }
             return (right, left, false)
