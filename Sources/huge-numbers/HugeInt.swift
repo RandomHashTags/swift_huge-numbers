@@ -476,31 +476,31 @@ internal extension HugeInt {
     /// - Complexity: O(_n_ + _m_) where _n_ equals `small_numbers` size and _m_ equals the amount of times a remainder has to be carried over.
     /// - Returns: the sum of the two arrays, in reverse order.
     static func add(bigger_numbers: [UInt8], smaller_numbers: [UInt8]) -> [UInt8] {
-        let array_count:Int = bigger_numbers.count
         let smaller_numbers_length:Int = smaller_numbers.count
-        let result_count:Int = array_count + 1
+        let result_count:Int = bigger_numbers.count + 1
         var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
         
-        var index:Int = 0
+        var index:Int = 0, remainder:UInt8 = 0
         while index < smaller_numbers_length {
-            let new_value:UInt8 = (bigger_numbers.get(index) ?? 0) + smaller_numbers[index]
-            result[index] = new_value
-            
-            while index < result_count && result[index] > 9 {
-                let original_value:UInt8 = result[index]
-                let remainder:UInt8 = original_value / 10
-                result[index] -= (remainder * 10)
-                index += 1
-                
-                let existing_value:UInt8 = bigger_numbers.get(index) ?? 0
-                let adding_value:UInt8 = smaller_numbers.get(index) ?? 0
-                let new_value:UInt8 = existing_value + adding_value + remainder
-                result[index] = new_value
+            var new_value:UInt8 = smaller_numbers[index] + (bigger_numbers.get(index) ?? 0) + remainder
+            if new_value > 9 {
+                new_value -= 10
+                remainder = 1
+            } else {
+                remainder = 0
             }
+            result[index] = new_value
             index += 1
         }
+        if remainder != 0 {
+            result[index] = remainder
+        }
         while index < result_count-1 {
-            result[index] = bigger_numbers[index]
+            result[index] += bigger_numbers[index]
+            if result[index] > 9 {
+                result[index] -= 10
+                result[index+1] += 1
+            }
             index += 1
         }
         return result

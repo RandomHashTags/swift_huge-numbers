@@ -25,13 +25,12 @@ extension huge_numbersTests {
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
         
-        /*let left_number:[UInt8] = [0, 0, 5, 5, 6], right_number:[UInt8] = [0, 0, 3, 1, 6]
-        try await benchmark_compare_is_faster(key1: "get_bigger_numbers1", {
-            let _ = HugeInt.get_bigger_numbers(left: left_number, right: right_number)
-        }, key2: "get_bigger_numbers2", code2: {
-            let _ = HugeInt.get_bigger_numbers2(left: left_number, right: right_number)
-        })
-        return;*/
+        /*let left_number:[UInt8] = [1, 2, 3, 4, 5], right_number:[UInt8] = [5, 4, 3, 2, 1]
+        try await benchmark_compare_is_faster(key1: "HugeInt.add1", {
+            let _ = HugeInt.add(bigger_numbers: left_number, smaller_numbers: right_number)
+        }, key2: "HugeInt.add2", code2: {
+            let _ = HugeInt.add2(bigger_numbers: left_number, smaller_numbers: right_number)
+        })*/
         
         try await test_benchmark_integer_addition()
         try await test_benchmark_integer_subtraction()
@@ -118,8 +117,9 @@ extension huge_numbersTests {
     private func test_benchmark_float_division() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat(left_native), right:HugeFloat = HugeFloat(right_native)
+        let precision:HugeInt = HugeInt.float_precision// HugeInt("100")
         try await benchmark_compare_is_faster(key1: "HugeFloat.divide", {
-            let _:HugeFloat = left.divide_by(right, precision: HugeInt.float_precision)
+            let _:HugeFloat = left.divide_by(right, precision: precision)
         }, key2: "Float.divide", code2: {
             let _:Float = left_native / right_native
         })
