@@ -34,10 +34,13 @@ The tables below display the nanoseconds longer it took this library to calculat
 |Version      |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
 |:------------|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|
 |1.0.6        |8237502387529357 |397653549738     |~2,800           |~2,400           |~43,000\*        |~225,000         |
+|1.0.13       |8237502387529357 |397653549738     |~2,450           |~2,350           |~38,100\*        |~208,700         |
 #### `HugeFloat`
 |Version      |Precision        |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
 |:------------|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|
 |1.0.6        |100              |12345.678        |54321.012        |~8,200           |~8,300           |~24,000          |~13,000,000      |
+|1.0.13       |100              |12345.678        |54321.012        |~8,100           |~8,400           |~22,500          |~9,306,000       |
+|1.0.13       |6                |12345.678        |54321.012        |~8,000           |~8,300           |~22,000          |~410,000         |
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.
