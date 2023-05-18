@@ -139,11 +139,12 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public func get_factors(maximum: HugeInt) -> Set<HugeInt> {
         var maximum:HugeInt = maximum
         var array:Set<HugeInt> = [self]
-        while maximum >= 2 {
+        let two:HugeInt = HugeInt(is_negative: false, [2]), one:HugeInt = HugeInt.one
+        while maximum >= two {
             if self % maximum == HugeInt.zero {
                 array.insert(maximum)
             }
-            maximum -= 1
+            maximum -= one
         }
         return array
     }
@@ -172,13 +173,14 @@ public struct HugeInt : Hashable, Comparable, Codable {
     public func get_factors_parallel(maximum: HugeInt) async -> Set<HugeInt> {
         let this:HugeInt = self
         var maximum:HugeInt = maximum
+        let two:HugeInt = HugeInt(is_negative: false, [2]), one:HugeInt = HugeInt.one
         let factors:Set<HugeInt> = await withTaskGroup(of: HugeInt?.self, body: { group in
-            while maximum >= 2 {
+            while maximum >= two {
                 let target_number:HugeInt = maximum
                 group.addTask {
                     return this % target_number == HugeInt.zero ? target_number : nil
                 }
-                maximum -= 1
+                maximum -= one
             }
             var array:Set<HugeInt> = [this]
             for await integer in group {

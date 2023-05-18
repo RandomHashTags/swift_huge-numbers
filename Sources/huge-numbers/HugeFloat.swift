@@ -399,7 +399,7 @@ internal extension HugeFloat {
         } else if left.remainder != nil {
             target_remainder = left.remainder! + (right.remainder ?? HugeRemainder.zero)
         }
-        if target_decimal == HugeDecimal.zero || target_decimal?.value.is_zero ?? false {
+        if target_decimal?.is_zero ?? false {
             target_decimal = nil
         }
         return HugeFloat(integer: target_quotient, decimal: target_decimal, remainder: target_remainder)
