@@ -691,6 +691,10 @@ extension huge_numbersTests {
         expected_result = HugeFloat("500")
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("3066") / HugeFloat("3840")
+        expected_result = HugeFloat(integer: HugeInt.zero, remainder: HugeRemainder(dividend: "3066", divisor: "3840"))
+        XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+        
         result = HugeFloat("12345.678").divide_by(HugeFloat("54321.012"), precision: HugeInt("100"))
         expected_result = HugeFloat("0.2272726067769135081651277041745834926639437424324863461674830358462393889127102418489552440591497080", remove_trailing_zeros: false)
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
