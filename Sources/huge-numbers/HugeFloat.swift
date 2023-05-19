@@ -216,7 +216,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
                         decimals.append(target_number)
                         numbers.removeFirst()
                     }
-                    while decimals.last == 0 {
+                    while decimals.first == 0 {
                         decimals.removeLast()
                     }
                 }
