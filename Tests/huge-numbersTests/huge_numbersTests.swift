@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import huge_numbers
+import huge_numbers
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
@@ -128,7 +128,7 @@ extension huge_numbersTests {
 
 extension huge_numbersTests {
     @available(macOS 13.0, iOS 16.0, *)
-    private func benchmark(iteration_count: Int = 10, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
+    private func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
         let clock:ContinuousClock = ContinuousClock()
         let _:Duration = try await clock.measure(code)
         var timings:[Int64] = [Int64]()
