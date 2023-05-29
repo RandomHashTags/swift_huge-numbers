@@ -577,7 +577,7 @@ public extension HugeFloat {
     }
 }
 internal extension HugeFloat {
-    static func divide(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat {
+    static func divide(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat { // TODO: fix (can divide a smaller number [left] by a bigger number [right])
         if left.decimal != nil || right.decimal != nil {
             return HugeFloat.divide_decimals(left: left, right: right, precision: precision)
         } else if left.remainder != nil || right.remainder != nil {

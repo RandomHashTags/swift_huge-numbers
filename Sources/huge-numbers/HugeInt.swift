@@ -482,9 +482,9 @@ internal extension HugeInt {
         let result_count:Int = bigger_numbers.count + 1
         var result:[UInt8] = [UInt8].init(repeating: 0, count: result_count)
         
-        var index:Int = 0, remainder:UInt8 = 0
-        while index < smaller_numbers_length {
-            var new_value:UInt8 = smaller_numbers[index] + (bigger_numbers.get(index) ?? 0) + remainder
+        var remainder:UInt8 = 0
+        for index in 0..<smaller_numbers_length {
+            var new_value:UInt8 = smaller_numbers[index] + bigger_numbers[index] + remainder
             if new_value > 9 {
                 new_value -= 10
                 remainder = 1
@@ -492,18 +492,14 @@ internal extension HugeInt {
                 remainder = 0
             }
             result[index] = new_value
-            index += 1
         }
-        if remainder != 0 {
-            result[index] = remainder
-        }
-        while index < result_count-1 {
-            result[index] += bigger_numbers[index]
-            if result[index] > 9 {
-                result[index] -= 10
-                result[index+1] += 1
+        result[smaller_numbers_length] = remainder
+        for i in smaller_numbers_length..<result_count-1 {
+            result[i] += bigger_numbers[i]
+            if result[i] > 9 {
+                result[i] -= 10
+                result[i+1] += 1
             }
-            index += 1
         }
         return result
     }

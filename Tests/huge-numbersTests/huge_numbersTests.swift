@@ -32,15 +32,17 @@ extension huge_numbersTests {
             let _ = HugeInt.divide2(dividend: dividend, divisor: divisor)
         })*/
         
-        try await test_benchmark_integer_addition()
-        try await test_benchmark_integer_subtraction()
-        try await test_benchmark_integer_multiplication()
-        try await test_benchmark_integer_division()
-        
-        try await test_benchmark_float_addition()
-        try await test_benchmark_float_subtraction()
-        try await test_benchmark_float_multiplication()
-        try await test_benchmark_float_division()
+        for _ in 1...5 {
+            try await test_benchmark_integer_addition()
+            try await test_benchmark_integer_subtraction()
+            try await test_benchmark_integer_multiplication()
+            try await test_benchmark_integer_division()
+            
+            try await test_benchmark_float_addition()
+            try await test_benchmark_float_subtraction()
+            try await test_benchmark_float_multiplication()
+            try await test_benchmark_float_division()
+        }
     }
     @available(macOS 13.0, *)
     private func test_benchmark_integer_addition() async throws {
@@ -482,7 +484,7 @@ extension huge_numbersTests {
         XCTAssert(-five <= five)
         XCTAssert(!(-five >= five))
         XCTAssert(five >= -five)
-        
+                
         test_float_addition()
         test_float_subtraction()
         test_float_multiplication()
