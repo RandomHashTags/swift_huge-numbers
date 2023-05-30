@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import huge_numbers
+import HugeNumbers
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
@@ -32,17 +32,15 @@ extension huge_numbersTests {
             let _ = HugeInt.divide2(dividend: dividend, divisor: divisor)
         })*/
         
-        for _ in 1...5 {
-            try await test_benchmark_integer_addition()
-            try await test_benchmark_integer_subtraction()
-            try await test_benchmark_integer_multiplication()
-            try await test_benchmark_integer_division()
-            
-            try await test_benchmark_float_addition()
-            try await test_benchmark_float_subtraction()
-            try await test_benchmark_float_multiplication()
-            try await test_benchmark_float_division()
-        }
+        try await test_benchmark_integer_addition()
+        try await test_benchmark_integer_subtraction()
+        try await test_benchmark_integer_multiplication()
+        try await test_benchmark_integer_division()
+        
+        try await test_benchmark_float_addition()
+        try await test_benchmark_float_subtraction()
+        try await test_benchmark_float_multiplication()
+        try await test_benchmark_float_division()
     }
     @available(macOS 13.0, *)
     private func test_benchmark_integer_addition() async throws {
@@ -131,22 +129,20 @@ extension huge_numbersTests {
 extension huge_numbersTests {
     @available(macOS 13.0, iOS 16.0, *)
     private func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
-        let clock:ContinuousClock = ContinuousClock()
+        let clock:SuspendingClock = SuspendingClock()
         let _:Duration = try await clock.measure(code)
-        var timings:[Int64] = [Int64]()
-        timings.reserveCapacity(iteration_count)
-        for _ in 1...iteration_count {
+        var timings:[Int64] = [Int64].init(repeating: 0, count: iteration_count)
+        for i in 0..<iteration_count {
             let result:Duration = try await clock.measure(code)
             let attoseconds:Int64 = result.components.attoseconds
             let nanoseconds:Int64 = attoseconds / 1_000_000_000
-            timings.append(nanoseconds)
+            timings[i] = nanoseconds
         }
         timings = timings.sorted(by: { $0 < $1 })
-        let timings_count:Int = timings.count
-        let minimum:Int64 = timings[0], maximum:Int64 = timings[timings_count-1]
-        let median:Int64 = timings[timings_count/2]
+        let minimum:Int64 = timings[0], maximum:Int64 = timings[iteration_count-1]
+        let median:Int64 = timings[iteration_count/2]
         let sum:Int64 = timings.reduce(0, +)
-        let average:Int64 = Int64( Double(sum) / Double(timings_count) )
+        let average:Int64 = Int64( Double(sum) / Double(iteration_count) )
         if will_print {
             let key:String = key + (1...(80-key.count)).map({ _ in " " }).joined()
             
@@ -176,7 +172,7 @@ extension huge_numbersTests {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 20
         let average_string:String = get_benchmark_formatted_string(formatter: formatter, faster_average / Int64(maximum_iterations))
-        print("huge_numbersTests;benchmark_compare_is_faster;     " + key1 + " is faster " + faster_count.description + "/" + maximum_iterations.description + " on average by " + average_string)
+        print("huge_numbersTests;benchmark_compare_is_faster;     " + key1 + " is faster \(faster_count)/\(maximum_iterations) on average by " + average_string)
     }
     @available(macOS 13.0, iOS 16.0, *)
     private func benchmark_compare(key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void, print_to_console: Bool = true) async throws -> (Bool, Int64) {
