@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal extension UInt8 {
+internal extension Int8 {
     var repeating_symbol : Character {
         return "\(String(describing: self))\u{0305}".first!
     }

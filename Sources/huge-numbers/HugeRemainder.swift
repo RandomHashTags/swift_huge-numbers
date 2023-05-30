@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct HugeRemainder : Hashable, Comparable {
+public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
     public static var zero:HugeRemainder = HugeRemainder(dividend: HugeInt.zero, divisor: HugeInt.zero)
     
     /// The number on the top.
@@ -56,9 +56,9 @@ public struct HugeRemainder : Hashable, Comparable {
     public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
         let precision_int:Int = precision.to_int() ?? Int.max
         let zero:HugeInt = HugeInt.zero, zero_remainder:HugeRemainder = HugeRemainder.zero
-        var result:ArraySlice<UInt8> = ArraySlice<UInt8>.init(repeating: 255, count: precision_int)
+        var result:ArraySlice<Int8> = ArraySlice<Int8>.init(repeating: 127, count: precision_int)
         var result_remainders:[HugeRemainder] = [HugeRemainder].init(repeating: zero_remainder, count: precision_int)
-        var repeated_value:[UInt8]? = nil
+        var repeated_value:[Int8]? = nil
         let is_negative:Bool = dividend.is_negative
         var remaining_dividend:HugeInt = is_negative ? -dividend : dividend, remaining_remainder:HugeRemainder = zero_remainder
         var index:Int = 0
@@ -69,7 +69,7 @@ public struct HugeRemainder : Hashable, Comparable {
             let subtracted_value:HugeInt = maximum_divisions * divisor
             remaining_dividend -= subtracted_value
             remaining_remainder = remainder ?? HugeRemainder(dividend: remaining_dividend, divisor: divisor)
-            let maximum_divisions_int:UInt8 = maximum_divisions.to_int() ?? 0
+            let maximum_divisions_int:Int8 = maximum_divisions.to_int() ?? 0
             if let same_max_division_indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
                 var index_of_same_max_division:Int = 0
                 for same_max_division_index in same_max_division_indexes {
@@ -94,7 +94,7 @@ public struct HugeRemainder : Hashable, Comparable {
             result_remainders[index] = remaining_remainder
             index += 1
         }
-        if let repeated_value:[UInt8] = repeated_value {
+        if let repeated_value:[Int8] = repeated_value {
             index = 0
             while result.first == 0 && repeated_value[index] == 0 {
                 result.removeFirst()
@@ -105,9 +105,9 @@ public struct HugeRemainder : Hashable, Comparable {
         }
         return HugeDecimal(value: HugeInt(is_negative: is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
-    private func get_indexes_of(value: UInt8, array: ArraySlice<UInt8>, set_value: UInt8) -> [Int]? {
+    private func get_indexes_of(value: Int8, array: ArraySlice<Int8>, set_value: Int8) -> [Int]? {
         guard let first_index:Int = array.firstIndex(of: value) else { return nil }
-        var array_copy:ArraySlice<UInt8> = array
+        var array_copy:ArraySlice<Int8> = array
         var indexes:[Int] = [first_index]
         array_copy[first_index] = set_value
         while let index:Int = array_copy.firstIndex(of: value) {

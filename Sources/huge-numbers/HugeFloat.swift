@@ -9,7 +9,7 @@ import Foundation
 
 // TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
-public struct HugeFloat : Hashable, Comparable, Codable {
+public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible {
     
     public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
     public static var one:HugeFloat = HugeFloat(integer: HugeInt.one)
@@ -75,15 +75,15 @@ public struct HugeFloat : Hashable, Comparable, Codable {
             let exponent:Int = Int(exponent_string)!
             if exponent < 0 {
                 integer = HugeInt(is_negative: is_negative, [])
-                var post_numbers:[UInt8] = [UInt8].init(repeating: 0, count: abs(exponent) + target_post_decimal_number.count)
+                var post_numbers:[Int8] = [Int8].init(repeating: 0, count: abs(exponent) + target_post_decimal_number.count)
                 var index:Int = target_post_decimal_number.count-1
                 for pre_number_char in target_pre_decimal_number {
-                    post_numbers[index] = UInt8(exactly: pre_number_char.wholeNumberValue!)!
+                    post_numbers[index] = Int8(exactly: pre_number_char.wholeNumberValue!)!
                     index -= 1
                 }
                 index = target_post_decimal_number.count
                 for post_number_char in target_post_decimal_number {
-                    post_numbers[index] = UInt8(exactly: post_number_char.wholeNumberValue!)!
+                    post_numbers[index] = Int8(exactly: post_number_char.wholeNumberValue!)!
                     index += 1
                 }
                 decimal = HugeDecimal(value: HugeInt(is_negative: false, post_numbers))
@@ -183,7 +183,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
         } else {
             let is_negative:Bool = amount < 0
             let target_amount:Int = is_negative ? abs(amount)-1 : amount
-            var numbers:[UInt8] = integer.numbers
+            var numbers:[Int8] = integer.numbers
             for _ in 0..<target_amount {
                 numbers.insert(0, at: 0)
             }
@@ -192,8 +192,8 @@ public struct HugeFloat : Hashable, Comparable, Codable {
     }
     public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
         let is_negative:Bool = amount < 0
-        var numbers:[UInt8] = integer.numbers
-        var decimals:[UInt8]! = decimal?.value.numbers.reversed() ?? []
+        var numbers:[Int8] = integer.numbers
+        var decimals:[Int8]! = decimal?.value.numbers.reversed() ?? []
         var remaining_decimals:HugeDecimal? = nil
         if is_negative {
             let absolute_amount:Int = abs(amount)
@@ -212,7 +212,7 @@ public struct HugeFloat : Hashable, Comparable, Codable {
                     }
                 } else {
                     for _ in 0..<absolute_amount {
-                        let target_number:UInt8 = numbers[0]
+                        let target_number:Int8 = numbers[0]
                         decimals.append(target_number)
                         numbers.removeFirst()
                     }
@@ -517,15 +517,15 @@ internal extension HugeFloat {
         
         let result_decimal_places:Int = left_post_number.length + right_post_number.length
         
-        var left_numbers:[UInt8] = left_post_number.numbers
+        var left_numbers:[Int8] = left_post_number.numbers
         left_numbers.append(contentsOf: left.integer.numbers)
         
-        var right_numbers:[UInt8] = right_post_number.numbers
+        var right_numbers:[Int8] = right_post_number.numbers
         right_numbers.append(contentsOf: right.integer.numbers)
         
-        var result:[UInt8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
+        var result:[Int8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
         
-        let pre_decimal_numbers:ArraySlice<UInt8> = result[result_decimal_places...]
+        let pre_decimal_numbers:ArraySlice<Int8> = result[result_decimal_places...]
         var integer:HugeInt = HugeInt(is_negative: left.is_negative == !right.is_negative, pre_decimal_numbers)
         integer.remove_leading_zeros()
         
@@ -535,7 +535,7 @@ internal extension HugeFloat {
             removed_zeroes += 1
         }
         let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
-        let decimal_numbers:ArraySlice<UInt8> = result[0..<ending_index]
+        let decimal_numbers:ArraySlice<Int8> = result[0..<ending_index]
         let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
         return HugeFloat(integer: integer, decimal: HugeDecimal(value: decimal))
     }

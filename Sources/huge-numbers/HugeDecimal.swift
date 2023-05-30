@@ -7,26 +7,26 @@
 
 import Foundation
 
-public struct HugeDecimal : Hashable, Comparable {
+public struct HugeDecimal : Hashable, Comparable, CustomStringConvertible {
     
     public static var zero:HugeDecimal = HugeDecimal(value: HugeInt.zero)
     
     /// The ``HugeInt`` that represents this decimal.
     public private(set) var value:HugeInt
     /// The infinitely repeating numbers, in reverse order.
-    public private(set) var repeating_numbers:[UInt8]?
+    public private(set) var repeating_numbers:[Int8]?
     
-    public init(value: HugeInt, repeating_numbers: [UInt8]? = nil) {
+    public init(value: HugeInt, repeating_numbers: [Int8]? = nil) {
         self.value = value
         self.repeating_numbers = repeating_numbers
     }
-    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true, repeating_numbers: [UInt8]? = nil) {
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true, repeating_numbers: [Int8]? = nil) {
         self.init(value: HugeInt(string, remove_leading_zeros: remove_leading_zeros), repeating_numbers: repeating_numbers)
     }
     
     /// The number the digits represent.
     public var description : String {
-        if let repeating_numbers:[UInt8] = repeating_numbers {
+        if let repeating_numbers:[Int8] = repeating_numbers {
             return value.description + String(repeating_numbers.reversed().map({ $0.repeating_symbol }))
         } else {
             return value.description
@@ -35,7 +35,7 @@ public struct HugeDecimal : Hashable, Comparable {
     
     /// The number the digits represent, in reverse order.
     public var description_literal : String {
-        if let repeating_numbers:[UInt8] = repeating_numbers {
+        if let repeating_numbers:[Int8] = repeating_numbers {
             return value.description + String(repeating_numbers.map({ $0.repeating_symbol }))
         } else {
             return value.description_literal
@@ -49,7 +49,7 @@ public struct HugeDecimal : Hashable, Comparable {
     
     /// Returns a ``HugeRemainder`` in which the decimal is the _dividend_, and the divisor is _10 to the power of decimal length plus one_.
     public var to_remainder : HugeRemainder {
-        var divisor_numbers:[UInt8] = [UInt8].init(repeating: 0, count: value.length+1)
+        var divisor_numbers:[Int8] = [Int8].init(repeating: 0, count: value.length+1)
         divisor_numbers[divisor_numbers.count-1] = 1
         let divisor:HugeInt = HugeInt(is_negative: value.is_negative, divisor_numbers)
         return HugeRemainder(dividend: value, divisor: divisor)
@@ -57,8 +57,8 @@ public struct HugeDecimal : Hashable, Comparable {
     
     /// Returns the distance to the next whole number.
     public var distance_to_next_quotient : HugeDecimal {
-        let value_numbers:[UInt8] = value.numbers.reversed()
-        var numbers:[UInt8] = [UInt8].init(repeating: 0, count: value_numbers.count)
+        let value_numbers:[Int8] = value.numbers.reversed()
+        var numbers:[Int8] = [Int8].init(repeating: 0, count: value_numbers.count)
         let indices:Range<Int> = value_numbers.indices
         for index in indices {
             numbers[index] = 9 - value_numbers[index]
@@ -164,7 +164,7 @@ internal extension HugeDecimal {
                 result.numbers.removeLast()
             }
         } else if result_length < decimal_length {
-            let array:[UInt8] = [UInt8].init(repeating: 0, count: decimal_length - result_length)
+            let array:[Int8] = [Int8].init(repeating: 0, count: decimal_length - result_length)
             result.numbers.append(contentsOf: array)
         }
         return (HugeDecimal(value: result), quotient)
