@@ -25,7 +25,6 @@ extension huge_numbersTests {
     private func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
         
-        return;
         /*let dividend:HugeInt = HugeInt("41"), divisor:HugeInt = HugeInt("4")
         try await benchmark_compare_is_faster(key1: "HugeInt.divide1", {
             let _ = HugeInt.divide(dividend: dividend, divisor: divisor)
@@ -33,16 +32,16 @@ extension huge_numbersTests {
             let _ = HugeInt.divide2(dividend: dividend, divisor: divisor)
         })*/
         
-        for _ in 1...20 {
+        for _ in 1...5 {
             //try await test_benchmark_integer_addition()
             //try await test_benchmark_integer_subtraction()
             //try await test_benchmark_integer_multiplication()
-            //try await test_benchmark_integer_division()
+            try await test_benchmark_integer_division()
             
             //try await test_benchmark_float_addition()
             //try await test_benchmark_float_subtraction()
             //try await test_benchmark_float_multiplication()
-            try await test_benchmark_float_division()
+            //try await test_benchmark_float_division()
         }
     }
     @available(macOS 13.0, *)

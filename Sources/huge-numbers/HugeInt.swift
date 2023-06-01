@@ -338,7 +338,7 @@ public extension HugeInt {
         var remaining_value:HugeInt = HugeInt(is_negative: false, numbers)
         var value:HugeInt = remaining_value
         while remaining_value != one {
-            remaining_value -= 1
+            remaining_value -= one
             value *= remaining_value
         }
         return HugeInt(is_negative: is_negative, value.numbers)
@@ -475,7 +475,7 @@ internal extension HugeInt {
         return (result, left_is_bigger)
     }
     /// Finds the sum of two 8-bit number arrays.
-    /// - Complexity: O(_n_ + _m_) where _n_ equals `small_numbers` size and _m_ equals the amount of times a remainder has to be carried over.
+    /// - Complexity: O(_n_ + 1) where _n_ equals _bigger_numbers.count_.
     /// - Returns: the sum of the two arrays, in reverse order.
     static func add(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
         let smaller_numbers_length:Int = smaller_numbers.count
@@ -681,15 +681,14 @@ internal extension HugeInt {
         }
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
-        let dividend_numbers:[Int8] = dividend.numbers
-        var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend_numbers)
+        var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
         let dividend_length:Int = dividend.length, divisor_length:Int = divisor.length
         let result_count:Int = dividend_length - divisor_length + 1
         var quotient_numbers:[Int8] = [Int8].init(repeating: Int8.max, count: result_count)
         
         var included_digits:Int = divisor_length
         var quotient_index:Int = 0
-        var last_subtracted_amount:HugeInt! = nil
+        var last_subtracted_amount:HugeInt = HugeInt.zero
         while remaining_dividend >= divisor {
             var divisible_dividend_numbers:[Int8] = [Int8].init(repeating: 0, count: included_digits)
             let remaining_dividend_numbers_reversed:[Int8] = remaining_dividend.numbers.reversed()
