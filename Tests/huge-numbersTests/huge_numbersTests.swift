@@ -10,7 +10,7 @@ import HugeNumbers
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        //try await test_benchmarks()
+        try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -36,12 +36,12 @@ extension huge_numbersTests {
             //try await test_benchmark_integer_addition()
             //try await test_benchmark_integer_subtraction()
             //try await test_benchmark_integer_multiplication()
-            try await test_benchmark_integer_division()
+            //try await test_benchmark_integer_division()
             
             //try await test_benchmark_float_addition()
             //try await test_benchmark_float_subtraction()
             //try await test_benchmark_float_multiplication()
-            //try await test_benchmark_float_division()
+            try await test_benchmark_float_division()
         }
     }
     @available(macOS 13.0, *)
@@ -119,7 +119,7 @@ extension huge_numbersTests {
     private func test_benchmark_float_division() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
-        let precision:HugeInt = HugeInt("100")
+        let precision:HugeInt = HugeInt.float_precision
         try await benchmark_compare_is_faster(key1: "HugeFloat.divide", {
             let _:HugeFloat = left.divide_by(right, precision: precision)
         }, key2: "Float.divide", code2: {

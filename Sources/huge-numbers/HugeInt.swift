@@ -174,7 +174,7 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
         let this:HugeInt = self
         var maximum:HugeInt = maximum
         let two:HugeInt = HugeInt(is_negative: false, [2]), one:HugeInt = HugeInt.one
-        let factors:Set<HugeInt> = await withTaskGroup(of: HugeInt?.self, body: { group in
+        return await withTaskGroup(of: HugeInt?.self, body: { group in
             while maximum >= two {
                 let target_number:HugeInt = maximum
                 group.addTask {
@@ -190,7 +190,6 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
             }
             return array
         })
-        return factors
     }
     /// - Warning: This function assumes self is less than or equal to the given number.
     /// - Warning: Very resource intensive when using big numbers.
@@ -480,22 +479,13 @@ internal extension HugeInt {
     static func add(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
         let smaller_numbers_length:Int = smaller_numbers.count
         let result_count:Int = bigger_numbers.count + 1
-        var result:[Int8] = [Int8].init(repeating: 0, count: result_count)
+        var result:[Int8] = bigger_numbers
+        result.append(0)
         
-        var remainder:Int8 = 0
         for index in 0..<smaller_numbers_length {
-            var new_value:Int8 = smaller_numbers[index] + bigger_numbers[index] + remainder
-            if new_value > 9 {
-                new_value -= 10
-                remainder = 1
-            } else {
-                remainder = 0
-            }
-            result[index] = new_value
+            result[index] += smaller_numbers[index]
         }
-        result[smaller_numbers_length] = remainder
-        for i in smaller_numbers_length..<result_count-1 {
-            result[i] += bigger_numbers[i]
+        for i in 0..<result_count {
             if result[i] > 9 {
                 result[i] -= 10
                 result[i+1] += 1
@@ -539,22 +529,14 @@ internal extension HugeInt {
     static func subtract(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
         let smaller_numbers_length:Int = smaller_numbers.count
         let result_count:Int = bigger_numbers.count
-        var result:[Int8] = [Int8].init(repeating: 0, count: result_count)
+        var result:[Int8] = bigger_numbers
         
         for index in 0..<smaller_numbers_length {
-            result[index] += bigger_numbers[index]
-            var value:Int8 = result[index] - smaller_numbers[index]
-            if value < 0 {
-                value += 10
-                result[index+1] -= 1
-            }
-            result[index] = value
+            result[index] -= smaller_numbers[index]
         }
-        for i in smaller_numbers_length..<result_count {
-            result[i] += bigger_numbers[i]
+        for i in 0..<result_count {
             if result[i] < 0 {
-                let value:Int8 = result[i] + 10
-                result[i] = value
+                result[i] += 10
                 result[i+1] -= 1
             }
         }
