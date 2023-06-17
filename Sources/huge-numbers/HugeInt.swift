@@ -124,7 +124,7 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
         } else {
             numbers.insert(contentsOf: array, at: numbers.count-1)
         }
-        return HugeInt(is_negative: false, array)
+        return HugeInt(is_negative: is_negative, numbers)
     }
     
     /// - Warning: Very resource intensive when using a big number.

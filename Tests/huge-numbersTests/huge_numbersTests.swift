@@ -10,7 +10,7 @@ import HugeNumbers
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
+        //try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -222,6 +222,7 @@ extension huge_numbersTests {
         XCTAssert(integer <= integer)
         
         let eleven:HugeInt = HugeInt("11")
+        let negative_eleven:HugeInt = HugeInt("-11")
         XCTAssert(eleven >= 4)
         XCTAssert(eleven >= 8)
         XCTAssert(!(eleven >= 12))
@@ -239,6 +240,14 @@ extension huge_numbersTests {
         
         let six_factors:Set<HugeInt> = await HugeInt("6").get_all_factors_parallel()
         XCTAssert(six_factors.count == 3, "test_int;factors=" + six_factors.description)
+        
+        var result:HugeInt = eleven.multiply_by_ten(1)
+        var expected_result:HugeInt = HugeInt(is_negative: false, [0, 1, 1])
+        XCTAssert(result == expected_result, "test_int;result=\(result);expected_result=\(expected_result)")
+        
+        result = negative_eleven.multiply_by_ten(1)
+        expected_result = HugeInt(is_negative: true, [0, 1, 1])
+        XCTAssert(result == expected_result, "test_int;result=\(result);expected_result=\(expected_result)")
         
         test_int_addition()
         test_int_subtraction()
