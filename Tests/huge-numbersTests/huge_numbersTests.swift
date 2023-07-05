@@ -10,7 +10,7 @@ import HugeNumbers
 
 final class huge_numbersTests: XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
+        //try await test_benchmarks()
         
         await test_int()
         test_float()
@@ -496,6 +496,7 @@ extension huge_numbersTests {
         test_float_subtraction()
         test_float_multiplication()
         test_float_division()
+        test_float_rounding()
     }
     private func test_float_addition() {
         let float:HugeFloat = HugeFloat("3.5")
@@ -707,6 +708,63 @@ extension huge_numbersTests {
         result = HugeFloat("12345.678").divide_by(HugeFloat("54321.012"), precision: HugeInt("100"))
         expected_result = HugeFloat("0.2272726067769135081651277041745834926639437424324863461674830358462393889127102418489552440591497080", remove_trailing_zeros: false)
         XCTAssert(result == expected_result, "test_float_division;result=\(result);expected_result=\(expected_result)")
+    }
+    private func test_float_rounding() {
+        var value:HugeFloat = HugeFloat("59.3551269911")
+        var result:HugeFloat = value.rounded(1)
+        var expected_result:HugeFloat = HugeFloat("59.3")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(2)
+        expected_result = HugeFloat("59.35")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(3)
+        expected_result = HugeFloat("59.355")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(4)
+        expected_result = HugeFloat("59.3551")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(5)
+        expected_result = HugeFloat("59.35513")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(6)
+        expected_result = HugeFloat("59.355127")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(7)
+        expected_result = HugeFloat("59.3551270")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(8)
+        expected_result = HugeFloat("59.35512699")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        value = HugeFloat("12.9999")
+        result = value.rounded(1)
+        expected_result = HugeFloat("13")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(2)
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(3)
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(4)
+        expected_result = value
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        result = value.rounded(5)
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
+        
+        value = HugeFloat("11")
+        result = value.rounded(1)
+        expected_result = HugeFloat("11")
+        XCTAssert(result == expected_result, "test_float_rounding;result=\(result);expected_result=\(expected_result)")
     }
 }
 

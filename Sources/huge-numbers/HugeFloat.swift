@@ -237,6 +237,37 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return HugeFloat.divide(left: self, right: value, precision: precision)
     }
     
+    /// Creates a new ``HugeFloat``, and rounds it to the nearest given place.
+    /// Converts ``remainder`` to a ``HugeDecimal``, if present.
+    public func rounded(_ precision: UInt, remainder_precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
+        var decimals:[Int8] = decimal?.value.numbers.reversed() ?? remainder?.to_decimal(precision: remainder_precision).value.numbers.reversed() ?? []
+        let decimal_count:Int = decimals.count
+        let index:Int = min(Int(precision), decimal_count)
+        guard index != decimal_count, index > 0 else { return self }
+        var previous_decimals:ArraySlice<Int8> = decimals[0..<index]
+        
+        for i in index..<decimal_count {
+            let target_value:Int8 = decimals[i]
+            if target_value != 5 {
+                previous_decimals[previous_decimals.count-1] += target_value > 5 ? 1 : 0
+                break
+            }
+        }
+        var integer:HugeInt = integer
+        while previous_decimals.last ?? 0 > 9 {
+            previous_decimals.removeLast()
+            if previous_decimals.count > 0 {
+                previous_decimals[previous_decimals.count-1] += 1
+            } else {
+                integer += HugeInt(is_negative: integer.is_negative, [1])
+            }
+        }
+        decimals = Array(previous_decimals).reversed()
+        let decimal:HugeDecimal = HugeDecimal(value: HugeInt(is_negative: false, decimals))
+        return HugeFloat.init(integer: integer, decimal: decimal.is_zero ? nil : decimal)
+    }
+    
+    
     public func to_radians() -> HugeFloat {
         return self * HugeFloat("0.01745329252")
     }
@@ -244,9 +275,8 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return self * (180 / HugeFloat.pi_100)
     }
 }
-/*
- Comparable
- */
+
+// MARK: Comparable
 public extension HugeFloat {
     static func == (left: HugeFloat, right: HugeFloat) -> Bool {
         return left.is_negative == right.is_negative && left.decimal == right.decimal && left.integer == right.integer && left.decimal == right.decimal && left.remainder == right.remainder
