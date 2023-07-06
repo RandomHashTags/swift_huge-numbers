@@ -2,12 +2,25 @@
 
 This library was created to remove the decimal precision limitation on floats, which is especially useful in scientific applications.
 
-## Requirements
+## Installation
+### Requirements
 - Swift >= 5.1
 - macOS >= 10.15
 - iOS >= 13.0
 - tvOS >= 13.0
 - watchOS >= 6.0
+### CocoaPods
+```ruby
+pod 'HugeNumbers', '~> 1.0.15'
+```
+or for latest version (may not be uploaded to CocoaPods yet)
+```ruby
+pod 'HugeNumbers', :git => 'https://github.com/RandomHashTags/swift_huge-numbers.git'
+```
+### Swift Package Manager
+```swift
+.package(url: "https://github.com/RandomHashTags/swift_huge-numbers.git", from: "1.0.15")
+```
 
 ## Current features
 - `HugeInt`
