@@ -129,7 +129,7 @@ extension huge_numbersTests {
 }
 
 extension huge_numbersTests {
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, watchOS 9.0, *)
     private func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
         let clock:SuspendingClock = SuspendingClock()
         let _:Duration = try await clock.measure(code)
@@ -162,8 +162,11 @@ extension huge_numbersTests {
         }
         return (key: key, min: minimum, max: maximum, median: median, average: average, total: sum)
     }
-    @available(macOS 13.0, iOS 16.0, *)
     private func benchmark_compare_is_faster(maximum_iterations: Int = 100, key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void) async throws {
+        guard #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) else {
+            print("huge_numbersTests;benchmark_compare_is_faster; unsupported platform version")
+            return
+        }
         var faster_count:Int = 0, faster_average:Int64 = 0
         for _ in 1...maximum_iterations {
             let faster:(Bool, Int64) = try await benchmark_compare(key1: key1, code1, key2: key2, code2: code2, print_to_console: false)
@@ -176,7 +179,7 @@ extension huge_numbersTests {
         let average_string:String = get_benchmark_formatted_string(formatter: formatter, faster_average / Int64(maximum_iterations))
         print("huge_numbersTests;benchmark_compare_is_faster;     " + key1 + " is faster \(faster_count)/\(maximum_iterations) on average by " + average_string)
     }
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, watchOS 9.0, *)
     private func benchmark_compare(key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void, print_to_console: Bool = true) async throws -> (Bool, Int64) {
         async let test1 = benchmark(key: key1, code1, will_print: false)
         async let test2 = benchmark(key: key2, code2, will_print: false)
@@ -993,7 +996,7 @@ extension huge_numbersTests {
         print("test_pi;pi=" + pi.description + ";precision=" + precision.description)*/
     }
     private func test_pi_indexes(i: Int, _ pi_digits: String, bigger_digits: String) {
-        if #available(macOS 13.0, iOS 16.0, *) {
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) {
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))
             var range_index:Int = 0
             for range in ranges {
@@ -1005,7 +1008,7 @@ extension huge_numbersTests {
         }
     }
     private func test_pi_ranges(i: Int, _ pi_digits: String) {
-        if #available(macOS 13.0, iOS 16.0, *) {
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) {
             let string_count:Int = pi_digits.count
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))
             var minimum_distance_between:Int = string_count, maximum_distance_between:Int = 0

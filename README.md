@@ -2,6 +2,13 @@
 
 This library was created to remove the decimal precision limitation on floats, which is especially useful in scientific applications.
 
+## Requirements
+- Swift >= 5.1
+- macOS >= 10.15
+- iOS >= 13.0
+- tvOS >= 13.0
+- watchOS >= 6.0
+
 ## Current features
 - `HugeInt`
 - `HugeFloat`
