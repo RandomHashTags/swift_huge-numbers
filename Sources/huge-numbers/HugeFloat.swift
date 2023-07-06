@@ -178,8 +178,8 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
             return HugeFloat.zero
         } else if decimal != nil {
             return multiply_decimal_by_ten(amount)
-        } else if remainder != nil { // TODO: finish
-            return self
+        } else if remainder != nil {
+            return multiply_remainder_by_ten(amount)
         } else {
             let is_negative:Bool = amount < 0
             let target_amount:Int = is_negative ? abs(amount)-1 : amount
@@ -190,6 +190,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
             return HugeFloat(integer: HugeInt(is_negative: is_negative == !integer.is_negative, numbers), remainder: remainder)
         }
     }
+    /// Multiplies the ``decimal`` by ten to the power of _amount_, potentially removing it if applicable.
     public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
         let is_negative:Bool = amount < 0
         var numbers:[Int8] = integer.numbers
@@ -231,6 +232,19 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
             remaining_decimals = HugeDecimal(value: HugeInt(is_negative: false, decimals))
         }
         return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimals)
+    }
+    /// Returns a new ``HugeFloat`` by multiplying the ``remainder`` by ten to the power of _amount_, potentially removing it if applicable. Also carries over the quotient to the new huge float, if applicable.
+    public func multiply_remainder_by_ten(_ amount: Int) -> HugeFloat {
+        var remainder:HugeRemainder! = remainder
+        guard remainder != nil else { return multiply_by_ten(amount) }
+        var integer:HugeInt = integer.multiply_by_ten(amount)
+        remainder = remainder.multiply_by_ten(amount)
+        if remainder.dividend >= remainder.divisor {
+            let (quotient, new_remainder):(HugeInt, HugeRemainder?) = remainder.dividend / remainder.divisor
+            integer += quotient
+            remainder = new_remainder
+        }
+        return HugeFloat(integer: integer, remainder: remainder)
     }
     
     public func divide_by(_ value: HugeFloat, precision: HugeInt) -> HugeFloat {

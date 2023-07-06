@@ -27,11 +27,11 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
     }
     
     public var description : String {
-        return dividend.description + "/" + divisor.description
+        return "\(dividend)/\(divisor)"
     }
     
     public var is_zero : Bool {
-        return dividend.is_zero
+        return divisor.is_zero || dividend.is_zero
     }
     public var to_int : (quotient: HugeInt, remainder: HugeRemainder?) {
         return dividend / divisor
@@ -117,15 +117,41 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         return indexes
     }
     
-    /// - Warning: Using this assumes the dividend is smaller than the divisor.
-    public mutating func simplify_parallel() async {
-        if divisor % dividend == HugeInt.zero {
-            divisor = (divisor / dividend).quotient
-            dividend = HugeInt.one
-        } else if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors_parallel(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
+    /// Creates a new ``HugeRemainder`` by multiplying the ``dividend`` by ten to the power of _amount_.
+    public func multiply_by_ten(_ amount: Int) -> HugeRemainder {
+        let dividend:HugeInt = dividend.multiply_by_ten(amount)
+        return HugeRemainder(dividend: dividend, divisor: divisor)
+    }
+    
+    /// - Returns: quotient
+    /// - Warning: Very resource intensive when using big numbers.
+    public mutating func simplify() -> HugeInt {
+        guard dividend < divisor else {
+            let (quotient, remainder):(HugeInt, HugeRemainder?) = divisor / dividend
+            divisor = remainder?.divisor ?? HugeInt.zero
+            dividend = remainder?.dividend ?? HugeInt.zero
+            return quotient
+        }
+        if let shared_factors:Set<HugeInt> = dividend.get_shared_factors(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
             dividend /= maximum_shared_factor
             divisor /= maximum_shared_factor
         }
+        return HugeInt.zero
+    }
+    /// - Returns: quotient
+    /// - Warning: Very resource intensive when using big numbers.
+    public mutating func simplify_parallel() async -> HugeInt {
+        guard dividend < divisor else {
+            let (quotient, remainder):(HugeInt, HugeRemainder?) = divisor / dividend
+            divisor = remainder?.divisor ?? HugeInt.zero
+            dividend = remainder?.dividend ?? HugeInt.zero
+            return quotient
+        }
+        if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors_parallel(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
+            dividend /= maximum_shared_factor
+            divisor /= maximum_shared_factor
+        }
+        return HugeInt.zero
     }
 }
 
