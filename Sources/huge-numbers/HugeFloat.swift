@@ -9,13 +9,12 @@ import Foundation
 
 // TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
-public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible {
+public struct HugeFloat : HugeNumber {
+    public static let zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
+    public static let one:HugeFloat = HugeFloat(integer: HugeInt.one)
     
-    public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
-    public static var one:HugeFloat = HugeFloat(integer: HugeInt.one)
-    
-    public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
-    public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
+    public static let pi:HugeFloat = pi(precision: HugeInt.default_precision)
+    public static let pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
         //let total_precision:HugeInt = precision * 1_000_000
@@ -37,6 +36,8 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return HugeFloat.zero
     }
     
+    public typealias DivisionResult = HugeFloat
+    
     public internal(set) var integer:HugeInt
     /// This float can have a populated ``decimal`` or ``remainder``; never both, however, both can be nil.
     public internal(set) var decimal:HugeDecimal? = nil
@@ -57,17 +58,20 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         self.init(integer: HugeInt(integer), decimal: decimal, remainder: remainder)
     }
     
-    public init(_ string: String, remove_trailing_zeros: Bool = true) {
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T) {
+        self.init(string: string, remove_trailing_zeros: true)
+    }
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_trailing_zeros: Bool = true) {
         self.init(string: string, remove_trailing_zeros: remove_trailing_zeros)
     }
     /// This init is only here because Xcode cannot link the ambiguous version.
-    public init(string: String, remove_trailing_zeros: Bool = true) {
-        let values:[Substring] = string.split(separator: ".")
-        let target_pre_decimal_number:Substring = values[0]
-        var target_post_decimal_number:Substring = values.get(1) ?? "0"
+    public init<T: StringProtocol & RangeReplaceableCollection>(string: T, remove_trailing_zeros: Bool = true) {
+        let values:[T.SubSequence] = string.split(separator: ".")
+        let target_pre_decimal_number:T.SubSequence = values[0]
+        var target_post_decimal_number:T.SubSequence = values.get(1) ?? "0"
         if let exponent_range:Range<Substring.Index> = target_post_decimal_number.rangeOfCharacter(from: ["e", "E"]) {
             let is_negative:Bool = target_pre_decimal_number[target_pre_decimal_number.startIndex] == "-"
-            let exponent_string:Substring = target_post_decimal_number[exponent_range.upperBound..<target_post_decimal_number.endIndex]
+            let exponent_string:T.SubSequence = target_post_decimal_number[exponent_range.upperBound..<target_post_decimal_number.endIndex]
             target_post_decimal_number = target_post_decimal_number[target_post_decimal_number.startIndex..<exponent_range.lowerBound]
             if remove_trailing_zeros {
                 target_post_decimal_number.remove_trailing_zeros()
@@ -93,7 +97,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
                 decimal = decimal_value.is_zero ? nil : HugeDecimal(value: decimal_value)
             }
         } else if let _:Range<Substring.Index> = string.rangeOfCharacter(from: ["r"]) {
-            let values:[Substring] = string.split(separator: "r"), remainder_string:[Substring] = values[1].split(separator: "/")
+            let values:[T.SubSequence] = string.split(separator: "r"), remainder_string:[T.SubSequence] = values[1].split(separator: "/")
             integer = HugeInt(values[0])
             decimal = nil
             remainder = HugeRemainder(dividend: HugeInt(remainder_string[0]), divisor: HugeInt(remainder_string[1]))
@@ -110,19 +114,6 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
     public init(_ float: any FloatingPoint) {
         self.init(String(describing: float))
-    }
-    public init(_ integer: any BinaryInteger) {
-        self.init(String(describing: integer))
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container:SingleValueDecodingContainer = try decoder.singleValueContainer()
-        let string:String = try container.decode(String.self)
-        self.init(string)
-    }
-    public func encode(to encoder: Encoder) throws {
-        var container:SingleValueEncodingContainer = encoder.singleValueContainer()
-        try container.encode(description)
     }
     
     public var represented_float : Float {
@@ -167,7 +158,6 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return description
     }
     
-    /// Whether or not this huge float equals zero.
     public var is_zero : Bool {
         return integer.is_zero && (remainder == nil || remainder!.is_zero) && (decimal == nil || decimal!.value.is_zero)
     }
@@ -604,7 +594,7 @@ internal extension HugeFloat {
  Division
  */
 public extension HugeFloat {
-    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
+    static func / (left: HugeFloat, right: HugeFloat) -> DivisionResult {
         return HugeFloat.divide(left: left, right: right, precision: HugeInt.default_precision)
     }
     /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.

@@ -7,23 +7,24 @@
 
 import Foundation
 
-// TODO: improve arthmetic performance by using SIMD instructions/vectors
-public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
-    /// 100 decimal places.
+public struct HugeInt : HugeNumber {
+    /// Default value is 100 decimal places.
     public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
     /// 6 decimal places.
-    public static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
+    public static let float_precision:HugeInt = HugeInt(is_negative: false, [6])
     /// 15 decimal places.
-    public static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
+    public static let double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
     
-    public static var zero:HugeInt = HugeInt(is_negative: false, [])
-    public static var one:HugeInt = HugeInt(is_negative: false, [1])
+    public static let zero:HugeInt = HugeInt(is_negative: false, [])
+    public static let one:HugeInt = HugeInt(is_negative: false, [1])
     
     public static func random(in range: Range<HugeInt>) -> HugeInt {
         let minimum_integer:UInt64 = range.lowerBound.to_int()!, maximum_integer:UInt64 = range.upperBound.to_int()!
         let number:UInt64 = UInt64.random(in: minimum_integer...maximum_integer)
         return HugeInt(number)
     }
+    
+    public typealias DivisionResult = (quotient: HugeInt, remainder: HugeRemainder?)
     
     public internal(set) var is_negative:Bool
     /// The 8-bit numbers representing this huge integer, in reverse order.
@@ -32,6 +33,9 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     public init(is_negative: Bool, _ numbers: [Int8]) {
         self.is_negative = is_negative
         self.numbers = numbers.count == 1 && numbers[0] == 0 ? [] : numbers
+    }
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T) {
+        self.init(string, remove_leading_zeros: true)
     }
     public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true) {
         var target_string:T = string
@@ -59,19 +63,6 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     public init(is_negative: Bool, _ integer: any BinaryInteger) {
         self.init(is_negative: is_negative, String(describing: integer))
     }
-    public init(_ integer: any BinaryInteger) {
-        self.init(String(describing: integer))
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container:SingleValueDecodingContainer = try decoder.singleValueContainer()
-        let string:String = try container.decode(String.self)
-        self.init(string)
-    }
-    public func encode(to encoder: Encoder) throws {
-        var container:SingleValueEncodingContainer = encoder.singleValueContainer()
-        try container.encode(description)
-    }
     
     /// The amount of digits that represent this huge integer.
     public var length : Int {
@@ -85,7 +76,7 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     public var description_literal : String {
         return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
-    /// Whether or not this huge integer equals zero.
+    
     public var is_zero : Bool {
         return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
     }
@@ -229,12 +220,6 @@ public extension HugeInt {
         }
         return false
     }
-    static func < (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left < HugeInt(right)
-    }
-    static func < (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) < right
-    }
 }
 public extension HugeInt {
     static func > (left: HugeInt, right: HugeInt) -> Bool {
@@ -254,12 +239,6 @@ public extension HugeInt {
             }
         }
         return false
-    }
-    static func > (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left > HugeInt(right)
-    }
-    static func > (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) > right
     }
 }
 public extension HugeInt {
@@ -653,7 +632,7 @@ public extension HugeInt {
     }
 }
 internal extension HugeInt {
-    static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+    static func divide(dividend: HugeInt, divisor: HugeInt) -> DivisionResult {
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
