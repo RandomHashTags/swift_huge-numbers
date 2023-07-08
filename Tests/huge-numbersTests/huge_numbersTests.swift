@@ -5,6 +5,7 @@
 //  Created by Evan Anderson on 4/10/23.
 //
 
+import Foundation
 import XCTest
 import HugeNumbers
 
@@ -216,6 +217,16 @@ extension huge_numbersTests {
 extension huge_numbersTests {
     private func test_int() async {
         let integer:HugeInt = HugeInt("1234567891011121314151617181920")
+        
+        let formatter:NumberFormatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        var formatted_integer:String? = formatter.string(from: integer)
+        XCTAssert(formatted_integer == "1,234,567,891,011,121,314,151,617,181,920", formatted_integer ?? "nil")
+        
+        formatter.thousandSeparator = "."
+        formatted_integer = formatter.string(from: integer)
+        XCTAssert(formatted_integer == "1.234.567.891.011.121.314.151.617.181.920", formatted_integer ?? "nil")
+        
         let second_integer:HugeInt = -integer
         XCTAssert(integer != second_integer)
         XCTAssert(integer == -second_integer)
@@ -482,12 +493,15 @@ extension huge_numbersTests {
 extension huge_numbersTests {
     private func test_float() {
         var float:HugeFloat = HugeFloat("3.1415926535e-10")
+        
         XCTAssert(float.description_literal.elementsEqual("0.00000000031415926535"), "test_float;float=\(float), description=" + float.description)
-        XCTAssert(float.description_simplified.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_simplified)
+        XCTAssert(float.description_scientific.elementsEqual("3.1415926535e-10"), "test_float;float=\(float), description_simplified=" + float.description_scientific)
         XCTAssert(HugeFloat("3r1/4") == HugeFloat(integer: HugeInt("3"), remainder: HugeRemainder(dividend: "1", divisor: "4")))
         float = HugeFloat("-3")
         XCTAssert(float.description.elementsEqual("-3"), "test_float;float=\(float);float.description=" + float.description)
-        XCTAssert(float.description_simplified.elementsEqual("-3"), "test_float;float=\(float);float.description_simplified=" + float.description_simplified)
+        XCTAssert(float.description_scientific.elementsEqual("-3"), "test_float;float=\(float);float.description_simplified=" + float.description_scientific)
+        
+        test_float_formatted()
         
         let five:HugeFloat = HugeFloat("5")
         XCTAssert(!(five < five))
@@ -509,6 +523,45 @@ extension huge_numbersTests {
         test_float_multiplication()
         test_float_division()
         test_float_rounding()
+    }
+    private func test_float_formatted() {
+        var float:HugeFloat = HugeFloat("123456789.0987654321")
+        let formatter:NumberFormatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.alwaysShowsDecimalSeparator = true
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = float.decimal?.value.length ?? 0
+        formatter.thousandSeparator = ","
+        formatter.decimalSeparator = "."
+        
+        var formatted_float:String? = formatter.string(from: float)
+        XCTAssert(formatted_float == "123,456,789.0987654321", formatted_float ?? "nil")
+        
+        formatter.maximumFractionDigits = 0
+        formatted_float = formatter.string(from: float)
+        XCTAssert(formatted_float == "123,456,789", formatted_float ?? "nil")
+        
+        formatter.maximumFractionDigits = 3
+        formatted_float = formatter.string(from: float)
+        XCTAssert(formatted_float == "123,456,789.099", formatted_float ?? "nil")
+        
+        formatter.thousandSeparator = " "
+        formatter.decimalSeparator = ","
+        formatter.maximumFractionDigits = float.decimal?.value.length ?? 0
+        formatted_float = formatter.string(from: float)
+        XCTAssert(formatted_float == "123 456 789,0987654321", formatted_float ?? "nil")
+        
+        
+        float = HugeFloat("123456789.19")
+        formatter.minimumFractionDigits = 3
+        formatter.thousandSeparator = ","
+        formatter.decimalSeparator = "."
+        formatted_float = formatter.string(from: float)
+        XCTAssert(formatted_float == "123,456,789.190", formatted_float ?? "nil")
+        
+        float = HugeFloat("123456789")
+        formatted_float = formatter.string(from: float)
+        XCTAssert(formatted_float == "123,456,789.000", formatted_float ?? "nil")
     }
     private func test_float_addition() {
         let float:HugeFloat = HugeFloat("3.5")
