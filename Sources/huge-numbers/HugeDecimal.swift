@@ -186,19 +186,19 @@ public extension HugeDecimal {
  Multiplication
  */
 public extension HugeDecimal {
-    static func * (left: HugeDecimal, right: any SomeHugeInt) -> (quotient: AnyHugeInt?, result: HugeDecimal) {
+    static func * (left: HugeDecimal, right: HugeInt) -> (quotient: HugeInt?, result: HugeDecimal) {
         let result_string:String = HugeDecimal.multiply(left: left.value, right: right, decimal_places: left.value.length)
         let result:HugeFloat = HugeFloat(result_string)
-        return (result.integer.is_zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
+        return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
     }
-    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: AnyHugeInt?, result: HugeDecimal) {
+    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) {
         let result_string:String = HugeDecimal.multiply(left: left.value, right: right.value, decimal_places: left.value.length + right.value.length)
         let result:HugeFloat = HugeFloat(result_string)
-        return (result.integer.is_zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
+        return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
     }
 }
 internal extension HugeDecimal {
-    static func multiply<T: SomeHugeInt>(left: T, right: any SomeHugeInt, decimal_places: Int) -> String {
+    static func multiply(left: HugeInt, right: HugeInt, decimal_places: Int) -> String {
         var result_string:String = (left * right).description
         result_string.insert(".", at: result_string.index(result_string.endIndex, offsetBy: -decimal_places))
         if result_string[result_string.startIndex] == "." {
