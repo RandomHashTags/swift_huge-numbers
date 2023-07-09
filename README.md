@@ -56,6 +56,7 @@ The tables below display the nanoseconds longer it took this library to calculat
 |1.0.6        |DEBUG            |8237502387529357 |397653549738     |~2,800           |~2,400           |~43,000\*        |~225,000         |
 |1.0.13       |DEBUG            |8237502387529357 |397653549738     |~2,450           |~2,350           |~38,100\*        |~208,700         |
 |1.0.14       |RELEASE          |8237502387529357 |397653549738     |~170             |~200             |~3,950\*         |~15,400          |
+|1.0.16       |RELEASE          |8237502387529357 |397653549738     |-                |-                |-                |~4,450           |
 #### `HugeFloat`
 |Version      |Scheme           |Precision        |Left Number      |Right Number     |Addition         |Subtraction      |Multiplication   |Division         |
 |:------------|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|:---------------:|
@@ -64,6 +65,8 @@ The tables below display the nanoseconds longer it took this library to calculat
 |1.0.13       |DEBUG            |100              |12345.678        |54321.012        |-                |-                |-                |~9,306,000       |
 |1.0.14       |RELEASE          |6                |12345.678        |54321.012        |~790             |~1,080           |~3,300           |~39,500          |
 |1.0.14       |RELEASE          |100              |12345.678        |54321.012        |-                |-                |-                |~660,000         |
+|1.0.16       |RELEASE          |6                |12345.678        |54321.012        |-                |-                |-                |~33,400          |
+|1.0.16       |RELEASE          |6                |12345.678        |54321.012        |-                |-                |-                |~533,000         |
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.
