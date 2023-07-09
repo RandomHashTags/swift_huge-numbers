@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'HugeNumbers'
-  s.version = '1.1.0'
+  s.version = '1.0.16'
   s.summary = 'Very large numbers with infinite precision.'
   s.homepage = 'https://github.com/RandomHashTags/swift_huge-numbers'
   s.license = { :type => 'CC0 1.0 Universal', :file => 'LICENSE.txt' }

@@ -654,9 +654,24 @@ public extension HugeInt {
 }
 internal extension HugeInt {
     static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+        if let dividend_number:UInt64 = dividend.to_int(), let divisor_number:UInt64 = divisor.to_int() {
+            let result:UInt64 = dividend_number / divisor_number
+            let remainder_number:UInt64 = dividend_number - (divisor_number * result)
+            let remainder:HugeRemainder? = remainder_number != 0 ? HugeRemainder(dividend: HugeInt(remainder_number), divisor: divisor) : nil
+            return (HugeInt(result), remainder)
+        } else if let dividend_number:Int64 = dividend.to_int(), let divisor_number:Int64 = divisor.to_int() {
+            let result:Int64 = dividend_number / divisor_number
+            let remainder_number:Int64 = dividend_number - (divisor_number * result)
+            let remainder:HugeRemainder? = remainder_number != 0 ? HugeRemainder(dividend: HugeInt(abs(remainder_number)), divisor: divisor) : nil
+            return (HugeInt(result), remainder)
+        }
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
+        return divide_very_large_numbers(dividend: dividend, divisor: divisor)
+    }
+    
+    static func divide_very_large_numbers(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
         let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
         
         var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)

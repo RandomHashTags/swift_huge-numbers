@@ -36,12 +36,12 @@ extension huge_numbersTests {
             //try await test_benchmark_integer_addition()
             //try await test_benchmark_integer_subtraction()
             //try await test_benchmark_integer_multiplication()
-            //try await test_benchmark_integer_division()
+            try await test_benchmark_integer_division()
             
             //try await test_benchmark_float_addition()
             //try await test_benchmark_float_subtraction()
             //try await test_benchmark_float_multiplication()
-            try await test_benchmark_float_division()
+            //try await test_benchmark_float_division()
         }
     }
     @available(macOS 13.0, *)
