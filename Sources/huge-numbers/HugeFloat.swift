@@ -293,7 +293,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
 // MARK: Comparable
 public extension HugeFloat {
     static func == (left: HugeFloat, right: HugeFloat) -> Bool {
-        return left.is_negative == right.is_negative && left.decimal == right.decimal && left.integer == right.integer && left.decimal == right.decimal && left.remainder == right.remainder
+        return left.is_negative == right.is_negative && left.integer == right.integer && left.decimal == right.decimal && left.remainder == right.remainder
     }
     static func == (left: HugeFloat, right: HugeInt) -> Bool {
         return left == right.to_float
