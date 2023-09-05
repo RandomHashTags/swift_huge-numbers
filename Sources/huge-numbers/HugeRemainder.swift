@@ -61,6 +61,7 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         var repeated_value:[Int8]? = nil
         var remaining_dividend:HugeInt = abs(dividend), remaining_remainder:HugeRemainder = zero_remainder
         var index:Int = 0
+        var same_division_indexes:[Int8:[Int]] = [:]
     while_loop:
         while index < precision_int && (remaining_dividend != zero || remaining_remainder != zero_remainder) && remaining_dividend <= divisor {
             remaining_dividend.multiplied_by_ten(1)
@@ -69,7 +70,7 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
             remaining_dividend -= subtracted_value
             remaining_remainder = remainder ?? HugeRemainder(dividend: remaining_dividend, divisor: divisor)
             let maximum_divisions_int:Int8 = maximum_divisions.to_int() ?? 0
-            if let same_max_division_indexes:[Int] = get_indexes_of(value: maximum_divisions_int, array: result, set_value: maximum_divisions_int+1) {
+            if let same_max_division_indexes:[Int] = same_division_indexes[maximum_divisions_int] {
                 var index_of_same_max_division:Int = 0
                 for same_max_division_index in same_max_division_indexes {
                     if remaining_remainder == result_remainders[same_max_division_index] {
@@ -89,6 +90,10 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
                     index_of_same_max_division += 1
                 }
             }
+            if same_division_indexes[maximum_divisions_int] == nil {
+                same_division_indexes[maximum_divisions_int] = []
+            }
+            same_division_indexes[maximum_divisions_int]!.append(index)
             result[index] = maximum_divisions_int
             result_remainders[index] = remaining_remainder
             index += 1
@@ -103,17 +108,6 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
             result = result[0..<index]
         }
         return HugeDecimal(value: HugeInt(is_negative: dividend.is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
-    }
-    private func get_indexes_of(value: Int8, array: ArraySlice<Int8>, set_value: Int8) -> [Int]? {
-        guard let first_index:Int = array.firstIndex(of: value) else { return nil }
-        var array_copy:ArraySlice<Int8> = array
-        var indexes:[Int] = [first_index]
-        array_copy[first_index] = set_value
-        while let index:Int = array_copy.firstIndex(of: value) {
-            indexes.append(index)
-            array_copy[index] = set_value
-        }
-        return indexes
     }
     
     /// Creates a new ``HugeRemainder`` by multiplying the ``dividend`` by ten to the power of _amount_.
