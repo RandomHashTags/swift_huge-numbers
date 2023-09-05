@@ -7,7 +7,6 @@
 
 import Foundation
 
-// TODO: expand functionality
 /// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible {
     
@@ -217,7 +216,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     ///
     /// If _amount_ is negative, move left, else right.
     ///
-    /// If ``remainder`` != nil, the dividend or divisor is multiplied or divided by ten.
+    /// If ``remainder`` != nil, it is converted to a ``HugeDecimal``.
     public func move_decimal(_ amount: Int, precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
         let is_negative:Bool = amount < 0
         var numbers:[Int8] = integer.numbers
@@ -245,7 +244,12 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
                     numbers = Array(numbers[absolute_amount...])
                     decimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
                 } else {
-                    
+                    var decimal_numbers:[Int8] = numbers
+                    for _ in 0..<absolute_amount-numbers_count {
+                        decimal_numbers.append(0)
+                    }
+                    numbers = []
+                    decimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
                 }
             } else {
                 for _ in 0..<amount {

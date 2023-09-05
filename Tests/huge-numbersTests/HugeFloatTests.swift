@@ -244,6 +244,9 @@ final class HugeFloatTests : XCTestCase {
         expected_result = HugeFloat("5036000")
         XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
         
+        result = HugeFloat("1234").move_decimal(-6)
+        expected_result = HugeFloat("0.001234")
+        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
         
         result = HugeFloat("500r1/2").move_decimal(1)
         expected_result = HugeFloat("5005")

@@ -7,7 +7,6 @@
 
 import Foundation
 
-// TODO: improve arthmetic performance by using SIMD instructions/vectors
 public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     /// 100 decimal places.
     public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
