@@ -273,7 +273,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return HugeFloat.divide(left: self, right: value, precision: precision)
     }
     
-    /// Creates a new ``HugeFloat``, and rounds it to the nearest given place.
+    /// Returns a new ``HugeFloat``, and rounds it to the nearest given place.
     /// Converts ``remainder`` to a ``HugeDecimal``, if present.
     public func rounded(_ precision: UInt, remainder_precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
         var decimals:[Int8] = decimal?.value.numbers.reversed() ?? remainder?.to_decimal(precision: remainder_precision).value.numbers.reversed() ?? []
