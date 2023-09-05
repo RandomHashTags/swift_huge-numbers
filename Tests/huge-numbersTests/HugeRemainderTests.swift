@@ -8,14 +8,8 @@
 import XCTest
 import HugeNumbers
 
-struct HugeRemainderTests {
-    func validate() async {
-        await test_remainder()
-    }
-}
-
-extension HugeRemainderTests {
-    private func test_remainder() async {
+final class HugeRemainderTests : XCTestCase {
+    func test_remainder() async {
         var remainder:HugeRemainder = HugeRemainder(dividend: "25", divisor: "5").multiply_by_ten(1)
         var expected_result:HugeRemainder = HugeRemainder(dividend: "250", divisor: "5")
         XCTAssert(remainder == expected_result, "test_remainder;remainder=\(remainder);expected_result=\(expected_result)")
@@ -23,20 +17,14 @@ extension HugeRemainderTests {
         remainder = HugeRemainder(dividend: "25", divisor: "5").multiply_by_ten(-1)
         expected_result = HugeRemainder(dividend: "-250", divisor: "5")
         XCTAssert(remainder == expected_result, "test_remainder;remainder=\(remainder);expected_result=\(expected_result)")
-        
-        test_remainder_addition()
-        test_remainder_subtraction()
-        test_remainder_multiplication()
-        test_remainder_division()
-        await test_remainder_simplify()
     }
-    private func test_remainder_addition() {
+    func test_remainder_addition() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeRemainder = remainder + HugeRemainder(dividend: "1", divisor: "4")
         var expected_result:HugeRemainder = HugeRemainder(dividend: "6", divisor: "8")
         XCTAssert(result == expected_result, "test_remainder_addition;result=\(result);expected_result=\(expected_result)")
     }
-    private func test_remainder_subtraction() {
+    func test_remainder_subtraction() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeRemainder = remainder - HugeRemainder(dividend: "1", divisor: "4")
         var expected_result:HugeRemainder = HugeRemainder(dividend: "2", divisor: "8")
@@ -60,7 +48,7 @@ extension HugeRemainderTests {
         expected_result = HugeRemainder(dividend: "-9", divisor: "5")
         XCTAssert(result == expected_result, "test_remainder_subtraction;result=\(result);expected_result=\(expected_result)")
     }
-    private func test_remainder_multiplication() {
+    func test_remainder_multiplication() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeRemainder = remainder * HugeRemainder(dividend: "5", divisor: "6")
         var expected_result:HugeRemainder = HugeRemainder(dividend: "5", divisor: "12")
@@ -71,7 +59,7 @@ extension HugeRemainderTests {
         expected_result = HugeRemainder(dividend: "20", divisor: "3362")
         XCTAssert(result == expected_result, "test_remainder_multiplication;result=\(result);expected_result=\(expected_result)")
     }
-    private func test_remainder_division() {
+    func test_remainder_division() {
         var remainder:HugeRemainder = HugeRemainder(dividend: "60", divisor: "1")
         var result:HugeRemainder = remainder / HugeRemainder(dividend: "90", divisor: "1")
         var expected_result:HugeRemainder = HugeRemainder(dividend: "60", divisor: "90")
@@ -81,7 +69,7 @@ extension HugeRemainderTests {
         expected_result = HugeRemainder(dividend: "3000", divisor: "24")
         XCTAssert(result == expected_result, "test_remainder_division;result=\(result);expected_result=\(expected_result)")
     }
-    private func test_remainder_simplify() async {
+    func test_remainder_simplify() async {
         var remainder:HugeRemainder = HugeRemainder(dividend: "2", divisor: "4")
         await remainder.simplify_parallel()
         var expected_result:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")

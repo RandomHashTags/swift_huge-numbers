@@ -207,3 +207,9 @@ internal extension HugeDecimal {
         return result_string
     }
 }
+/*
+ Misc
+ */
+public func abs(_ integer: HugeInt) -> HugeDecimal {
+    return HugeDecimal(value: HugeInt(is_negative: false, integer.numbers))
+}

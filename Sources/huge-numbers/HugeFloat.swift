@@ -50,8 +50,8 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     
     public init(integer: HugeInt, decimal: HugeDecimal? = nil, remainder: HugeRemainder? = nil) {
         self.integer = integer
-        self.decimal = decimal
-        self.remainder = remainder
+        self.decimal = decimal?.is_zero ?? false ? nil : decimal
+        self.remainder = remainder?.is_zero ?? false ? nil : remainder
     }
     public init(integer: String, decimal: HugeDecimal? = nil, remainder: HugeRemainder? = nil) {
         self.init(integer: HugeInt(integer), decimal: decimal, remainder: remainder)
@@ -182,7 +182,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
             return multiply_remainder_by_ten(amount)
         } else {
             let is_negative:Bool = amount < 0
-            let target_amount:Int = is_negative ? abs(amount)-1 : amount
+            let target_amount:Int = abs(amount)
             var numbers:[Int8] = integer.numbers
             for _ in 0..<target_amount {
                 numbers.insert(0, at: 0)
@@ -192,46 +192,68 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     }
     /// Multiplies the ``decimal`` by ten to the power of _amount_, potentially removing it if applicable.
     public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
+        let absolute_amount:Int = abs(amount)
         let is_negative:Bool = amount < 0
         var numbers:[Int8] = integer.numbers
         var decimals:[Int8]! = decimal?.value.numbers.reversed() ?? []
         var remaining_decimals:HugeDecimal? = nil
-        if is_negative {
-            let absolute_amount:Int = abs(amount)
-            if integer.is_zero {
-                for _ in 0..<absolute_amount {
-                    decimals.append(0)
-                }
-            } else {
-                let numbers_count:Int = numbers.count
-                if absolute_amount >= numbers_count {
-                    decimals = decimals.reversed()
-                    decimals.append(contentsOf: numbers)
-                    numbers = []
-                    for _ in 0..<absolute_amount-numbers_count {
-                        decimals.append(0)
-                    }
-                } else {
-                    for _ in 0..<absolute_amount {
-                        let target_number:Int8 = numbers[0]
-                        decimals.append(target_number)
-                        numbers.removeFirst()
-                    }
-                    while decimals.first == 0 {
-                        decimals.removeLast()
-                    }
-                }
-            }
-        } else {
-            for i in 0..<amount {
-                numbers.insert(decimals.get(i) ?? 0, at: 0)
-            }
+        let decimals_count:Int = decimals.count
+        for i in 0..<decimals_count {
+            numbers.insert(decimals[i], at: 0)
+        }
+        if decimals_count <= absolute_amount {
             decimals = nil
         }
-        if decimals != nil && !decimals.isEmpty {
+        
+        for _ in decimals_count..<absolute_amount {
+            numbers.insert(0, at: 0)
+        }
+        if decimals != nil {
             remaining_decimals = HugeDecimal(value: HugeInt(is_negative: false, decimals))
         }
-        return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimals)
+        return HugeFloat(integer: HugeInt(is_negative: is_negative == !integer.is_negative, numbers), decimal: remaining_decimals)
+    }
+    /// Returns a new ``HugeFloat`` by moving the ``decimal``/``remainder`` _amount_ times, potentially removing it if applicable.
+    ///
+    /// If _amount_ is negative, move left, else right.
+    ///
+    /// If ``remainder`` != nil, the dividend or divisor is multiplied or divided by ten.
+    public func move_decimal(_ amount: Int, precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
+        let is_negative:Bool = amount < 0
+        var numbers:[Int8] = integer.numbers
+        if let decimal:HugeDecimal = decimal ?? remainder?.to_decimal(precision: precision) {
+            var decimal_numbers:[Int8] = decimal.value.numbers
+            if is_negative {
+                for _ in 0..<abs(amount) {
+                    decimal_numbers.append(numbers.isEmpty ? 0 : numbers.removeFirst())
+                }
+            } else {
+                for _ in 0..<amount {
+                    numbers.insert(decimal_numbers.isEmpty ? 0 : decimal_numbers.removeLast(), at: 0)
+                }
+            }
+            let remaining_decimal:HugeDecimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
+            return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimal)
+        } else {
+            var decimal:HugeDecimal? = nil
+            if is_negative {
+                let numbers_count:Int = numbers.count, absolute_amount:Int = abs(amount)
+                if numbers_count == absolute_amount {
+                    decimal = abs(integer)
+                } else if numbers_count >= absolute_amount {
+                    let decimal_numbers:[Int8] = Array(numbers[0..<absolute_amount])
+                    numbers = Array(numbers[absolute_amount...])
+                    decimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
+                } else {
+                    
+                }
+            } else {
+                for _ in 0..<amount {
+                    numbers.insert(0, at: 0)
+                }
+            }
+            return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: decimal)
+        }
     }
     /// Returns a new ``HugeFloat`` by multiplying the ``remainder`` by ten to the power of _amount_, potentially removing it if applicable. Also carries over the quotient to the new huge float, if applicable.
     public func multiply_remainder_by_ten(_ amount: Int) -> HugeFloat {
@@ -278,7 +300,7 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         }
         decimals = Array(previous_decimals).reversed()
         let decimal:HugeDecimal = HugeDecimal(value: HugeInt(is_negative: false, decimals))
-        return HugeFloat.init(integer: integer, decimal: decimal.is_zero ? nil : decimal)
+        return HugeFloat.init(integer: integer, decimal: decimal)
     }
     
     

@@ -107,14 +107,13 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
         return numbers.allSatisfy(transform)
     }
     
-    public mutating func multiplied_by_ten(_ amount: Int) -> HugeInt {
+    public mutating func multiplied_by_ten(_ amount: Int) {
         let array:[Int8] = [Int8].init(repeating: 0, count: abs(amount))
         if amount > 0 {
             numbers.insert(contentsOf: array, at: 0)
         } else {
             numbers.insert(contentsOf: array, at: numbers.count-1)
         }
-        return self
     }
     public func multiply_by_ten(_ amount: Int) -> HugeInt {
         let is_negative:Bool = is_negative != (amount < 0 ? true : false)

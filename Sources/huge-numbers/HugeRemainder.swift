@@ -59,12 +59,11 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         var result:ArraySlice<Int8> = ArraySlice<Int8>.init(repeating: 127, count: precision_int)
         var result_remainders:[HugeRemainder] = [HugeRemainder].init(repeating: zero_remainder, count: precision_int)
         var repeated_value:[Int8]? = nil
-        let is_negative:Bool = dividend.is_negative
-        var remaining_dividend:HugeInt = is_negative ? -dividend : dividend, remaining_remainder:HugeRemainder = zero_remainder
+        var remaining_dividend:HugeInt = abs(dividend), remaining_remainder:HugeRemainder = zero_remainder
         var index:Int = 0
     while_loop:
         while index < precision_int && (remaining_dividend != zero || remaining_remainder != zero_remainder) && remaining_dividend <= divisor {
-            remaining_dividend *= 10
+            remaining_dividend.multiplied_by_ten(1)
             let (maximum_divisions, remainder):(HugeInt, HugeRemainder?) = remaining_dividend / divisor
             let subtracted_value:HugeInt = maximum_divisions * divisor
             remaining_dividend -= subtracted_value
@@ -103,7 +102,7 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         } else {
             result = result[0..<index]
         }
-        return HugeDecimal(value: HugeInt(is_negative: is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
+        return HugeDecimal(value: HugeInt(is_negative: dividend.is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
     private func get_indexes_of(value: Int8, array: ArraySlice<Int8>, set_value: Int8) -> [Int]? {
         guard let first_index:Int = array.firstIndex(of: value) else { return nil }

@@ -10,12 +10,7 @@ import HugeNumbers
 
 final class huge_numbersTests : XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
-        
-        await HugeIntTests().validate()
-        await HugeFloatTests().validate()
-        await HugeRemainderTests().validate()
-        await HugeDecimalTests().validate()
+        //try await test_benchmarks()
         test_sin()
         test_pi()
     }
@@ -33,6 +28,7 @@ extension huge_numbersTests {
         })*/
         
         for _ in 1...5 {
+            try await test()
             //try await test_benchmark_integer_addition()
             //try await test_benchmark_integer_subtraction()
             //try await test_benchmark_integer_multiplication()
@@ -41,9 +37,19 @@ extension huge_numbersTests {
             //try await test_benchmark_float_addition()
             //try await test_benchmark_float_subtraction()
             //try await test_benchmark_float_multiplication()
-            try await test_benchmark_float_division()
+            //try await test_benchmark_float_division()
         }
     }
+    @available(macOS 13.0, *)
+    private func test() async throws {
+        /*let remainder:HugeRemainder = HugeRemainder(dividend: "12355", divisor: "87315")
+        try await benchmark_compare_is_faster(maximum_iterations: 10, key1: "HugeRemainder.to_decimal", {
+            let _:HugeDecimal = remainder.to_decimal()
+        }, key2: "HugeRemainder.to_decimal2") {
+            let _:HugeDecimal = remainder.to_decimal2()
+        }*/
+    }
+    
     @available(macOS 13.0, *)
     private func test_benchmark_integer_addition() async throws {
         let left_native:UInt64 = 8237502387529357, right_native:UInt64 = 397653549738

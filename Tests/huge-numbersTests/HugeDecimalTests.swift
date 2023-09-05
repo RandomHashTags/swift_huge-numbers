@@ -8,14 +8,8 @@
 import XCTest
 import HugeNumbers
 
-struct HugeDecimalTests {
-    func validate() async {
-        await test_decimal()
-    }
-}
-
-extension HugeDecimalTests {
-    private func test_decimal() async {
+final class HugeDecimalTests : XCTestCase {
+    func test_decimal() async {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeDecimal = remainder.to_decimal()
         var expected_result:HugeDecimal = HugeDecimal("5")
@@ -58,12 +52,8 @@ extension HugeDecimalTests {
         result = HugeDecimal("9999").distance_to_next_quotient
         expected_result = HugeDecimal("0001", remove_leading_zeros: false)
         XCTAssert(result == expected_result, "test_decimal;result=\(result);expected_result=\(expected_result)")
-        
-        test_decimal_addition()
-        test_decimal_subtraction()
-        test_decimal_multiplication()
     }
-    private func test_decimal_addition() {
+    func test_decimal_addition() {
         var decimal:HugeDecimal = HugeDecimal("999")
         var (result, quotient):(HugeDecimal, HugeInt?) = decimal + HugeDecimal("001", remove_leading_zeros: false)
         var (expected_result, expected_quotient):(HugeDecimal, HugeInt?) = (HugeDecimal("000", remove_leading_zeros: false), HugeInt.one)
@@ -73,12 +63,12 @@ extension HugeDecimalTests {
         (expected_result, expected_quotient) = (decimal, nil)
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_addition;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
     }
-    private func test_decimal_subtraction() {
+    func test_decimal_subtraction() {
         var (result, quotient):(HugeDecimal, HugeInt?) = HugeDecimal("999") - HugeDecimal("001", remove_leading_zeros: false)
         var (expected_result, expected_quotient):(HugeDecimal, HugeInt?) = (HugeDecimal("998"), nil)
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_subtraction;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
     }
-    private func test_decimal_multiplication() {
+    func test_decimal_multiplication() {
         var (quotient, result):(HugeInt?, HugeDecimal) = HugeDecimal("999") * HugeDecimal("2")
         var (expected_quotient, expected_result):(HugeInt?, HugeDecimal) = (nil, HugeDecimal("1998"))
         XCTAssert(result == expected_result && quotient == expected_quotient, "test_decimal_multiplication;result=\(result);expected_result=\(expected_result);quotient=\(String(describing: quotient));expected_quotient=\(String(describing: expected_quotient))")
