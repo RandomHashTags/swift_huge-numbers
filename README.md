@@ -19,7 +19,7 @@ pod 'HugeNumbers', :git => 'https://github.com/RandomHashTags/swift_huge-numbers
 ```
 ### Swift Package Manager
 ```swift
-.package(url: "https://github.com/RandomHashTags/swift_huge-numbers.git", from: "1.0.15")
+.package(url: "https://github.com/RandomHashTags/swift_huge-numbers.git", from: "1.1.0")
 ```
 
 ## Current features
@@ -66,7 +66,7 @@ The tables below display the nanoseconds longer it took this library to calculat
 |1.0.14       |RELEASE          |6                |12345.678        |54321.012        |~790             |~1,080           |~3,300           |~39,500          |
 |1.0.14       |RELEASE          |100              |12345.678        |54321.012        |-                |-                |-                |~660,000         |
 |1.0.16       |RELEASE          |6                |12345.678        |54321.012        |-                |-                |-                |~33,400          |
-|1.0.16       |RELEASE          |6                |12345.678        |54321.012        |-                |-                |-                |~533,000         |
+|1.0.16       |RELEASE          |100              |12345.678        |54321.012        |-                |-                |-                |~533,000         |
 
 ## Contributing
 Adding/improving functionality is always welcome, just make a PR.
