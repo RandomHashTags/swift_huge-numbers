@@ -12,3 +12,9 @@ internal extension Int8 {
         return "\(String(describing: self))\u{0305}".first!
     }
 }
+
+public extension BinaryInteger {
+    func to_binary() -> [Bool] {
+        return String.init(self, radix: 2).map({ $0 == "1" ? true : false })
+    }
+}

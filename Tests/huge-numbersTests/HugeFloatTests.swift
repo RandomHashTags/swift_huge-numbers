@@ -138,7 +138,7 @@ final class HugeFloatTests : XCTestCase {
         var expected_result:HugeFloat = HugeFloat("3.5918")
         XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
         
-        result = HugeFloat("19385436.795909235895") * 9
+        result = (HugeFloat("19385436.795909235895") * 9).remainder_to_decimal()
         expected_result = HugeFloat("174468931.163183123055")
         XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
         
@@ -213,6 +213,11 @@ final class HugeFloatTests : XCTestCase {
         
         result = HugeFloat("5008").multiply_by_ten(-3)
         expected_result = HugeFloat("-5008000")
+        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+    }
+    func test_float_decimal_and_remainder_mismatch_multiplication() {
+        var result:HugeFloat = HugeFloat("42.25") * HugeFloat(integer: HugeInt.one, remainder: HugeRemainder(dividend: "1", divisor: "2")).remainder_to_decimal()
+        var expected_result:HugeFloat = HugeFloat("21.125")
         XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
     }
     func test_float_move_decimal() {

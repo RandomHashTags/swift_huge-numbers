@@ -11,8 +11,24 @@ import HugeNumbers
 final class huge_numbersTests : XCTestCase {
     func testExample() async throws {
         //try await test_benchmarks()
+        
+        test_hugeint2()
+        
+        return;
         test_sin()
         test_pi()
+    }
+    
+    func test_hugeint2() {
+        var integer:HugeInt2 = HugeInt2(UInt64.max) + HugeInt2(3)
+        
+        var target_binary:[Bool] = [Bool].init(repeating: false, count: 64)
+        target_binary.insert(true, at: 0)
+        target_binary[63] = true
+        
+        var result:HugeInt2 = HugeInt2(binary: target_binary)
+        
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
     }
 }
 

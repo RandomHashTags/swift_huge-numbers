@@ -307,6 +307,12 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         return HugeFloat.init(integer: integer, decimal: decimal)
     }
     
+    public func decimal_to_remainder() -> HugeFloat {
+        return HugeFloat(integer: integer, remainder: decimal?.to_remainder)
+    }
+    public func remainder_to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
+        return HugeFloat(integer: integer, decimal: remainder?.to_decimal(precision: precision))
+    }
     
     public func to_radians() -> HugeFloat {
         return self * HugeFloat("0.01745329252")
@@ -573,9 +579,7 @@ internal extension HugeFloat {
             return right
         } else if right == HugeFloat.one {
             return left
-        } else if left.decimal != nil || right.decimal != nil {
-            return multiply_decimals(left: left, right: right)
-        } else if left.remainder != nil || right.remainder != nil {
+        } else if left.decimal != nil || right.decimal != nil || left.remainder != nil || right.remainder != nil {
             return multiply_remainders(left: left, right: right)
         } else {
             return HugeFloat(integer: left.integer * right.integer)
@@ -610,11 +614,11 @@ internal extension HugeFloat {
         return HugeFloat(integer: integer, decimal: HugeDecimal(value: decimal))
     }
     static func multiply_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero
+        let remainder:HugeRemainder = left.decimal?.to_remainder ?? left.remainder ?? HugeRemainder.zero
         let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
         let (left_quotient, left_remainder):(HugeInt, HugeRemainder?) = (remainder * right_integer).to_int
         let right_quotient:HugeInt, right_remainder:HugeRemainder?, multiplied_remainder:HugeRemainder?
-        if let target_right_remainder:HugeRemainder = right.remainder {
+        if let target_right_remainder:HugeRemainder = right.decimal?.to_remainder ?? right.remainder {
             (right_quotient, right_remainder) = (target_right_remainder * left_integer).to_int
             multiplied_remainder = remainder * target_right_remainder
         } else {
