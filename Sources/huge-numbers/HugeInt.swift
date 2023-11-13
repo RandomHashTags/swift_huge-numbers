@@ -9,14 +9,17 @@ import Foundation
 
 public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     /// 100 decimal places.
-    public static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
+    public private(set) static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
     /// 6 decimal places.
-    public static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
+    public private(set) static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
     /// 15 decimal places.
-    public static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
+    public private(set) static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
     
-    public static var zero:HugeInt = HugeInt(is_negative: false, [])
-    public static var one:HugeInt = HugeInt(is_negative: false, [1])
+    public private(set) static var zero:HugeInt = HugeInt(is_negative: false, [])
+    public private(set) static var one:HugeInt = HugeInt(is_negative: false, [1])
+    public private(set) static var two:HugeInt = HugeInt(is_negative: false, [2])
+    public private(set) static var sixty_four:HugeInt = HugeInt(is_negative: false, [4, 6])
+    public private(set) static var sixty_fifth_bit_value:HugeInt = HugeInt("18446744073709551616")
     
     public static func random(in range: Range<HugeInt>) -> HugeInt {
         let minimum_integer:UInt64 = range.lowerBound.to_int()!, maximum_integer:UInt64 = range.upperBound.to_int()!

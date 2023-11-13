@@ -18,15 +18,19 @@ public struct HugeInt2 : Equatable {
     public var binary_string : String {
         return binary.map({ $0 ? "1" : "0" }).joined()
     }
-    public var binary_complement_one : [Bool] {
+    
+    public func binary_complement_one(totalBits: Int) -> [Bool] {
         var inverted:[Bool] = binary.map({ !$0 })
+        if inverted.count != totalBits {
+            inverted.insert(contentsOf: [Bool].init(repeating: true, count: totalBits - inverted.count), at: 0)
+        }
         while !(inverted.first ?? true) {
             inverted.removeFirst()
         }
         return inverted
     }
-    public var binary_complement_two : [Bool] {
-        return HugeInt2.add(left_binary: [true], right_binary: binary_complement_one)
+    public func binary_complement_two(totalBits: Int) -> [Bool] {
+        return HugeInt2.add(left_binary: [true], right_binary: binary_complement_one(totalBits: totalBits))
     }
     
     public init<T: BinaryInteger>(_ integer: T) {
@@ -39,6 +43,9 @@ public struct HugeInt2 : Equatable {
     }
     
     public var description : String {
+        guard binary.count > 64 else {
+            return (is_negative ? "-" : "") + "\(UInt64(binary_string, radix: 2)!)"
+        }
         return "?" // TODO: fix
     }
     public var is_zero : Bool {
@@ -119,7 +126,11 @@ extension HugeInt2 {
 }
 extension HugeInt2 {
     static func subtract(left: HugeInt2, right: HugeInt2) -> HugeInt2 {
-        let binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary_complement_two)
+        let max_length:Int = max(left.binary.count, right.binary.count)
+        var binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary_complement_two(totalBits: max_length))
+        while binary.count > max_length || !binary[0] {
+            binary.removeFirst()
+        }
         return HugeInt2(is_negative: false, binary: binary) // TODO: fix
     }
 }
@@ -142,5 +153,21 @@ public extension HugeInt2 {
         } else {
             return HugeInt2.subtract(left: left, right: right)
         }
+    }
+}
+
+public extension HugeInt2 {
+    static func get_bit_value(bit_width: HugeInt) -> [Int8] {
+        guard bit_width > 64 else {
+            let integer:Int = bit_width.to_int()!
+            return String(2^integer).map({ Int8(String($0))! }).reversed()
+        }
+        var value:HugeInt = HugeInt.sixty_fifth_bit_value
+        var bit_width:HugeInt = bit_width - HugeInt.sixty_four
+        while bit_width > 0 {
+            value *= HugeInt.two
+            bit_width -= HugeInt.one
+        }
+        return value.numbers
     }
 }

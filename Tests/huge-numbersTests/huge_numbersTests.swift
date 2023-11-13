@@ -29,6 +29,21 @@ final class huge_numbersTests : XCTestCase {
         var result:HugeInt2 = HugeInt2(binary: target_binary)
         
         XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
+        
+        integer = HugeInt2(4) - HugeInt2(1)
+        result = HugeInt2(3)
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
+        
+        integer = HugeInt2(15) - HugeInt2(1)
+        result = HugeInt2(14)
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
+        
+        integer = HugeInt2(15) - HugeInt2(7)
+        result = HugeInt2(8)
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
+        
+        let test:[Int8] = HugeInt2.get_bit_value(bit_width: 128)
+        print("test=" + test.debugDescription)
     }
 }
 
