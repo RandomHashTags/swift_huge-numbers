@@ -10,9 +10,9 @@ import HugeNumbers
 
 final class huge_numbersTests : XCTestCase {
     func testExample() async throws {
-        //try await test_benchmarks()
+        try await test_benchmarks()
         
-        test_hugeint2()
+        //test_hugeint2()
         
         return;
         test_sin()
@@ -42,8 +42,16 @@ final class huge_numbersTests : XCTestCase {
         result = HugeInt2(8)
         XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
         
+        integer = HugeInt2(14) + HugeInt2(28) + HugeInt2(112)
+        result = HugeInt2(154)
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
+        
         let test:[Int8] = HugeInt2.get_bit_value(bit_width: 128)
         print("test=" + test.debugDescription)
+        
+        integer = HugeInt2(11) * HugeInt2(14)
+        result = HugeInt2(154)
+        XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
     }
 }
 
@@ -73,6 +81,16 @@ extension huge_numbersTests {
     }
     @available(macOS 13.0, *)
     private func test() async throws {
+        let left:Int = 515982376, right:Int = 12
+        let one:HugeInt = HugeInt(left), two:HugeInt = HugeInt(right)
+        let three:HugeInt2 = HugeInt2(left), four:HugeInt2 = HugeInt2(right)
+        
+        try await benchmark_compare_is_faster(key1: "HugeInt.add", {
+            let value:HugeInt = one * two
+        }, key2: "HugeInt2.add") {
+            let value:HugeInt2 = three * four
+        }
+        
         /*let remainder:HugeRemainder = HugeRemainder(dividend: "12355", divisor: "87315")
         try await benchmark_compare_is_faster(maximum_iterations: 10, key1: "HugeRemainder.to_decimal", {
             let _:HugeDecimal = remainder.to_decimal()

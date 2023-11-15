@@ -7,6 +7,7 @@
 
 import Foundation
 
+// abandond due to scaling issue??
 public struct HugeInt2 : Equatable {
     
     public static var zero:HugeInt2 = HugeInt2(0)
@@ -61,74 +62,51 @@ public extension HugeInt2 {
 
 extension HugeInt2 {
     static func add(left_binary: [Bool], right_binary: [Bool]) -> [Bool] {
-        let left_binary:[Bool] = left_binary.reversed()
-        let right_binary:[Bool] = right_binary.reversed()
+        var left_binary:[Bool] = left_binary
+        var right_binary:[Bool] = right_binary
         let binary_length:Int = max(left_binary.count, right_binary.count)
         var result_binary:[Bool] = [Bool].init(repeating: false, count: binary_length)
         
+        if left_binary.count != right_binary.count {
+            for _ in left_binary.count..<binary_length {
+                left_binary.insert(false, at: 0)
+            }
+            for _ in right_binary.count..<binary_length {
+                right_binary.insert(false, at: 0)
+            }
+        }
+        
         var carry_over:Bool = false
-        if left_binary.count == right_binary.count { // equal amount of bits that represent each number
-            for bit in 0..<binary_length {
-                var value:Bool = carry_over
-                if left_binary[bit] {
-                    if right_binary[bit] {
-                        carry_over = true
-                    } else {
-                        value = !value
-                    }
-                } else if right_binary[bit] {
+        let starting_index:Int = binary_length - 1
+        for bit in 0..<binary_length {
+            let value:Bool
+            let index:Int = starting_index - bit
+            if left_binary[index] {
+                if right_binary[index] {
+                    value = carry_over
+                    carry_over = true
+                } else {
                     value = !carry_over
                 }
-                result_binary[bit] = value
-            }
-        } else {
-            let smaller_binary:[Bool], larger_binary:[Bool]
-            if left_binary.count < right_binary.count {
-                smaller_binary = left_binary
-                larger_binary = right_binary
+            } else if right_binary[index] {
+                value = !carry_over
             } else {
-                smaller_binary = right_binary
-                larger_binary = left_binary
+                value = carry_over
+                carry_over = false
             }
-            for bit in 0..<larger_binary.count {
-                result_binary[bit] = larger_binary[bit]
-            }
-            for bit in 0..<smaller_binary.count {
-                var value:Bool = carry_over
-                if smaller_binary[bit] {
-                    if result_binary[bit] {
-                        carry_over = true
-                    } else {
-                        value = !value
-                    }
-                } else if result_binary[bit] && carry_over {
-                    value = false
-                    carry_over = false
-                }
-                result_binary[bit] = value
-            }
-            var bit:Int = smaller_binary.count
-            while carry_over && bit < larger_binary.count {
-                if result_binary[bit] {
-                    result_binary[bit] = !result_binary[bit]
-                } else {
-                    result_binary[bit] = true
-                    carry_over = false
-                }
-                bit += 1
-            }
+            result_binary[index] = value
         }
         if carry_over {
-            result_binary.append(true)
+            result_binary.insert(true, at: 0)
         }
-        return result_binary.reversed()
+        return result_binary
     }
 }
 extension HugeInt2 {
     static func subtract(left: HugeInt2, right: HugeInt2) -> HugeInt2 {
         let max_length:Int = max(left.binary.count, right.binary.count)
         var binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary_complement_two(totalBits: max_length))
-        while binary.count > max_length || !binary[0] {
+        while binary.count > max_length || binary.count != 0 && !binary[0] {
             binary.removeFirst()
         }
         return HugeInt2(is_negative: false, binary: binary) // TODO: fix
@@ -144,6 +122,11 @@ public extension HugeInt2 {
             return HugeInt2.subtract(left: left, right: right)
         }
     }
+    static func += (left: inout HugeInt2, right: HugeInt2) {
+        let value:HugeInt2 = left + right
+        left.is_negative = value.is_negative
+        left.binary = value.binary
+    }
 }
 public extension HugeInt2 {
     static func - (left: HugeInt2, right: HugeInt2) -> HugeInt2 {
@@ -154,9 +137,61 @@ public extension HugeInt2 {
             return HugeInt2.subtract(left: left, right: right)
         }
     }
+    static func -= (left: inout HugeInt2, right: HugeInt2) {
+        let value:HugeInt2 = left - right
+        left.is_negative = value.is_negative
+        left.binary = value.binary
+    }
+}
+
+internal extension HugeInt2 {
+    static func multiply(left: [Bool], right: [Bool]) -> [Bool] {
+        let left_count:Int = left.count, right_count:Int = right.count
+        let max_digits:Int = max(left_count, right_count)
+        let result_digits:Int = left_count + right_count
+        let index:Int = result_digits-1
+        
+        var left_binary:[Bool] = left
+        var right_binary:[Bool] = right
+        
+        for _ in left_count..<max_digits {
+            left_binary.insert(false, at: 0)
+        }
+        for _ in right_count..<max_digits {
+            right_binary.insert(false, at: 0)
+        }
+        
+        var value:HugeInt2 = HugeInt2(0)
+        var binary:[Bool] = [Bool].init(repeating: false, count: result_digits)
+        for left_index in 0..<left_count {
+            if left_binary[left_count - 1 - left_index] {
+                for right_index in 0..<right_count {
+                    binary[index - left_index - right_index] = right_binary[right_count - 1 - right_index]
+                }
+                value += HugeInt2(binary: binary)
+                for i in 0..<result_digits {
+                    binary[i] = false
+                }
+            }
+        }
+        return value.binary
+    }
+}
+public extension HugeInt2 {
+    static func * (left: HugeInt2, right: HugeInt2) -> HugeInt2 {
+        return HugeInt2(is_negative: !(left.is_negative == right.is_negative), binary: HugeInt2.multiply(left: left.binary, right: right.binary))
+    }
+    static func *= (left: inout HugeInt2, right: HugeInt2) {
+        let value:HugeInt2 = left * right
+        left.is_negative = value.is_negative
+        left.binary = value.binary
+    }
 }
 
 public extension HugeInt2 {
+    static func get_bit_value(bit_width: UInt64) -> [Int8] {
+        return get_bit_value(bit_width: HugeInt(bit_width))
+    }
     static func get_bit_value(bit_width: HugeInt) -> [Int8] {
         guard bit_width > 64 else {
             let integer:Int = bit_width.to_int()!
