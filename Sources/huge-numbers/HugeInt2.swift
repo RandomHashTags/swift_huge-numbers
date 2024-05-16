@@ -7,7 +7,7 @@
 
 import Foundation
 
-// abandond due to scaling issue??
+// abandon due to scaling issue??
 public struct HugeInt2 : Equatable {
     
     public static var zero:HugeInt2 = HugeInt2(0)

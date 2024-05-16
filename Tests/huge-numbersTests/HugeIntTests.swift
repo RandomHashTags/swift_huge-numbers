@@ -41,16 +41,16 @@ final class HugeIntTests : XCTestCase {
         
         var result:HugeInt = eleven.multiply_by_ten(1)
         var expected_result:HugeInt = HugeInt(is_negative: false, [0, 1, 1])
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     
         result = eleven.multiply_by_ten(-1)
         expected_result = HugeInt(is_negative: true, [0, 1, 1])
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         
         result = negative_eleven.multiply_by_ten(1)
         expected_result = HugeInt(is_negative: true, [0, 1, 1])
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_int_addition() {
         var integer:HugeInt = HugeInt("93285729350358025806")
@@ -71,28 +71,28 @@ final class HugeIntTests : XCTestCase {
         let second_integer:HugeInt = HugeInt("82372959")
         var result:HugeInt = integer - second_integer
         var expected_result:HugeInt = HugeInt("-1")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         XCTAssert(integer - integer - 1 == expected_result, "result=\(result);expected_result=\(expected_result)")
         
         result -= 1
         expected_result = HugeInt("-2")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result -= -2
         expected_result = HugeInt.zero
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeInt("10000") - HugeInt("9045")
         expected_result = HugeInt("955")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeInt("780637") - HugeInt("714760")
         expected_result = HugeInt("65877")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeInt("200200") - HugeInt("1")
         expected_result = HugeInt("200199")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_int_multiplication() {
         let integer:HugeInt = HugeInt("1234567891011121314151617181920")
@@ -177,90 +177,90 @@ final class HugeIntTests : XCTestCase {
     func test_int_factorial() {
         var result:HugeInt = HugeInt("5").factorial()
         var expected_result:HugeInt = HugeInt("120")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_int_percent() {
         var integer:HugeInt = HugeInt("100")
         var result:HugeInt = integer % HugeInt("10")
         var expected_result:HugeInt = HugeInt.zero
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = integer % HugeInt("40")
         expected_result = HugeInt("20")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_int_square_root() {
         var integer:HugeInt = HugeInt("7921")
         var result:HugeFloat = sqrt(integer)
         var expected_result:HugeFloat = HugeFloat("89")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("9")
         result = sqrt(integer)
         expected_result = HugeFloat("3")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("64")
         result = sqrt(integer)
         expected_result = HugeFloat("8")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("100")
         result = sqrt(integer)
         expected_result = HugeFloat("10")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("10000")
         result = sqrt(integer)
         expected_result = HugeFloat("100")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("2025")
         result = sqrt(integer)
         expected_result = HugeFloat("45")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("1444")
         result = sqrt(integer)
         expected_result = HugeFloat("38")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("5184")
         result = sqrt(integer)
         expected_result = HugeFloat("72")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("8281")
         result = sqrt(integer)
         expected_result = HugeFloat("91")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("24336")
         result = sqrt(integer)
         expected_result = HugeFloat("156")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("80")
         result = sqrt(integer)
         expected_result = HugeFloat("8")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         integer = HugeInt("0")
         result = sqrt(integer)
         expected_result = HugeFloat("0")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_int_to_the_power_of() {
         var result:HugeInt = HugeInt("2").squared()
         var expected_result:HugeInt = HugeInt("4")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeInt("3").cubed()
         expected_result = HugeInt("27")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeInt("5").to_the_power_of(5)
         expected_result = HugeInt("3125")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
 }

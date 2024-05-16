@@ -7,6 +7,7 @@
 
 import Foundation
 
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 public extension String.LocalizationValue.StringInterpolation {
     mutating func appendLiteral(_ value: HugeInt) {
@@ -27,3 +28,4 @@ public extension String.LocalizationValue.StringInterpolation {
         appendLiteral(value)
     }
 }
+#endif

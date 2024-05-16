@@ -10,16 +10,14 @@ import HugeNumbers
 
 final class huge_numbersTests : XCTestCase {
     func testExample() async throws {
-        try await test_benchmarks()
-        
-        //test_hugeint2()
+        //try await test_benchmarks()
         
         return;
         test_sin()
         test_pi()
     }
     
-    func test_hugeint2() {
+    private func test_hugeint2() {
         var integer:HugeInt2 = HugeInt2(UInt64.max) + HugeInt2(3)
         
         var target_binary:[Bool] = [Bool].init(repeating: false, count: 64)
@@ -47,7 +45,7 @@ final class huge_numbersTests : XCTestCase {
         XCTAssertEqual(integer, result, integer.binary_string + " != " + result.binary_string)
         
         let test:[Int8] = HugeInt2.get_bit_value(bit_width: 128)
-        print("test=" + test.debugDescription)
+        print("test_hugeint2=" + test.debugDescription)
         
         integer = HugeInt2(11) * HugeInt2(14)
         result = HugeInt2(154)
@@ -55,8 +53,8 @@ final class huge_numbersTests : XCTestCase {
     }
 }
 
-extension huge_numbersTests {
-    private func test_benchmarks() async throws {
+private extension huge_numbersTests {
+    func test_benchmarks() async throws {
         guard #available(macOS 13.0, iOS 16.0, *) else { return }
         
         /*let dividend:HugeInt = HugeInt("41"), divisor:HugeInt = HugeInt("4")
@@ -80,7 +78,7 @@ extension huge_numbersTests {
         }
     }
     @available(macOS 13.0, *)
-    private func test() async throws {
+    func test() async throws {
         let left:Int = 515982376, right:Int = 12
         let one:HugeInt = HugeInt(left), two:HugeInt = HugeInt(right)
         let three:HugeInt2 = HugeInt2(left), four:HugeInt2 = HugeInt2(right)
@@ -100,7 +98,7 @@ extension huge_numbersTests {
     }
     
     @available(macOS 13.0, *)
-    private func test_benchmark_integer_addition() async throws {
+    func test_benchmark_integer_addition() async throws {
         let left_native:UInt64 = 8237502387529357, right_native:UInt64 = 397653549738
         let left:HugeInt = HugeInt(left_native), right:HugeInt = HugeInt(right_native)
         try await benchmark_compare_is_faster(key1: "HugeInt.add", {
@@ -110,7 +108,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_integer_subtraction() async throws {
+    func test_benchmark_integer_subtraction() async throws {
         let left_native:UInt64 = 8237502387529357, right_native:UInt64 = 397653549738
         let left:HugeInt = HugeInt(left_native), right:HugeInt = HugeInt(right_native)
         try await benchmark_compare_is_faster(key1: "HugeInt.subtract", {
@@ -120,7 +118,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_integer_multiplication() async throws {
+    func test_benchmark_integer_multiplication() async throws {
         let left_native:UInt64 = 8237502387529357, right_native:UInt64 = 397653549738
         let left:HugeInt = HugeInt(left_native), right:HugeInt = HugeInt(right_native)
         try await benchmark_compare_is_faster(key1: "HugeInt.multiply", {
@@ -130,7 +128,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_integer_division() async throws {
+    func test_benchmark_integer_division() async throws {
         let left_native:UInt64 = 8237502387529357, right_native:UInt64 = 397653549738
         let left:HugeInt = HugeInt(left_native), right:HugeInt = HugeInt(right_native)
         try await benchmark_compare_is_faster(key1: "HugeInt.divide", {
@@ -141,7 +139,7 @@ extension huge_numbersTests {
     }
     
     @available(macOS 13.0, *)
-    private func test_benchmark_float_addition() async throws {
+    func test_benchmark_float_addition() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.add", {
@@ -151,7 +149,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_float_subtraction() async throws {
+    func test_benchmark_float_subtraction() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.subtract", {
@@ -161,7 +159,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_float_multiplication() async throws {
+    func test_benchmark_float_multiplication() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         try await benchmark_compare_is_faster(key1: "HugeFloat.multiply", {
@@ -171,7 +169,7 @@ extension huge_numbersTests {
         })
     }
     @available(macOS 13.0, *)
-    private func test_benchmark_float_division() async throws {
+    func test_benchmark_float_division() async throws {
         let left_native:Float = 12345.678, right_native:Float = 54321.012
         let left:HugeFloat = HugeFloat("12345.678"), right:HugeFloat = HugeFloat("54321.012")
         let precision:HugeInt = HugeInt.default_precision
@@ -183,9 +181,9 @@ extension huge_numbersTests {
     }
 }
 
-extension huge_numbersTests {
+private extension huge_numbersTests {
     @available(macOS 13.0, iOS 16.0, watchOS 9.0, *)
-    private func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
+    func benchmark(iteration_count: Int = 10_00, key: String, _ code: @escaping () async throws -> Void, will_print: Bool = true) async throws -> (key: String, min: Int64, max: Int64, median: Int64, average: Int64, total: Int64) {
         let clock:SuspendingClock = SuspendingClock()
         let _:Duration = try await clock.measure(code)
         var timings:[Int64] = [Int64].init(repeating: 0, count: iteration_count)
@@ -217,7 +215,7 @@ extension huge_numbersTests {
         }
         return (key: key, min: minimum, max: maximum, median: median, average: average, total: sum)
     }
-    private func benchmark_compare_is_faster(maximum_iterations: Int = 100, key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void) async throws {
+    func benchmark_compare_is_faster(maximum_iterations: Int = 100, key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void) async throws {
         guard #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) else {
             print("huge_numbersTests;benchmark_compare_is_faster; unsupported platform version")
             return
@@ -235,7 +233,7 @@ extension huge_numbersTests {
         print("huge_numbersTests;benchmark_compare_is_faster;     " + key1 + " is faster \(faster_count)/\(maximum_iterations) on average by " + average_string)
     }
     @available(macOS 13.0, iOS 16.0, watchOS 9.0, *)
-    private func benchmark_compare(key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void, print_to_console: Bool = true) async throws -> (Bool, Int64) {
+    func benchmark_compare(key1: String, _ code1: @escaping () async throws -> Void, key2: String, code2: @escaping () async throws -> Void, print_to_console: Bool = true) async throws -> (Bool, Int64) {
         async let test1 = benchmark(key: key1, code1, will_print: false)
         async let test2 = benchmark(key: key2, code2, will_print: false)
         let ((key1, min1, max1, median1, average1, total1) , (_, min2, max2, median2, average2, total2)) = try await (test1, test2)
@@ -262,22 +260,22 @@ extension huge_numbersTests {
         }
         return (average1 <= average2, average2 - average1)
     }
-    private func get_benchmark_formatted_string(formatter: NumberFormatter, _ value: Any, separation_count: Int = 20) -> String {
+    func get_benchmark_formatted_string(formatter: NumberFormatter, _ value: Any, separation_count: Int = 20) -> String {
         let string:String = formatter.string(for: value)! + "ns"
         return string + (0..<(separation_count - (string.count))).map({ _ in " " }).joined()
     }
 }
 
-extension huge_numbersTests {
-    private func test_sin() {
+private extension huge_numbersTests {
+    func test_sin() {
         /*var (value, decimal):(HugeInt?, HugeDecimal?) = sin(HugeFloat("90"), precision: HugeInt.default_precision)
         var (expected_value, expected_decimal):(HugeInt?, HugeDecimal?) = (HugeInt("1"), nil)
         XCTAssert(value == expected_value && decimal == expected_decimal, "test_sin;value=\(value);decimal=\(decimal);expected_value=\(expected_value);expected_decimal=\(expected_decimal)")*/
     }
 }
 
-extension huge_numbersTests {
-    private func test_pi() {
+private extension huge_numbersTests {
+    func test_pi() {
         return
         // the first 32 characters contain at least 1 of every digit (0-9)
         let pi_100:String = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679"
@@ -297,7 +295,7 @@ extension huge_numbersTests {
         let pi:HugeFloat = HugeFloat.pi(precision: precision)
         print("test_pi;pi=" + pi.description + ";precision=" + precision.description)*/
     }
-    private func test_pi_indexes(i: Int, _ pi_digits: String, bigger_digits: String) {
+    func test_pi_indexes(i: Int, _ pi_digits: String, bigger_digits: String) {
         if #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) {
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))
             var range_index:Int = 0
@@ -309,7 +307,7 @@ extension huge_numbersTests {
             print("test_pi_indexes;i=" + i.description + ";previous number=" + pi_digits[last_index].description + ";next_number=" + bigger_digits[next_index].description)
         }
     }
-    private func test_pi_ranges(i: Int, _ pi_digits: String) {
+    func test_pi_ranges(i: Int, _ pi_digits: String) {
         if #available(macOS 13.0, iOS 16.0, watchOS 9.0, *) {
             let string_count:Int = pi_digits.count
             let ranges:[Range<String.Index>] = pi_digits.ranges(of: String(describing: i))

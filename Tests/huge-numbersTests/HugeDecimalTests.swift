@@ -13,28 +13,28 @@ final class HugeDecimalTests : XCTestCase {
         var remainder:HugeRemainder = HugeRemainder(dividend: "1", divisor: "2")
         var result:HugeDecimal = remainder.to_decimal()
         var expected_result:HugeDecimal = HugeDecimal("5")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         remainder = HugeRemainder(dividend: "1", divisor: "4")
         result = remainder.to_decimal()
         expected_result = HugeDecimal("25")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         remainder = HugeRemainder(dividend: "1", divisor: "10")
         result = remainder.to_decimal()
         expected_result = HugeDecimal("1")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         remainder = HugeRemainder(dividend: "1", divisor: "1005")
         result = remainder.to_decimal()
         expected_result = HugeDecimal(value: HugeInt.zero, repeating_numbers: [8, 9, 3, 0, 2, 9, 5, 1, 8, 6, 3, 6, 2, 7, 4, 5, 0, 9, 8, 1, 2, 6, 5, 7, 8, 4, 2, 0, 5, 9, 9, 0, 0])
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         XCTAssert(result.description.elementsEqual(expected_result.description), "result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeRemainder(dividend: "1", divisor: "1010")
         result = remainder.to_decimal()
         expected_result = HugeDecimal(value: HugeInt.zero, repeating_numbers: [9, 9, 0, 0])
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         XCTAssert(result.description.elementsEqual(expected_result.description), "result=\(result);expected_result=\(expected_result)")
         
         remainder = HugeDecimal("124").to_remainder
@@ -43,15 +43,15 @@ final class HugeDecimalTests : XCTestCase {
         
         result = HugeDecimal("1234").distance_to_next_quotient
         expected_result = HugeDecimal("8766")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeDecimal("100852").distance_to_next_quotient
         expected_result = HugeDecimal("899148")
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
         
         result = HugeDecimal("9999").distance_to_next_quotient
         expected_result = HugeDecimal("0001", remove_leading_zeros: false)
-        XCTAssert(result == expected_result, "result=\(result);expected_result=\(expected_result)")
+        XCTAssertEqual(result, expected_result)
     }
     func test_decimal_addition() {
         var decimal:HugeDecimal = HugeDecimal("999")
