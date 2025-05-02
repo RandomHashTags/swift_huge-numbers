@@ -5,262 +5,307 @@
 //  Created by Evan Anderson on 7/9/23.
 //
 
-import XCTest
-import HugeNumbers
+#if compiler(>=6.0)
 
-final class HugeIntTests : XCTestCase {
-    func test_int() async {
+import HugeNumbers
+import Testing
+
+struct HugeIntTests {
+    @Test
+    func int() async {
         let integer:HugeInt = HugeInt("1234567891011121314151617181920")
         let second_integer:HugeInt = -integer
-        XCTAssert(integer != second_integer)
-        XCTAssert(integer == -second_integer)
-        XCTAssert(!(integer > integer))
-        XCTAssert(!(integer < integer))
-        XCTAssert(integer >= integer)
-        XCTAssert(integer <= integer)
+        #expect(integer != second_integer)
+        #expect(integer == -second_integer)
+        #expect(!(integer > integer))
+        #expect(!(integer < integer))
+        #expect(integer >= integer)
+        #expect(integer <= integer)
         
         let eleven:HugeInt = HugeInt("11")
         let negative_eleven:HugeInt = HugeInt("-11")
-        XCTAssert(eleven >= 4)
-        XCTAssert(eleven >= 8)
-        XCTAssert(!(eleven >= 12))
-        XCTAssert(eleven >= eleven)
-        XCTAssert(HugeInt("111") < HugeInt("220"))
-        XCTAssert(!(HugeInt("222") < HugeInt("103")))
+        #expect(eleven >= 4)
+        #expect(eleven >= 8)
+        #expect(!(eleven >= 12))
+        #expect(eleven >= eleven)
+        #expect(HugeInt("111") < HugeInt("220"))
+        #expect(!(HugeInt("222") < HugeInt("103")))
         
-        XCTAssert(HugeInt("5") > HugeInt("-5"))
-        XCTAssert(HugeInt("5") >= HugeInt("-5"))
-        XCTAssert(HugeInt("-5") < HugeInt("5"))
-        XCTAssert(HugeInt("-5") <= HugeInt("5"))
+        #expect(HugeInt("5") > HugeInt("-5"))
+        #expect(HugeInt("5") >= HugeInt("-5"))
+        #expect(HugeInt("-5") < HugeInt("5"))
+        #expect(HugeInt("-5") <= HugeInt("5"))
         
-        XCTAssert(second_integer < integer)
-        XCTAssert(second_integer <= integer)
+        #expect(second_integer < integer)
+        #expect(second_integer <= integer)
         
-        let six_factors:Set<HugeInt> = await HugeInt("6").get_all_factors_parallel()
-        XCTAssert(six_factors.count == 3, "factors=" + six_factors.description)
+        let six_factors:Set<HugeInt> = await HugeInt("6").getAllFactorsParallel()
+        #expect(six_factors.count == 3, "factors=\(six_factors.description)")
         
-        var result:HugeInt = eleven.multiply_by_ten(1)
-        var expected_result:HugeInt = HugeInt(is_negative: false, [0, 1, 1])
-        XCTAssertEqual(result, expected_result)
+        var result:HugeInt = eleven.multiplyByTen(1)
+        var expectedResult:HugeInt = HugeInt(isNegative: false, [0, 1, 1])
+        #expect(result == expectedResult)
     
-        result = eleven.multiply_by_ten(-1)
-        expected_result = HugeInt(is_negative: true, [0, 1, 1])
-        XCTAssertEqual(result, expected_result)
+        result = eleven.multiplyByTen(-1)
+        expectedResult = HugeInt(isNegative: true, [0, 1, 1])
+        #expect(result == expectedResult)
         
         
-        result = negative_eleven.multiply_by_ten(1)
-        expected_result = HugeInt(is_negative: true, [0, 1, 1])
-        XCTAssertEqual(result, expected_result)
+        result = negative_eleven.multiplyByTen(1)
+        expectedResult = HugeInt(isNegative: true, [0, 1, 1])
+        #expect(result == expectedResult)
     }
-    func test_int_addition() {
-        var integer:HugeInt = HugeInt("93285729350358025806")
-        let second_integer:HugeInt = HugeInt("99999999999239579")
-        integer += second_integer
-        XCTAssert(integer == HugeInt("93385729350357265385"), "integer=\(integer)")
+}
+
+// MARK: Addition
+extension HugeIntTests {
+    @Test
+    func intAddition() {
+        var integer = HugeInt("93285729350358025806")
+        let secondInteger = HugeInt("99999999999239579")
+        integer += secondInteger
+        #expect(integer == HugeInt("93385729350357265385"))
         integer += -1
-        XCTAssert(integer == HugeInt("93385729350357265384"))
+        #expect(integer == HugeInt("93385729350357265384"))
         
         integer += 1
-        XCTAssert(integer == HugeInt("93385729350357265385"), "integer=\(integer)")
-        XCTAssert(integer+1 == HugeInt("93385729350357265386"), "integer=\(integer)")
+        #expect(integer == HugeInt("93385729350357265385"))
+        #expect(integer+1 == HugeInt("93385729350357265386"))
         integer += -1
-        XCTAssert(integer == HugeInt("93385729350357265384"), "integer=\(integer)")
+        #expect(integer == HugeInt("93385729350357265384"))
     }
-    func test_int_subtraction() {
-        var integer:HugeInt = HugeInt("82372958")
-        let second_integer:HugeInt = HugeInt("82372959")
-        var result:HugeInt = integer - second_integer
-        var expected_result:HugeInt = HugeInt("-1")
-        XCTAssertEqual(result, expected_result)
-        XCTAssert(integer - integer - 1 == expected_result, "result=\(result);expected_result=\(expected_result)")
+}
+
+// MARK: Subtraction
+extension HugeIntTests {
+    @Test
+    func intSubtraction() {
+        var integer = HugeInt("82372958")
+        let second_integer = HugeInt("82372959")
+        var result = integer - second_integer
+        var expectedResult = HugeInt("-1")
+        #expect(result == expectedResult)
+        #expect(integer - integer - 1 == expectedResult, "result=\(result);expectedResult=\(expectedResult)")
         
         result -= 1
-        expected_result = HugeInt("-2")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt("-2")
+        #expect(result == expectedResult)
         
         result -= -2
-        expected_result = HugeInt.zero
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt.zero
+        #expect(result == expectedResult)
         
         result = HugeInt("10000") - HugeInt("9045")
-        expected_result = HugeInt("955")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt("955")
+        #expect(result == expectedResult)
         
         result = HugeInt("780637") - HugeInt("714760")
-        expected_result = HugeInt("65877")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt("65877")
+        #expect(result == expectedResult)
         
         result = HugeInt("200200") - HugeInt("1")
-        expected_result = HugeInt("200199")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt("200199")
+        #expect(result == expectedResult)
     }
-    func test_int_multiplication() {
-        let integer:HugeInt = HugeInt("1234567891011121314151617181920")
-        let second_integer:HugeInt = -integer
+}
+
+// MARK: Multiplication
+extension HugeIntTests {
+    @Test
+    func intMultiplication() {
+        let integer = HugeInt("1234567891011121314151617181920")
+        let secondInteger = -integer
         
-        let result_multiplication:HugeInt = HugeInt("2469135782022242628303234363840")
-        XCTAssert(integer * 2 == result_multiplication)
-        XCTAssert(integer * -2 == -result_multiplication)
-        XCTAssert(second_integer * 2 == -result_multiplication)
-        XCTAssert(second_integer * -2 == result_multiplication)
+        let resultMultiplication:HugeInt = HugeInt("2469135782022242628303234363840")
+        #expect(integer * 2 == resultMultiplication)
+        #expect(integer * -2 == -resultMultiplication)
+        #expect(secondInteger * 2 == -resultMultiplication)
+        #expect(secondInteger * -2 == resultMultiplication)
     }
-    func test_int_division() {
-        var (quotient, remainder):(HugeInt, HugeRemainder?) = (HugeInt("518") / HugeInt("4"))
-        XCTAssert(quotient == HugeInt("129") && remainder == HugeRemainder(dividend: "2", divisor: "4"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+}
+
+// MARK: Division
+extension HugeIntTests {
+    @Test
+    func intDivision() {
+        var (quotient, remainder) = (HugeInt("518") / HugeInt("4"))
+        #expect(quotient == HugeInt("129") && remainder == HugeRemainder(dividend: "2", divisor: "4"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("18") / HugeInt("9")
-        XCTAssert(quotient == HugeInt("2") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("2") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("10") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("5") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("5") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("36") / HugeInt("7")
-        XCTAssert(quotient == HugeInt("5") && remainder == HugeRemainder(dividend: "1", divisor: "7"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("5") && remainder == HugeRemainder(dividend: "1", divisor: "7"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("3460987") / HugeInt("89345")
-        XCTAssert(quotient == HugeInt("38") && remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("38") && remainder == HugeRemainder(dividend: "65877", divisor: "89345"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("13") / HugeInt("6")
-        XCTAssert(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("25") / HugeInt("5")
-        XCTAssert(quotient == HugeInt("5") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("5") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("448") / HugeInt("4")
-        XCTAssert(quotient == HugeInt("112") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("112") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("44") / HugeInt("4")
-        XCTAssert(quotient == HugeInt("11") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("11") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("8320") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("4160") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("4160") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("8330") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("4165") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("4165") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("8420") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("4210") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("4210") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("8520") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("4260") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("4260") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("30") / HugeInt("15")
-        XCTAssert(quotient == HugeInt("2") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("2") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("40") / HugeInt("4")
-        XCTAssert(quotient == HugeInt("10") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("10") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("41") / HugeInt("4")
-        XCTAssert(quotient == HugeInt("10") && remainder == HugeRemainder(dividend: "1", divisor: "4"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("10") && remainder == HugeRemainder(dividend: "1", divisor: "4"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("928359234") / HugeInt("18")
-        XCTAssert(quotient == HugeInt("51575513") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("51575513") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("13") / HugeInt("6")
-        XCTAssert(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("-13") / HugeInt("6")
-        XCTAssert(quotient == HugeInt("-2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("-2") && remainder == HugeRemainder(dividend: "1", divisor: "6"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("14345645") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("7172822") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("7172822") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("425") / HugeInt("25")
-        XCTAssert(quotient == HugeInt("17") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("17") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("80665") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("40332") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("40332") && remainder == HugeRemainder(dividend: "1", divisor: "2"), "quotient=\(quotient);remainder=\(String(describing: remainder))")
         
         (quotient, remainder) = HugeInt("1000") / HugeInt("2")
-        XCTAssert(quotient == HugeInt("500") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
+        #expect(quotient == HugeInt("500") && remainder == nil, "quotient=\(quotient);remainder=\(String(describing: remainder))")
     }
-    func test_int_factorial() {
-        var result:HugeInt = HugeInt("5").factorial()
-        var expected_result:HugeInt = HugeInt("120")
-        XCTAssertEqual(result, expected_result)
+}
+
+// MARK: Factorial
+extension HugeIntTests {
+    @Test
+    func intFactorial() {
+        var result = HugeInt("5").factorial()
+        var expectedResult = HugeInt("120")
+        #expect(result == expectedResult)
     }
-    func test_int_percent() {
-        var integer:HugeInt = HugeInt("100")
-        var result:HugeInt = integer % HugeInt("10")
-        var expected_result:HugeInt = HugeInt.zero
-        XCTAssertEqual(result, expected_result)
+}
+
+// MARK: Modulo
+extension HugeIntTests {
+    @Test
+    func intModulo() {
+        var integer = HugeInt("100")
+        var result = integer % HugeInt("10")
+        var expectedResult = HugeInt.zero
+        #expect(result == expectedResult)
         
         result = integer % HugeInt("40")
-        expected_result = HugeInt("20")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeInt("20")
+        #expect(result == expectedResult)
     }
-    func test_int_square_root() {
-        var integer:HugeInt = HugeInt("7921")
-        var result:HugeFloat = sqrt(integer)
-        var expected_result:HugeFloat = HugeFloat("89")
-        XCTAssertEqual(result, expected_result)
+}
+
+// MARK: Square Root
+extension HugeIntTests {
+    @Test
+    func intSquareRoot() {
+        var integer = HugeInt("7921")
+        var result = sqrt(integer)
+        var expectedResult = HugeFloat("89")
+        #expect(result == expectedResult)
         
         integer = HugeInt("9")
         result = sqrt(integer)
-        expected_result = HugeFloat("3")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("3")
+        #expect(result == expectedResult)
         
         integer = HugeInt("64")
         result = sqrt(integer)
-        expected_result = HugeFloat("8")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("8")
+        #expect(result == expectedResult)
         
         integer = HugeInt("100")
         result = sqrt(integer)
-        expected_result = HugeFloat("10")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("10")
+        #expect(result == expectedResult)
         
         integer = HugeInt("10000")
         result = sqrt(integer)
-        expected_result = HugeFloat("100")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("100")
+        #expect(result == expectedResult)
         
         integer = HugeInt("2025")
         result = sqrt(integer)
-        expected_result = HugeFloat("45")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("45")
+        #expect(result == expectedResult)
         
         integer = HugeInt("1444")
         result = sqrt(integer)
-        expected_result = HugeFloat("38")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("38")
+        #expect(result == expectedResult)
         
         integer = HugeInt("5184")
         result = sqrt(integer)
-        expected_result = HugeFloat("72")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("72")
+        #expect(result == expectedResult)
         
         integer = HugeInt("8281")
         result = sqrt(integer)
-        expected_result = HugeFloat("91")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("91")
+        #expect(result == expectedResult)
         
         integer = HugeInt("24336")
         result = sqrt(integer)
-        expected_result = HugeFloat("156")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("156")
+        #expect(result == expectedResult)
         
         integer = HugeInt("80")
         result = sqrt(integer)
-        expected_result = HugeFloat("8")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("8")
+        #expect(result == expectedResult)
         
         integer = HugeInt("0")
         result = sqrt(integer)
-        expected_result = HugeFloat("0")
-        XCTAssertEqual(result, expected_result)
-    }
-    func test_int_to_the_power_of() {
-        var result:HugeInt = HugeInt("2").squared()
-        var expected_result:HugeInt = HugeInt("4")
-        XCTAssertEqual(result, expected_result)
-        
-        result = HugeInt("3").cubed()
-        expected_result = HugeInt("27")
-        XCTAssertEqual(result, expected_result)
-        
-        result = HugeInt("5").to_the_power_of(5)
-        expected_result = HugeInt("3125")
-        XCTAssertEqual(result, expected_result)
+        expectedResult = HugeFloat("0")
+        #expect(result == expectedResult)
     }
 }
+
+// MARK: Exponents
+extension HugeIntTests {
+    @Test
+    func intToThePowerOf() {
+        var result = HugeInt("2").squared()
+        var expectedResult = HugeInt("4")
+        #expect(result == expectedResult)
+        
+        result = HugeInt("3").cubed()
+        expectedResult = HugeInt("27")
+        #expect(result == expectedResult)
+        
+        result = HugeInt("5").toThePowerOf(5)
+        expectedResult = HugeInt("3125")
+        #expect(result == expectedResult)
+    }
+}
+
+#endif

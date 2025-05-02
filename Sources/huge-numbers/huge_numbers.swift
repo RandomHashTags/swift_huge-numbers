@@ -12,7 +12,7 @@ import Foundation
 public extension String.LocalizationValue.StringInterpolation {
     mutating func appendLiteral(_ value: HugeInt) {
         // TODO: fix (doesn't support any number larger than UInt64.max)
-        let number:Int = value.to_int() ?? -1
+        let number:Int = value.toInt() ?? -1
         appendInterpolation(number)
     }
     mutating func appendInterpolation(_ value: HugeInt) {

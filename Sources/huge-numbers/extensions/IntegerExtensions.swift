@@ -5,16 +5,16 @@
 //  Created by Evan Anderson on 4/12/23.
 //
 
-import Foundation
-
-internal extension Int8 {
-    var repeating_symbol : Character {
-        return "\(String(describing: self))\u{0305}".first!
+extension Int8 {
+    @inlinable
+    var repeatingSymbol : Character {
+        return "\(String.init(describing: self))\u{0305}".first ?? "?"
     }
 }
 
-public extension BinaryInteger {
-    func to_binary() -> [Bool] {
+extension BinaryInteger {
+    @inlinable
+    public func toBinary() -> [Bool] {
         return String.init(self, radix: 2).map({ $0 == "1" })
     }
 }

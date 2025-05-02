@@ -13,7 +13,7 @@ public struct HugeInt2 : Equatable {
     public static var zero:HugeInt2 = HugeInt2(0)
     public static var one:HugeInt2 = HugeInt2(1)
     
-    public private(set) var is_negative:Bool
+    public private(set) var isNegative:Bool
     public private(set) var binary:[Bool]
     
     public var binary_string : String {
@@ -35,28 +35,28 @@ public struct HugeInt2 : Equatable {
     }
     
     public init<T: BinaryInteger>(_ integer: T) {
-        is_negative = integer < 0
-        binary = integer.to_binary()
+        isNegative = integer < 0
+        binary = integer.toBinary()
     }
-    public init(is_negative: Bool = false, binary: [Bool]) {
-        self.is_negative = is_negative
+    public init(isNegative: Bool = false, binary: [Bool]) {
+        self.isNegative = isNegative
         self.binary = binary
     }
     
     public var description : String {
         guard binary.count > 64 else {
-            return (is_negative ? "-" : "") + "\(UInt64(binary_string, radix: 2)!)"
+            return (isNegative ? "-" : "") + "\(UInt64(binary_string, radix: 2)!)"
         }
         return "?" // TODO: fix
     }
-    public var is_zero : Bool {
+    public var isZero : Bool {
         return binary.count == 1 && !binary[0]
     }
 }
 
 public extension HugeInt2 {
-    static func == (left: HugeInt2, right: HugeInt2) -> Bool {
-        return left.is_negative == right.is_negative && left.binary.elementsEqual(right.binary)
+    static func == (lhs: HugeInt2, rhs: HugeInt2) -> Bool {
+        return lhs.isNegative == rhs.isNegative && lhs.binary.elementsEqual(rhs.binary)
     }
 }
 
@@ -103,70 +103,70 @@ extension HugeInt2 {
     }
 }
 extension HugeInt2 {
-    static func subtract(left: HugeInt2, right: HugeInt2) -> HugeInt2 {
-        let max_length:Int = max(left.binary.count, right.binary.count)
-        var binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary_complement_two(totalBits: max_length))
+    static func subtract(lhs: HugeInt2, rhs: HugeInt2) -> HugeInt2 {
+        let max_length:Int = max(lhs.binary.count, rhs.binary.count)
+        var binary:[Bool] = HugeInt2.add(left_binary: lhs.binary, right_binary: rhs.binary_complement_two(totalBits: max_length))
         while binary.count > max_length || binary.count != 0 && !binary[0] {
             binary.removeFirst()
         }
-        return HugeInt2(is_negative: false, binary: binary) // TODO: fix
+        return HugeInt2(isNegative: false, binary: binary) // TODO: fix
     }
 }
 
 public extension HugeInt2 {
-    static func + (left: HugeInt2, right: HugeInt2) -> HugeInt2 {
-        if left.is_negative == right.is_negative {
-            let binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary)
-            return HugeInt2(is_negative: left.is_negative, binary: binary)
+    static func + (lhs: HugeInt2, rhs: HugeInt2) -> HugeInt2 {
+        if lhs.isNegative == rhs.isNegative {
+            let binary:[Bool] = HugeInt2.add(left_binary: lhs.binary, right_binary: rhs.binary)
+            return HugeInt2(isNegative: lhs.isNegative, binary: binary)
         } else {
-            return HugeInt2.subtract(left: left, right: right)
+            return HugeInt2.subtract(lhs: lhs, rhs: rhs)
         }
     }
-    static func += (left: inout HugeInt2, right: HugeInt2) {
-        let value:HugeInt2 = left + right
-        left.is_negative = value.is_negative
-        left.binary = value.binary
+    static func += (lhs: inout HugeInt2, rhs: HugeInt2) {
+        let value:HugeInt2 = lhs + rhs
+        lhs.isNegative = value.isNegative
+        lhs.binary = value.binary
     }
 }
 public extension HugeInt2 {
-    static func - (left: HugeInt2, right: HugeInt2) -> HugeInt2 {
-        if left.is_negative && right.is_negative || !left.is_negative && right.is_negative || left.is_negative && !right.is_negative {
-            let binary:[Bool] = HugeInt2.add(left_binary: left.binary, right_binary: right.binary) // TODO: fix
-            return HugeInt2(is_negative: false, binary: binary) // TODO: fix
+    static func - (lhs: HugeInt2, rhs: HugeInt2) -> HugeInt2 {
+        if lhs.isNegative && rhs.isNegative || !lhs.isNegative && rhs.isNegative || lhs.isNegative && !rhs.isNegative {
+            let binary:[Bool] = HugeInt2.add(left_binary: lhs.binary, right_binary: rhs.binary) // TODO: fix
+            return HugeInt2(isNegative: false, binary: binary) // TODO: fix
         } else {
-            return HugeInt2.subtract(left: left, right: right)
+            return HugeInt2.subtract(lhs: lhs, rhs: rhs)
         }
     }
-    static func -= (left: inout HugeInt2, right: HugeInt2) {
-        let value:HugeInt2 = left - right
-        left.is_negative = value.is_negative
-        left.binary = value.binary
+    static func -= (lhs: inout HugeInt2, rhs: HugeInt2) {
+        let value:HugeInt2 = lhs - rhs
+        lhs.isNegative = value.isNegative
+        lhs.binary = value.binary
     }
 }
 
 internal extension HugeInt2 {
-    static func multiply(left: [Bool], right: [Bool]) -> [Bool] {
-        let left_count:Int = left.count, right_count:Int = right.count
-        let max_digits:Int = max(left_count, right_count)
-        let result_digits:Int = left_count + right_count
+    static func multiply(lhs: [Bool], rhs: [Bool]) -> [Bool] {
+        let lhsCount:Int = lhs.count, rhsCount:Int = rhs.count
+        let max_digits:Int = max(lhsCount, rhsCount)
+        let result_digits:Int = lhsCount + rhsCount
         let index:Int = result_digits-1
         
-        var left_binary:[Bool] = left
-        var right_binary:[Bool] = right
+        var left_binary:[Bool] = lhs
+        var right_binary:[Bool] = rhs
         
-        for _ in left_count..<max_digits {
+        for _ in lhsCount..<max_digits {
             left_binary.insert(false, at: 0)
         }
-        for _ in right_count..<max_digits {
+        for _ in rhsCount..<max_digits {
             right_binary.insert(false, at: 0)
         }
         
         var value:HugeInt2 = HugeInt2(0)
         var binary:[Bool] = [Bool].init(repeating: false, count: result_digits)
-        for left_index in 0..<left_count {
-            if left_binary[left_count - 1 - left_index] {
-                for right_index in 0..<right_count {
-                    binary[index - left_index - right_index] = right_binary[right_count - 1 - right_index]
+        for left_index in 0..<lhsCount {
+            if left_binary[lhsCount - 1 - left_index] {
+                for right_index in 0..<rhsCount {
+                    binary[index - left_index - right_index] = right_binary[rhsCount - 1 - right_index]
                 }
                 value += HugeInt2(binary: binary)
                 for i in 0..<result_digits {
@@ -178,30 +178,32 @@ internal extension HugeInt2 {
     }
 }
 public extension HugeInt2 {
-    static func * (left: HugeInt2, right: HugeInt2) -> HugeInt2 {
-        return HugeInt2(is_negative: !(left.is_negative == right.is_negative), binary: HugeInt2.multiply(left: left.binary, right: right.binary))
+    static func * (lhs: HugeInt2, rhs: HugeInt2) -> HugeInt2 {
+        return HugeInt2(isNegative: !(lhs.isNegative == rhs.isNegative), binary: HugeInt2.multiply(lhs: lhs.binary, rhs: rhs.binary))
     }
-    static func *= (left: inout HugeInt2, right: HugeInt2) {
-        let value:HugeInt2 = left * right
-        left.is_negative = value.is_negative
-        left.binary = value.binary
+    static func *= (lhs: inout HugeInt2, rhs: HugeInt2) {
+        let value:HugeInt2 = lhs * rhs
+        lhs.isNegative = value.isNegative
+        lhs.binary = value.binary
     }
 }
 
-public extension HugeInt2 {
-    static func get_bit_value(bit_width: UInt64) -> [Int8] {
-        return get_bit_value(bit_width: HugeInt(bit_width))
+extension HugeInt2 {
+    @inlinable
+    public static func getBitValue(bitWidth: UInt64) -> [Int8] {
+        return getBitValue(bitWidth: HugeInt(bitWidth))
     }
-    static func get_bit_value(bit_width: HugeInt) -> [Int8] {
-        guard bit_width > 64 else {
-            let integer:Int = bit_width.to_int()!
+    @inlinable
+    public static func getBitValue(bitWidth: HugeInt) -> [Int8] {
+        guard bitWidth > 64 else {
+            let integer:Int = bitWidth.toInt()!
             return String(2^integer).map({ Int8(String($0))! }).reversed()
         }
-        var value:HugeInt = HugeInt.sixty_fifth_bit_value
-        var bit_width:HugeInt = bit_width - HugeInt.sixty_four
-        while bit_width > 0 {
+        var value = HugeInt.sixtyFifthBitValue
+        var bitWidth = bitWidth - HugeInt.sixtyFour
+        while bitWidth > 0 {
             value *= HugeInt.two
-            bit_width -= HugeInt.one
+            bitWidth -= HugeInt.one
         }
         return value.numbers
     }

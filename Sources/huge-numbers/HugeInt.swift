@@ -9,179 +9,216 @@ import Foundation
 
 public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     /// 100 decimal places.
-    public private(set) static var default_precision:HugeInt = HugeInt(is_negative: false, [0, 0, 1])
+    public private(set) static var defaultPrecision = HugeInt(isNegative: false, [0, 0, 1])
     /// 6 decimal places.
-    public private(set) static var float_precision:HugeInt = HugeInt(is_negative: false, [6])
+    public private(set) static var floatPrecision = HugeInt(isNegative: false, [6])
     /// 15 decimal places.
-    public private(set) static var double_precision:HugeInt = HugeInt(is_negative: false, [5, 1])
+    public private(set) static var doublePrecision = HugeInt(isNegative: false, [5, 1])
     
-    public private(set) static var zero:HugeInt = HugeInt(is_negative: false, [])
-    public private(set) static var one:HugeInt = HugeInt(is_negative: false, [1])
-    public private(set) static var two:HugeInt = HugeInt(is_negative: false, [2])
-    public private(set) static var sixty_four:HugeInt = HugeInt(is_negative: false, [4, 6])
-    public private(set) static var sixty_fifth_bit_value:HugeInt = HugeInt("18446744073709551616")
+    public private(set) static var zero = HugeInt(isNegative: false, [])
+    public private(set) static var one = HugeInt(isNegative: false, [1])
+    public private(set) static var two = HugeInt(isNegative: false, [2])
+    public private(set) static var sixtyFour = HugeInt(isNegative: false, [4, 6])
+    public private(set) static var sixtyFifthBitValue = HugeInt("18446744073709551616")
+
+    public enum Sign: Sendable {
+        case minus
+        case plus
+    }
     
     public static func random(in range: Range<HugeInt>) -> HugeInt {
-        let minimum_integer:UInt64 = range.lowerBound.to_int()!, maximum_integer:UInt64 = range.upperBound.to_int()!
+        let minimum_integer:UInt64 = range.lowerBound.toInt()!, maximum_integer:UInt64 = range.upperBound.toInt()!
         let number:UInt64 = UInt64.random(in: minimum_integer...maximum_integer)
         return HugeInt(number)
     }
-    
-    public internal(set) var is_negative:Bool
+
     /// The 8-bit numbers representing this huge integer, in reverse order.
     public internal(set) var numbers:[Int8]
-    
-    public init(is_negative: Bool, _ numbers: [Int8]) {
-        self.is_negative = is_negative
-        self.numbers = numbers.count == 1 && numbers[0] == 0 ? [] : numbers
+
+    public internal(set) var sign:Sign
+
+    @inlinable
+    public var isNegative: Bool {
+        sign == .minus
     }
-    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true) {
-        var target_string:T = string
-        if remove_leading_zeros {
-            target_string.remove_leading_zeros()
+    
+    public init(isNegative: Bool, _ numbers: [Int8]) {
+        self.numbers = numbers.count == 1 && numbers[0] == 0 ? [] : numbers
+        self.sign = isNegative ? .minus : .plus
+    }
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, removeLeadingZeros: Bool = true) {
+        var targetString:T = string
+        if removeLeadingZeros {
+            targetString.removeLeadingZeros()
         }
-        if target_string.isEmpty {
-            is_negative = false
+        if targetString.isEmpty {
+            sign = .plus
             numbers = []
         } else {
-            let start_index:String.Index = target_string.startIndex
-            self.is_negative = target_string[start_index] == "-"
-            let characters:any StringProtocol = is_negative ? target_string[target_string.index(start_index, offsetBy: 1)...] : target_string
+            let startIndex = targetString.startIndex
+            self.sign = targetString[startIndex] == "-" ? .minus : .plus
+            let characters = sign == .minus ? T(targetString[targetString.index(startIndex, offsetBy: 1)...]) : targetString
             self.numbers = characters.map({ Int8(exactly: $0.wholeNumberValue!)! }).reversed()
         }
     }
-    
-    public init<T: StringProtocol & RangeReplaceableCollection>(is_negative: Bool, _ string: T) {
+
+    public init<T: StringProtocol & RangeReplaceableCollection>(isNegative: Bool, _ string: T) {
         self.init(string)
-        self.is_negative = is_negative
+        sign = isNegative ? .minus : .plus
     }
-    public init(is_negative: Bool, _ numbers: ArraySlice<Int8>) {
-        self.init(is_negative: is_negative, Array(numbers))
+    @inlinable
+    public init(isNegative: Bool, _ numbers: ArraySlice<Int8>) {
+        self.init(isNegative: isNegative, Array(numbers))
     }
-    public init(is_negative: Bool, _ integer: any BinaryInteger) {
-        self.init(is_negative: is_negative, String(describing: integer))
+    @inlinable
+    public init(isNegative: Bool, _ integer: any BinaryInteger) {
+        self.init(isNegative: isNegative, String(describing: integer))
     }
+    @inlinable
     public init(_ integer: any BinaryInteger) {
         self.init(String(describing: integer))
     }
     
+    @inlinable
     public init(from decoder: Decoder) throws {
-        let container:SingleValueDecodingContainer = try decoder.singleValueContainer()
-        let string:String = try container.decode(String.self)
+        let container = try decoder.singleValueContainer()
+        let string = try container.decode(String.self)
         self.init(string)
     }
+    @inlinable
     public func encode(to encoder: Encoder) throws {
-        var container:SingleValueEncodingContainer = encoder.singleValueContainer()
+        var container = encoder.singleValueContainer()
         try container.encode(description)
     }
     
     /// The amount of digits that represent this huge integer.
+    @inlinable
     public var length : Int {
         return numbers.count
     }
+
     /// The number the digits represent.
+    @inlinable
     public var description : String {
-        return is_zero ? "0" : (is_negative ? "-" : "") + numbers.reversed().map({ String(describing: $0) }).joined()
+        return isZero ? "0" : (isNegative ? "-" : "") + numbers.reversed().map({ String(describing: $0) }).joined()
     }
+
     /// The number the digits represent, in reverse order.
-    public var description_literal : String {
-        return is_zero ? "0" : (is_negative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
+    @inlinable
+    public var descriptionLiteral : String {
+        return isZero ? "0" : (isNegative ? "-" : "") + numbers.map({ String(describing: $0) }).joined()
     }
+
     /// Whether or not this huge integer equals zero.
-    public var is_zero : Bool {
-        return numbers.count == 0 || all_digits_satisfy({ $0 == 0 })
+    @inlinable
+    public var isZero : Bool {
+        return numbers.count == 0 || allDigitsSatisfy({ $0 == 0 })
     }
-    /// Converts this huge integer to a ``HugeFloat``.
-    public var to_float : HugeFloat {
+
+    /// Converts this huge integer to a `HugeFloat`.
+    @inlinable
+    public var toFloat : HugeFloat {
         return HugeFloat(integer: self)
     }
-    /// Converts this huge integer to a ``HugeRemainder``.
-    public var to_remainder : HugeRemainder {
+
+    /// Converts this huge integer to a `HugeRemainder`.
+    @inlinable
+    public var toRemainder : HugeRemainder {
         return HugeRemainder(dividend: self, divisor: HugeInt.one)
     }
-    /// Converts this huge integer to a native integer, if possible.
-    public func to_int<T: BinaryInteger & LosslessStringConvertible>() -> T? {
+
+    /// Converts this huge integer to a concrete integer, if possible.
+    @inlinable
+    public func toInt<T: BinaryInteger & LosslessStringConvertible>() -> T? {
         return T.init(description)
     }
     
     /// Whether or not all the digits that represent this huge integer satisfy a predicate.
-    public func all_digits_satisfy(_ transform: (Int8) -> Bool) -> Bool {
-        return numbers.allSatisfy(transform)
+    @inlinable
+    public func allDigitsSatisfy(_ transform: (Int8) throws -> Bool) rethrows -> Bool {
+        return try numbers.allSatisfy(transform)
     }
     
-    public mutating func multiplied_by_ten(_ amount: Int) {
-        let array:[Int8] = [Int8].init(repeating: 0, count: abs(amount))
+    public mutating func multipliedByTen(_ amount: Int) {
+        let array = [Int8].init(repeating: 0, count: abs(amount))
         if amount > 0 {
             numbers.insert(contentsOf: array, at: 0)
         } else {
             numbers.insert(contentsOf: array, at: numbers.count-1)
         }
     }
-    public func multiply_by_ten(_ amount: Int) -> HugeInt {
-        let is_negative:Bool = is_negative != (amount < 0 ? true : false)
-        var numbers:[Int8] = numbers
+    @inlinable
+    public func multiplyByTen(_ amount: Int) -> HugeInt {
+        let isNegative = isNegative != (amount < 0 ? true : false)
+        var numbers = numbers
         numbers.insert(contentsOf: [Int8].init(repeating: 0, count: abs(amount)), at: 0)
-        return HugeInt(is_negative: is_negative, numbers)
+        return HugeInt(isNegative: isNegative, numbers)
     }
     
     /// - Warning: Very resource intensive when using a big number.
-    public func get_all_factors() -> Set<HugeInt> {
-        let maximum:HugeInt = (self / 2).quotient
-        return get_factors(maximum: maximum)
+    public func getAllFactors() -> Set<HugeInt> {
+        let maximum = (self / 2).quotient
+        return getFactors(maximum: maximum)
     }
     /// - Parameters:
     ///     - maximum: the starting number
     /// - Complexity: O(_n_ - 1) where _n_ is equal to the _maximum_ parameter.
     /// - Warning: Very resource intensive when using a big number.
-    public func get_factors(maximum: HugeInt) -> Set<HugeInt> {
-        var maximum:HugeInt = maximum
+    @inlinable
+    public func getFactors(maximum: HugeInt) -> Set<HugeInt> {
+        var maximum = maximum
         var array:Set<HugeInt> = [self]
-        let two:HugeInt = HugeInt(is_negative: false, [2]), one:HugeInt = HugeInt.one
+        let two = HugeInt(isNegative: false, [2])
         while maximum >= two {
             if self % maximum == HugeInt.zero {
                 array.insert(maximum)
             }
-            maximum -= one
+            maximum -= HugeInt.one
         }
         return array
     }
+
     /// - Warning: This function assumes self is less than or equal to `integer`.
     /// - Warning: Very resource intensive when using big numbers.
+    @inlinable
     public func get_shared_factors(_ integer: HugeInt) -> Set<HugeInt>? {
-        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = (get_all_factors(), integer.get_factors(maximum: self))
-        let bigger_array:Set<HugeInt>, smaller_array:Set<HugeInt>
-        if self_array.count > other_array.count {
-            bigger_array = self_array
-            smaller_array = other_array
+        let (selfArray, otherArray) = (getAllFactors(), integer.getFactors(maximum: self))
+        let biggerArray:Set<HugeInt>, smallerArray:Set<HugeInt>
+        if selfArray.count > otherArray.count {
+            biggerArray = selfArray
+            smallerArray = otherArray
         } else {
-            bigger_array = other_array
-            smaller_array = self_array
+            biggerArray = otherArray
+            smallerArray = selfArray
         }
-        let array:Set<HugeInt> = bigger_array.filter({ smaller_array.contains($0) })
+        let array = biggerArray.filter({ smallerArray.contains($0) })
         return array.isEmpty ? nil : array
     }
     
     /// - Warning: Very resource intensive when using a big number.
-    public func get_all_factors_parallel() async -> Set<HugeInt> {
-        let maximum:HugeInt = (self / 2).quotient
-        return await get_factors_parallel(maximum: maximum)
+    @inlinable
+    public func getAllFactorsParallel() async -> Set<HugeInt> {
+        let maximum = (self / 2).quotient
+        return await getFactorsParallel(maximum: maximum)
     }
+
     /// - Warning: Very resource intensive when using a big number.
-    public func get_factors_parallel(maximum: HugeInt) async -> Set<HugeInt> {
-        let this:HugeInt = self
-        var maximum:HugeInt = maximum
-        let two:HugeInt = HugeInt(is_negative: false, [2]), one:HugeInt = HugeInt.one
+    @inlinable
+    public func getFactorsParallel(maximum: HugeInt) async -> Set<HugeInt> {
+        let this = self
+        var maximum = maximum
+        let two = HugeInt(isNegative: false, [2])
         return await withTaskGroup(of: HugeInt?.self, body: { group in
             while maximum >= two {
-                let target_number:HugeInt = maximum
+                let targetNumber = maximum
                 group.addTask {
-                    return this % target_number == HugeInt.zero ? target_number : nil
+                    return this % targetNumber == HugeInt.zero ? targetNumber : nil
                 }
-                maximum -= one
+                maximum -= HugeInt.one
             }
             var array:Set<HugeInt> = [this]
             for await integer in group {
-                if let integer:HugeInt = integer {
+                if let integer {
                     array.insert(integer)
                 }
             }
@@ -190,299 +227,313 @@ public struct HugeInt : Hashable, Comparable, Codable, CustomStringConvertible {
     }
     /// - Warning: This function assumes self is less than or equal to the given number.
     /// - Warning: Very resource intensive when using big numbers.
-    public func get_shared_factors_parallel(_ integer: HugeInt) async -> Set<HugeInt>? {
-        let (self_array, other_array):(Set<HugeInt>, Set<HugeInt>) = await (get_all_factors_parallel(), integer.get_factors_parallel(maximum: self))
-        let array:Set<HugeInt> = self_array.filter({ other_array.contains($0) })
+    @inlinable
+    public func getSharedFactorsParallel(_ integer: HugeInt) async -> Set<HugeInt>? {
+        let (selfArray, otherArray) = await (getAllFactorsParallel(), integer.getFactorsParallel(maximum: self))
+        let array = selfArray.filter({ otherArray.contains($0) })
         return array.isEmpty ? nil : array
     }
     
-    public mutating func remove_trailing_zeros() {
+    public mutating func removeTrailingZeros() {
         while numbers.first == 0 {
             numbers.removeFirst()
         }
     }
-    public mutating func remove_leading_zeros() {
+    public mutating func removeLeadingZeros() {
         while numbers.last == 0 {
             numbers.removeLast()
         }
     }
 }
 
-/*
- Comparable
- */
-public extension HugeInt {
-    static func < (left: HugeInt, right: HugeInt) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative == !right.is_negative
+// MARK: Comparable
+extension HugeInt {
+    @inlinable
+    static func compare(
+        lhs: HugeInt,
+        rhs: HugeInt,
+        operation: (HugeInt, HugeInt) -> Bool,
+        operation2: (Int8, Int8) -> Bool,
+        fallbackValue: () -> Bool = { false }
+    ) -> Bool {
+        guard lhs.sign == rhs.sign else {
+            return lhs.isNegative == !rhs.isNegative
         }
-        var left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-        guard left_numbers.count == right_numbers.count else {
-            return left_numbers.count < right_numbers.count
+        guard lhs.numbers.count == rhs.numbers.count else {
+            return operation(lhs, rhs)
         }
-        left_numbers = left_numbers.reversed()
-        right_numbers = right_numbers.reversed()
-        for index in 0..<left_numbers.count {
-            let left_number:Int8 = left_numbers[index], right_number:Int8 = right_numbers[index]
-            if left_number != right_number {
-                return left_number < right_number
+        let leftNumbers = lhs.numbers.reversed()
+        let rightNumbers = rhs.numbers.reversed()
+        for index in leftNumbers.indices {
+            let leftNumber = leftNumbers[index]
+            let rightNumber = rightNumbers[index]
+            if leftNumber != rightNumber {
+                return operation2(leftNumber, rightNumber)
             }
         }
-        return false
-    }
-    static func < (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left < HugeInt(right)
-    }
-    static func < (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) < right
+        return fallbackValue()
     }
 }
-public extension HugeInt {
-    static func > (left: HugeInt, right: HugeInt) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative == !right.is_negative
+extension HugeInt {
+    @inlinable
+    public static func < (lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return compare(lhs: lhs, rhs: rhs) {
+            $0.numbers.count < $1.numbers.count
+        } operation2: {
+            $0 < $1
         }
-        var left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-        guard left_numbers.count == right_numbers.count else {
-            return left_numbers.count > right_numbers.count
-        }
-        left_numbers = left_numbers.reversed()
-        right_numbers = right_numbers.reversed()
-        for index in 0..<left_numbers.count {
-            let left_number:Int8 = left_numbers[index], right_number:Int8 = right_numbers[index]
-            if left_number != right_number {
-                return left_number > right_number
-            }
-        }
-        return false
     }
-    static func > (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left > HugeInt(right)
+
+    @inlinable
+    public static func < (lhs: HugeInt, rhs: any BinaryInteger) -> Bool {
+        return lhs < HugeInt(rhs)
     }
-    static func > (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) > right
+
+    @inlinable
+    public static func < (lhs: any BinaryInteger, rhs: HugeInt) -> Bool {
+        return HugeInt(lhs) < rhs
     }
 }
-public extension HugeInt {
-    static func == (left: HugeInt, right: HugeInt) -> Bool {
-        return left.is_negative == right.is_negative && left.numbers.count == right.numbers.count && left.numbers.elementsEqual(right.numbers) || left.is_zero && right.is_zero
+extension HugeInt {
+    @inlinable
+    public static func > (lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return compare(lhs: lhs, rhs: rhs) {
+            $0.numbers.count > $1.numbers.count
+        } operation2: {
+            $0 > $1
+        }
+    }
+
+    @inlinable
+    public static func > (lhs: HugeInt, rhs: any BinaryInteger) -> Bool {
+        return lhs > HugeInt(rhs)
+    }
+
+    @inlinable
+    public static func > (lhs: any BinaryInteger, rhs: HugeInt) -> Bool {
+        return HugeInt(lhs) > rhs
     }
 }
-public extension HugeInt {
-    static func <= (left: HugeInt, right: HugeInt) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative == !right.is_negative
-        }
-        var left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-        guard left_numbers.count == right_numbers.count else {
-            return left_numbers.count <= right_numbers.count
-        }
-        left_numbers = left_numbers.reversed()
-        right_numbers = right_numbers.reversed()
-        for index in 0..<left_numbers.count {
-            let left_number:Int8 = left_numbers[index], right_number:Int8 = right_numbers[index]
-            if left_number != right_number {
-                return left_number <= right_number
-            }
-        }
-        return true
-    }
-    static func <= (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left <= HugeInt(right)
-    }
-    static func <= (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) <= right
+extension HugeInt {
+    @inlinable
+    public static func == (lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return lhs.sign == rhs.sign && lhs.numbers.count == rhs.numbers.count && lhs.numbers.elementsEqual(rhs.numbers) || lhs.isZero && rhs.isZero
     }
 }
-public extension HugeInt {
-    static func >= (left: HugeInt, right: HugeInt) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative == !right.is_negative
+extension HugeInt {
+    @inlinable
+    public static func <= (lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return compare(lhs: lhs, rhs: rhs) {
+            $0.numbers.count <= $1.numbers.count
+        } operation2: {
+            $0 <= $1
+        } fallbackValue: {
+            true
         }
-        var left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-        guard left_numbers.count == right_numbers.count else {
-            return left_numbers.count >= right_numbers.count
-        }
-        left_numbers = left_numbers.reversed()
-        right_numbers = right_numbers.reversed()
-        for index in 0..<left_numbers.count {
-            let left_number:Int8 = left_numbers[index], right_number:Int8 = right_numbers[index]
-            if left_number != right_number {
-                return left_number >= right_number
-            }
-        }
-        return true
     }
-    static func >= (left: HugeInt, right: any BinaryInteger) -> Bool {
-        return left >= HugeInt(right)
+
+    @inlinable
+    public static func <= (lhs: HugeInt, rhs: any BinaryInteger) -> Bool {
+        return lhs <= HugeInt(rhs)
     }
-    static func >= (left: any BinaryInteger, right: HugeInt) -> Bool {
-        return HugeInt(left) >= right
+
+    @inlinable
+    public static func <= (lhs: any BinaryInteger, rhs: HugeInt) -> Bool {
+        return HugeInt(lhs) <= rhs
     }
 }
-/*
- prefixes / postfixes
- */
-public extension HugeInt {
-    static prefix func - (value: HugeInt) -> HugeInt {
-        return HugeInt(is_negative: !value.is_negative, value.numbers)
+extension HugeInt {
+    @inlinable
+    public static func >= (lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return compare(lhs: lhs, rhs: rhs) {
+            $0.numbers.count >= $1.numbers.count
+        } operation2: {
+            $0 >= $1
+        } fallbackValue: {
+            true
+        }
+    }
+
+    @inlinable
+    public static func >= (lhs: HugeInt, rhs: any BinaryInteger) -> Bool {
+        return lhs >= HugeInt(rhs)
+    }
+
+    @inlinable
+    public static func >= (lhs: any BinaryInteger, rhs: HugeInt) -> Bool {
+        return HugeInt(lhs) >= rhs
+    }
+}
+
+// MARK: Prefixes / postfixes
+extension HugeInt {
+    @inlinable
+    public static prefix func - (value: HugeInt) -> HugeInt {
+        return HugeInt(isNegative: !value.isNegative, value.numbers)
     }
     /// - Complexity: O(_n_ - 1) where _n_ equals this huge integer.
     /// - Warning: Very resource intensive when using big numbers.
-    func factorial() -> HugeInt {
-        let one:HugeInt = HugeInt.one
-        var remaining_value:HugeInt = HugeInt(is_negative: false, numbers)
-        var value:HugeInt = remaining_value
-        while remaining_value != one {
-            remaining_value -= one
-            value *= remaining_value
+    @inlinable
+    public func factorial() -> HugeInt {
+        let one = HugeInt.one
+        var remainingValue = HugeInt(isNegative: false, numbers)
+        var value = remainingValue
+        while remainingValue != one {
+            remainingValue -= one
+            value *= remainingValue
         }
-        return HugeInt(is_negative: is_negative, value.numbers)
+        return HugeInt(isNegative: isNegative, value.numbers)
     }
 }
-/*
- Misc
- */
+
+// MARK: Misc
 public func abs(_ integer: HugeInt) -> HugeInt {
-    return HugeInt(is_negative: false, integer.numbers)
+    return HugeInt(isNegative: false, integer.numbers)
 }
-internal extension HugeInt {
-    static func left_int_is_bigger(left: HugeInt, right: HugeInt) -> Bool {
-        return get_bigger_int(left: left, right: right).left_is_bigger
+extension HugeInt {
+    static func leftIntIsBigger(lhs: HugeInt, rhs: HugeInt) -> Bool {
+        return getBiggerInt(lhs: lhs, rhs: rhs).leftIsBigger
     }
-    static func get_bigger_int(left: HugeInt, right: HugeInt) -> (bigger_int: HugeInt, smaller_int: HugeInt, left_is_bigger: Bool) {
-        let (_, _, left_is_bigger):([Int8], [Int8], Bool) = get_bigger_numbers(left: left, right: right)
-        if left_is_bigger {
-            return (left, right, true)
+    static func getBiggerInt(lhs: HugeInt, rhs: HugeInt) -> (biggerInt: HugeInt, smallerInt: HugeInt, leftIsBigger: Bool) {
+        let (_, _, leftIsBigger) = getBiggerNumbers(lhs: lhs, rhs: rhs)
+        if leftIsBigger {
+            return (lhs, rhs, true)
         } else {
-            return (right, left, false)
+            return (rhs, lhs, false)
         }
     }
-    static func get_bigger_numbers(left: HugeInt, right: HugeInt) -> (bigger_numbers: [Int8], smaller_numbers: [Int8], left_is_bigger: Bool) {
-        let left_is_negative:Bool = left.is_negative, left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-        if left_is_negative == right.is_negative {
-            return get_bigger_numbers(left: left_numbers, right: right_numbers)
+    static func getBiggerNumbers(lhs: HugeInt, rhs: HugeInt) -> (biggerNumbers: [Int8], smallerNumbers: [Int8], leftIsBigger: Bool) {
+        let leftNumbers = lhs.numbers
+        let rightNumbers = rhs.numbers
+        if lhs.sign == rhs.sign {
+            return getBiggerNumbers(lhs: leftNumbers, rhs: rightNumbers)
         } else {
-            return left_is_negative ? (right_numbers, left_numbers, false) : (left_numbers, right_numbers, true)
+            return lhs.isNegative  ? (rightNumbers, leftNumbers, false) : (leftNumbers, rightNumbers, true)
         }
     }
-    static func get_bigger_numbers(left: [Int8], right: [Int8]) -> (bigger_numbers: [Int8], smaller_numbers: [Int8], left_is_bigger: Bool) {
-        let left_count:Int = left.count, right_count:Int = right.count
-        if left_count == right_count {
-            let reversed_left:[Int8] = left.reversed(), reversed_right:[Int8] = right.reversed()
-            for index in 0..<left_count {
-                let left_number:Int8 = reversed_left[index], right_number:Int8 = reversed_right[index]
-                if left_number != right_number {
-                    if left_number > right_number {
-                        return (left, right, true)
+    static func getBiggerNumbers(lhs: [Int8], rhs: [Int8]) -> (biggerNumbers: [Int8], smallerNumbers: [Int8], leftIsBigger: Bool) {
+        let lhsCount = lhs.count
+        let rhsCount = rhs.count
+        if lhsCount == rhsCount {
+            let lhsReversed = lhs.reversed()
+            let rhsReversed = rhs.reversed()
+            for index in lhsReversed.indices {
+                let leftNumber = lhsReversed[index]
+                let rightNumber = rhsReversed[index]
+                if leftNumber != rightNumber {
+                    if leftNumber > rightNumber {
+                        return (lhs, rhs, true)
                     } else {
-                        return (right, left, false)
+                        return (rhs, lhs, false)
                     }
                 }
             }
-            return (right, left, false)
-        } else if left_count > right_count {
-            return (left, right, true)
+            return (rhs, lhs, false)
+        } else if lhsCount > rhsCount {
+            return (lhs, rhs, true)
         } else {
-            return (right, left, false)
+            return (rhs, lhs, false)
         }
     }
 }
-/*
- Addition
- */
+
+// MARK: Addition
 public extension HugeInt {
-    static func + (left: HugeInt, right: HugeInt) -> HugeInt {
-        if left == HugeInt.zero {
-            return right
-        } else if right == HugeInt.zero {
-            return left
+    static func + (lhs: HugeInt, rhs: HugeInt) -> HugeInt {
+        if lhs == HugeInt.zero {
+            return rhs
+        } else if rhs == HugeInt.zero {
+            return lhs
         } else {
-            let is_bigger:Bool, result:[Int8], is_negative:Bool
-            let left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-            if right.is_negative {
-                if left.is_negative {
-                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                    is_negative = true
+            let isBigger:Bool
+            let result:[Int8]
+            let isNegative:Bool
+            let leftNumbers = lhs.numbers
+            let rightNumbers = rhs.numbers
+            if rhs.isNegative {
+                if lhs.isNegative {
+                    (result, isBigger) = HugeInt.add(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = true
                 } else {
-                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                    (result, isBigger) = HugeInt.subtract(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = leftNumbers == rightNumbers ? false : !isBigger
                 }
             } else {
-                if left.is_negative {
-                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                if lhs.isNegative {
+                    (result, isBigger) = HugeInt.subtract(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = leftNumbers == rightNumbers ? false : !isBigger
                 } else {
-                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                    is_negative = false
+                    (result, isBigger) = HugeInt.add(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = false
                 }
             }
-            return HugeInt(is_negative: is_negative, result)
+            return HugeInt(isNegative: isNegative, result)
         }
     }
-    static func + (left: HugeInt, right: any BinaryInteger) -> HugeInt {
-        return left + HugeInt(right)
+    static func + (lhs: HugeInt, rhs: any BinaryInteger) -> HugeInt {
+        return lhs + HugeInt(rhs)
     }
-    static func + (left: any BinaryInteger, right: HugeInt) -> HugeInt {
-        return HugeInt(left) + right
+    static func + (lhs: any BinaryInteger, rhs: HugeInt) -> HugeInt {
+        return HugeInt(lhs) + rhs
     }
     
-    static func += (left: inout HugeInt, right: HugeInt) {
-        if left == HugeInt.zero {
-            left.is_negative = right.is_negative
-            left.numbers = right.numbers
-        } else if right == HugeInt.zero {
+    static func += (lhs: inout HugeInt, rhs: HugeInt) {
+        if lhs == HugeInt.zero {
+            lhs.sign = rhs.sign
+            lhs.numbers = rhs.numbers
+        } else if rhs == HugeInt.zero {
             return
         } else {
-            let is_bigger:Bool, result:[Int8], is_negative:Bool
-            let left_numbers:[Int8] = left.numbers, right_numbers:[Int8] = right.numbers
-            if right.is_negative {
-                if left.is_negative {
-                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                    is_negative = true
+            let isBigger:Bool, result:[Int8], isNegative:Bool
+            let leftNumbers = lhs.numbers
+            let rightNumbers = rhs.numbers
+            if rhs.isNegative {
+                if lhs.isNegative {
+                    (result, isBigger) = HugeInt.add(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = true
                 } else {
-                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                    (result, isBigger) = HugeInt.subtract(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = leftNumbers == rightNumbers ? false : !isBigger
                 }
             } else {
-                if left.is_negative {
-                    (result, is_bigger) = HugeInt.subtract(left: left_numbers, right: right_numbers)
-                    is_negative = left_numbers == right_numbers ? false : !is_bigger
+                if lhs.isNegative {
+                    (result, isBigger) = HugeInt.subtract(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = leftNumbers == rightNumbers ? false : !isBigger
                 } else {
-                    (result, is_bigger) = HugeInt.add(left: left_numbers, right: right_numbers)
-                    is_negative = false
+                    (result, isBigger) = HugeInt.add(lhs: leftNumbers, rhs: rightNumbers)
+                    isNegative = false
                 }
             }
-            left.is_negative = is_negative
-            left.numbers = result
+            lhs.sign = isNegative ? .minus : .plus
+            lhs.numbers = result
         }
     }
-    static func += (left: inout HugeInt, right: any BinaryInteger) {
-        left += HugeInt(right)
+    static func += (lhs: inout HugeInt, rhs: any BinaryInteger) {
+        lhs += HugeInt(rhs)
     }
 }
-internal extension HugeInt {
-    static func add(left: [Int8], right: [Int8]) -> (result: [Int8], left_is_bigger: Bool) {
-        let (bigger_numbers, smaller_numbers, left_is_bigger):([Int8], [Int8], Bool) = get_bigger_numbers(left: left, right: right)
-        var result:[Int8] = HugeInt.add(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+extension HugeInt {
+    static func add(lhs: [Int8], rhs: [Int8]) -> (result: [Int8], leftIsBigger: Bool) {
+        let (biggerNumbers, smallerNumbers, leftIsBigger) = getBiggerNumbers(lhs: lhs, rhs: rhs)
+        var result = HugeInt.add(biggerNumbers: biggerNumbers, smallerNumbers: smallerNumbers)
         while result.last == 0 {
             result.removeLast()
         }
-        return (result, left_is_bigger)
+        return (result, leftIsBigger)
     }
+
     /// Finds the sum of two 8-bit number arrays.
+    /// 
     /// - Complexity: O(_n_ + 1) where _n_ equals _bigger_numbers.count_.
     /// - Returns: the sum of the two arrays, in reverse order.
-    static func add(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
-        let smaller_numbers_length:Int = smaller_numbers.count
-        let result_count:Int = bigger_numbers.count + 1
-        var result:[Int8] = bigger_numbers
+    static func add(biggerNumbers: [Int8], smallerNumbers: [Int8]) -> [Int8] {
+        var result = biggerNumbers
         result.append(0)
         
-        for index in 0..<smaller_numbers_length {
-            result[index] += smaller_numbers[index]
+        for index in 0..<smallerNumbers.count {
+            result[index] += smallerNumbers[index]
         }
-        for i in 0..<result_count {
+        for i in 0..<(biggerNumbers.count + 1) {
             if result[i] > 9 {
                 result[i] -= 10
                 result[i+1] += 1
@@ -491,47 +542,50 @@ internal extension HugeInt {
         return result
     }
 }
-/*
- Subtraction
- */
-public extension HugeInt {
-    static func - (left: HugeInt, right: HugeInt) -> HugeInt {
-        return left + -right
+
+// MARK: Subtraction
+extension HugeInt {
+    @inlinable
+    public static func - (lhs: HugeInt, rhs: HugeInt) -> HugeInt {
+        return lhs + -rhs
     }
-    static func - (left: HugeInt, right: any BinaryInteger) -> HugeInt {
-        return left - HugeInt(right)
+    @inlinable
+    public static func - (lhs: HugeInt, rhs: any BinaryInteger) -> HugeInt {
+        return lhs - HugeInt(rhs)
     }
-    static func - (left: any BinaryInteger, right: HugeInt) -> HugeInt {
-        return HugeInt(left) - right
+    @inlinable
+    public static func - (lhs: any BinaryInteger, rhs: HugeInt) -> HugeInt {
+        return HugeInt(lhs) - rhs
     }
     
-    static func -= (left: inout HugeInt, right: HugeInt) {
-        left += -right
+    @inlinable
+    public static func -= (lhs: inout HugeInt, rhs: HugeInt) {
+        lhs += -rhs
     }
-    static func -= (left: inout HugeInt, right: any BinaryInteger) {
-        left -= HugeInt(right)
+    @inlinable
+    public static func -= (lhs: inout HugeInt, rhs: any BinaryInteger) {
+        lhs -= HugeInt(rhs)
     }
 }
 internal extension HugeInt {
-    static func subtract(left: [Int8], right: [Int8]) -> (result: [Int8], left_is_bigger: Bool) {
-        let (bigger_numbers, smaller_numbers, left_is_bigger):([Int8], [Int8], Bool) = get_bigger_numbers(left: left, right: right)
-        var result:[Int8] = HugeInt.subtract(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
+    static func subtract(lhs: [Int8], rhs: [Int8]) -> (result: [Int8], leftIsBigger: Bool) {
+        let (biggerNumbers, smallerNumbers, leftIsBigger) = getBiggerNumbers(lhs: lhs, rhs: rhs)
+        var result = HugeInt.subtract(biggerNumbers: biggerNumbers, smallerNumbers: smallerNumbers)
         while result.last == 0 {
             result.removeLast()
         }
-        return (result, left_is_bigger)
+        return (result, leftIsBigger)
     }
+
     /// Finds the net of two 8-bit number arrays.
+    /// 
     /// - Returns: the net of the two arrays, in reverse order.
-    static func subtract(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
-        let smaller_numbers_length:Int = smaller_numbers.count
-        let result_count:Int = bigger_numbers.count
-        var result:[Int8] = bigger_numbers
-        
-        for index in 0..<smaller_numbers_length {
-            result[index] -= smaller_numbers[index]
+    static func subtract(biggerNumbers: [Int8], smallerNumbers: [Int8]) -> [Int8] {
+        var result = biggerNumbers
+        for index in 0..<smallerNumbers.count {
+            result[index] -= smallerNumbers[index]
         }
-        for i in 0..<result_count {
+        for i in 0..<biggerNumbers.count {
             if result[i] < 0 {
                 result[i] += 10
                 result[i+1] -= 1
@@ -540,97 +594,103 @@ internal extension HugeInt {
         return result
     }
 }
-/*
- Multiplication
- */
-public extension HugeInt {
-    static func * (left: HugeInt, right: HugeInt) -> HugeInt {
-        if left.is_zero || right.is_zero {
+
+// MARK: Multiplication
+extension HugeInt {
+    public static func * (lhs: HugeInt, rhs: HugeInt) -> HugeInt {
+        if lhs.isZero || rhs.isZero {
             return HugeInt.zero
-        } else if left == HugeInt.one {
-            return right
-        } else if right == HugeInt.one {
-            return left
+        } else if lhs == HugeInt.one {
+            return rhs
+        } else if rhs == HugeInt.one {
+            return lhs
         } else {
-            let numbers:[Int8] = HugeInt.multiply(left: left.numbers, right: right.numbers)
-            let is_negative:Bool = !(left.is_negative == right.is_negative)
-            return HugeInt(is_negative: is_negative, numbers)
+            let numbers = HugeInt.multiply(lhs: lhs.numbers, rhs: rhs.numbers)
+            let isNegative = !(lhs.isNegative == rhs.isNegative)
+            return HugeInt(isNegative: isNegative, numbers)
         }
     }
-    static func * (left: HugeInt, right: any BinaryInteger) -> HugeInt {
-        return left * HugeInt(right)
+    @inlinable
+    public static func * (lhs: HugeInt, rhs: any BinaryInteger) -> HugeInt {
+        return lhs * HugeInt(rhs)
     }
-    static func * (left: any BinaryInteger, right: HugeInt) -> HugeInt {
-        return right * HugeInt(left)
+    @inlinable
+    public static func * (lhs: any BinaryInteger, rhs: HugeInt) -> HugeInt {
+        return rhs * HugeInt(lhs)
     }
     
-    static func *= (left: inout HugeInt, right: HugeInt) {
-        left.is_negative = !(left.is_negative == right.is_negative)
-        left.numbers = HugeInt.multiply(left: left.numbers, right: right.numbers)
+    public static func *= (lhs: inout HugeInt, rhs: HugeInt) {
+        lhs.sign = !(lhs.isNegative == rhs.isNegative) ? .minus : .plus
+        lhs.numbers = HugeInt.multiply(lhs: lhs.numbers, rhs: rhs.numbers)
     }
-    static func *= (left: inout HugeInt, right: any BinaryInteger) {
-        left *= HugeInt(right)
+    @inlinable
+    public static func *= (lhs: inout HugeInt, rhs: any BinaryInteger) {
+        lhs *= HugeInt(rhs)
     }
 }
-internal extension HugeInt {
-    static func multiply(left: [Int8], right: [Int8], remove_leading_zeros: Bool = true) -> [Int8] {
-        let (bigger_numbers, smaller_numbers, _):([Int8], [Int8], Bool) = get_bigger_numbers(left: left, right: right)
-        var result:[Int8] = HugeInt.multiply(bigger_numbers: bigger_numbers, smaller_numbers: smaller_numbers)
-        if remove_leading_zeros {
+extension HugeInt {
+    static func multiply(lhs: [Int8], rhs: [Int8], removeLeadingZeros: Bool = true) -> [Int8] {
+        let (biggerNumbers, smallerNumbers, _) = getBiggerNumbers(lhs: lhs, rhs: rhs)
+        var result = HugeInt.multiply(biggerNumbers: biggerNumbers, smallerNumbers: smallerNumbers)
+        if removeLeadingZeros {
             while result.last == 0 {
                 result.removeLast()
             }
         }
         return result
     }
+
     // TODO: optimize | n * log(n)
     /// Multiplies two 8-bit number arrays together.
     /// - Parameters:
-    ///     - bigger_numbers: An array of 8-bit numbers in reverse order. This array's size should be bigger than or equal to _smaller_numbers_ size.
-    ///     - smaller_numbers: An array of 8-bit numbers in reverse order. This array's size should be less than or equal to _bigger_numbers_ size.
+    ///     - biggerNumbers: An array of 8-bit numbers in reverse order. This array's size should be bigger than or equal to _smaller_numbers_ size.
+    ///     - smallerNumbers: An array of 8-bit numbers in reverse order. This array's size should be less than or equal to _bigger_numbers_ size.
     /// - Complexity: O(_n_ \* _m_), where _n_ is the _bigger\_numbers_ size, and _m_ is the _smaller\_numbers_ size.
     /// - Returns: the product of the two 8-bit number arrays, in reverse order.
-    static func multiply(bigger_numbers: [Int8], smaller_numbers: [Int8]) -> [Int8] {
-        let array_count:Int = bigger_numbers.count
-        let smaller_numbers_length:Int = smaller_numbers.count, smaller_numbers_length_minus_one:Int = smaller_numbers_length-1
-        let result_count:Int = array_count + smaller_numbers_length, result_count_minus_one:Int = result_count-1
-        var result:[Int8] = [Int8].init(repeating: 0, count: result_count)
+    static func multiply(biggerNumbers: [Int8], smallerNumbers: [Int8]) -> [Int8] {
+        let array_count = biggerNumbers.count
+        let smallerNumbersLength = smallerNumbers.count
+        let smallerNumbersLengthMinusOne = smallerNumbersLength-1
+        let resultCount = array_count + smallerNumbersLength
+        let resultCountMinusOne = resultCount-1
+        var result = [Int8].init(repeating: 0, count: resultCount)
         
-        var small_number_index:Int = 0
-        while small_number_index < smaller_numbers_length {
-            let smaller_number:Int8 = smaller_numbers[small_number_index]
-            if smaller_number != 0 {
-                var big_number_index:Int = 0, remainder:Int8 = 0
-                var small_number_result:[Int8] = [Int8].init(repeating: 0, count: result_count)
-                while big_number_index < array_count {
-                    let calculated_value:Int8 = smaller_number * bigger_numbers[big_number_index]
-                    let total_value:Int8 = calculated_value + remainder
-                    remainder = total_value / 10
-                    let ending_result:Int8 = total_value - (remainder * 10)
-                    small_number_result[small_number_index + big_number_index] = ending_result
-                    big_number_index += 1
+        var smallNumberIndex = 0
+        while smallNumberIndex < smallerNumbersLength {
+            let smallerNumber = smallerNumbers[smallNumberIndex]
+            if smallerNumber != 0 {
+                var bigNumberIndex = 0
+                var remainder:Int8 = 0
+                var smallNumberResult = [Int8].init(repeating: 0, count: resultCount)
+                while bigNumberIndex < array_count {
+                    let calculatedValue = smallerNumber * biggerNumbers[bigNumberIndex]
+                    let totalValue = calculatedValue + remainder
+                    remainder = totalValue / 10
+                    let endingResult = totalValue - (remainder * 10)
+                    smallNumberResult[smallNumberIndex + bigNumberIndex] = endingResult
+                    bigNumberIndex += 1
                 }
                 if remainder > 0 {
-                    let ending_index:Int = small_number_index == smaller_numbers_length_minus_one ? result_count_minus_one : small_number_index + big_number_index
-                    small_number_result[ending_index] = remainder
+                    let endingIndex = smallNumberIndex == smallerNumbersLengthMinusOne ? resultCountMinusOne : smallNumberIndex + bigNumberIndex
+                    smallNumberResult[endingIndex] = remainder
                     remainder = 0
                 }
-                result = HugeInt.add(bigger_numbers: result, smaller_numbers: small_number_result)
+                result = HugeInt.add(biggerNumbers: result, smallerNumbers: smallNumberResult)
             }
-            small_number_index += 1
+            smallNumberIndex += 1
         }
         return result
     }
 }
-/*
- Division (https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
- */
-public extension HugeInt {
-    static func / (dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+
+// MARK: Division
+// https://www.wikihow.com/Do-Short-Division , but optimized for a computer)
+extension HugeInt {
+    public static func / (dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
         if dividend == HugeInt.zero {
             return (HugeInt.zero, divisor == HugeInt.zero ? nil : HugeRemainder(dividend: dividend, divisor: divisor))
         } else if divisor.numbers == [1] {
-            if divisor.is_negative {
+            if divisor.isNegative {
                 return (-dividend, nil)
             } else {
                 return (dividend, nil)
@@ -639,199 +699,197 @@ public extension HugeInt {
         return HugeInt.divide(dividend: dividend, divisor: divisor)
     }
     
-    static func / (left: HugeInt, right: any BinaryInteger) -> (quotient: HugeInt, remainder: HugeRemainder?) {
-        return left / HugeInt(right)
+    @inlinable
+    public static func / (lhs: HugeInt, rhs: any BinaryInteger) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+        return lhs / HugeInt(rhs)
     }
-    static func / (left: any BinaryInteger, right: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
-        return HugeInt(left) / right
+    @inlinable
+    public static func / (lhs: any BinaryInteger, rhs: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+        return HugeInt(lhs) / rhs
     }
     
-    static func /= (left: inout HugeInt, right: HugeInt) {
-        left = (left / right).quotient
+    @inlinable
+    public static func /= (lhs: inout HugeInt, rhs: HugeInt) {
+        lhs = (lhs / rhs).quotient
     }
-    static func /= (left: inout HugeInt, right: any BinaryInteger) {
-        left /= HugeInt(right)
+    @inlinable
+    public static func /= (lhs: inout HugeInt, rhs: any BinaryInteger) {
+        lhs /= HugeInt(rhs)
     }
 }
-internal extension HugeInt {
+extension HugeInt {
     static func divide(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
-        if let dividend_number:UInt64 = dividend.to_int(), let divisor_number:UInt64 = divisor.to_int() {
-            let result:UInt64 = dividend_number / divisor_number
-            let remainder_number:UInt64 = dividend_number - (divisor_number * result)
-            let remainder:HugeRemainder? = remainder_number != 0 ? HugeRemainder(dividend: HugeInt(remainder_number), divisor: divisor) : nil
+        if let dividendNumber:UInt64 = dividend.toInt(), let divisorNumber:UInt64 = divisor.toInt() {
+            let result = dividendNumber / divisorNumber
+            let remainderNumber = dividendNumber - (divisorNumber * result)
+            let remainder = remainderNumber != 0 ? HugeRemainder(dividend: HugeInt(remainderNumber), divisor: divisor) : nil
             return (HugeInt(result), remainder)
-        } else if let dividend_number:Int64 = dividend.to_int(), let divisor_number:Int64 = divisor.to_int() {
-            let result:Int64 = dividend_number / divisor_number
-            let remainder_number:Int64 = dividend_number - (divisor_number * result)
-            let remainder:HugeRemainder? = remainder_number != 0 ? HugeRemainder(dividend: HugeInt(abs(remainder_number)), divisor: divisor) : nil
+        } else if let dividendNumber:Int64 = dividend.toInt(), let divisorNumber:Int64 = divisor.toInt() {
+            let result = dividendNumber / divisorNumber
+            let remainderNumber = dividendNumber - (divisorNumber * result)
+            let remainder = remainderNumber != 0 ? HugeRemainder(dividend: HugeInt(abs(remainderNumber)), divisor: divisor) : nil
             return (HugeInt(result), remainder)
         }
         guard dividend >= divisor else {
             return (HugeInt.zero, HugeRemainder(dividend: dividend, divisor: divisor))
         }
-        return divide_very_large_numbers(dividend: dividend, divisor: divisor)
+        return divideVeryLargeNumbers(dividend: dividend, divisor: divisor)
     }
-    
-    static func divide_very_large_numbers(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
-        let is_negative:Bool = !(dividend.is_negative == divisor.is_negative)
+
+    static func divideVeryLargeNumbers(dividend: HugeInt, divisor: HugeInt) -> (quotient: HugeInt, remainder: HugeRemainder?) {
+        let isNegative = !(dividend.isNegative == divisor.isNegative)
+        var remainingDividend = HugeInt(isNegative: false, dividend.numbers)
+        let dividendLength = dividend.length
+        let divisorLength = divisor.length
+        let resultCount = dividendLength - divisorLength + 1
+        var quotientNumbers = [Int8].init(repeating: Int8.max, count: resultCount)
         
-        var remaining_dividend:HugeInt = HugeInt(is_negative: false, dividend.numbers)
-        let dividend_length:Int = dividend.length, divisor_length:Int = divisor.length
-        let result_count:Int = dividend_length - divisor_length + 1
-        var quotient_numbers:[Int8] = [Int8].init(repeating: Int8.max, count: result_count)
-        
-        var included_digits:Int = divisor_length
-        var quotient_index:Int = 0
-        var last_subtracted_amount:HugeInt = HugeInt.zero
-        while remaining_dividend >= divisor {
-            var divisible_dividend_numbers:[Int8] = [Int8].init(repeating: 0, count: included_digits)
-            let remaining_dividend_numbers_reversed:[Int8] = remaining_dividend.numbers.reversed()
-            for index in 0..<included_digits {
-                divisible_dividend_numbers[index] = remaining_dividend_numbers_reversed[index]
+        var includedDigits = divisorLength
+        var quotientIndex = 0
+        var lastSubtractedAmount = HugeInt.zero
+        while remainingDividend >= divisor {
+            var divisibleDividendNumbers = [Int8].init(repeating: 0, count: includedDigits)
+            let remainingDividendNumbersReversed = remainingDividend.numbers.reversed()
+            for index in 0..<includedDigits {
+                divisibleDividendNumbers[index] = remainingDividendNumbersReversed[remainingDividendNumbersReversed.index(remainingDividendNumbersReversed.startIndex, offsetBy: index)]
             }
-            var divisible_dividend:HugeInt = HugeInt(is_negative: false, divisible_dividend_numbers.reversed())
-            if divisible_dividend >= divisor {
-                divisible_dividend -= divisor
-                last_subtracted_amount = divisor
-                quotient_numbers[quotient_index] = 1
-                while divisible_dividend >= divisor {
-                    quotient_numbers[quotient_index] += 1
-                    divisible_dividend -= divisor
-                    last_subtracted_amount += divisor
+            var divisibleDividend = HugeInt(isNegative: false, divisibleDividendNumbers.reversed())
+            if divisibleDividend >= divisor {
+                divisibleDividend -= divisor
+                lastSubtractedAmount = divisor
+                quotientNumbers[quotientIndex] = 1
+                while divisibleDividend >= divisor {
+                    quotientNumbers[quotientIndex] += 1
+                    divisibleDividend -= divisor
+                    lastSubtractedAmount += divisor
                 }
-                quotient_index += 1
-                let remaining_dividend_numbers:[Int8] = remaining_dividend.numbers
-                let remaining_dividend_numbers_count:Int = remaining_dividend_numbers.count
-                if remaining_dividend_numbers[remaining_dividend_numbers_count-1] < 10 {
-                    for _ in included_digits..<remaining_dividend_numbers_count {
-                        last_subtracted_amount.numbers.insert(0, at: 0)
+                quotientIndex += 1
+                let remainingDividendNumbers = remainingDividend.numbers
+                let remainingDividendNumbersCount = remainingDividendNumbers.count
+                if remainingDividendNumbers[remainingDividendNumbersCount-1] < 10 {
+                    for _ in includedDigits..<remainingDividendNumbersCount {
+                        lastSubtractedAmount.numbers.insert(0, at: 0)
                     }
                 }
                 
-                var bruh:[Int8] = HugeInt.subtract(bigger_numbers: remaining_dividend_numbers, smaller_numbers: last_subtracted_amount.numbers)
-                for _ in 0..<included_digits {
+                var bruh = HugeInt.subtract(biggerNumbers: remainingDividendNumbers, smallerNumbers: lastSubtractedAmount.numbers)
+                for _ in 0..<includedDigits {
                     if bruh.last == 0 {
                         bruh.removeLast()
                     }
                 }
                 while bruh.last == 0 {
-                    if quotient_index < result_count {
-                        quotient_numbers[quotient_index] = 0
-                        quotient_index += 1
+                    if quotientIndex < resultCount {
+                        quotientNumbers[quotientIndex] = 0
+                        quotientIndex += 1
                     }
                     bruh.removeLast()
                 }
-                remaining_dividend = HugeInt(is_negative: false, bruh)
-                if included_digits > 1 {
-                    included_digits -= 1
+                remainingDividend = HugeInt(isNegative: false, bruh)
+                if includedDigits > 1 {
+                    includedDigits -= 1
                 }
             } else {
-                included_digits += 1
+                includedDigits += 1
             }
         }
         let remainder:HugeRemainder?
-        if remaining_dividend.is_zero {
+        if remainingDividend.isZero {
             remainder = nil
         } else {
-            remainder = HugeRemainder(dividend: remaining_dividend, divisor: divisor)
-            if last_subtracted_amount.numbers.last == divisor.numbers.last && last_subtracted_amount.numbers.count == dividend_length && quotient_index < result_count {
-                quotient_numbers[quotient_index] = 0
+            remainder = HugeRemainder(dividend: remainingDividend, divisor: divisor)
+            if lastSubtractedAmount.numbers.last == divisor.numbers.last && lastSubtractedAmount.numbers.count == dividendLength && quotientIndex < resultCount {
+                quotientNumbers[quotientIndex] = 0
             }
         }
         
-        while quotient_numbers.last == Int8.max {
-            quotient_numbers.removeLast()
+        while quotientNumbers.last == Int8.max {
+            quotientNumbers.removeLast()
         }
-        return (HugeInt(is_negative: is_negative, quotient_numbers.reversed()), remainder)
+        return (HugeInt(isNegative: isNegative, quotientNumbers.reversed()), remainder)
     }
 }
-/*
- Percent
- */
-public extension HugeInt {
-    static func % (left: HugeInt, right: HugeInt) -> HugeInt {
-        return (left / right).remainder?.dividend ?? HugeInt.zero
+// MARK: Percent
+extension HugeInt {
+    @inlinable
+    public static func % (lhs: HugeInt, rhs: HugeInt) -> HugeInt {
+        return (lhs / rhs).remainder?.dividend ?? HugeInt.zero
     }
-    static func % (left: HugeInt, right: any BinaryInteger) -> HugeInt {
-        return left % HugeInt(right)
+    @inlinable
+    public static func % (lhs: HugeInt, rhs: any BinaryInteger) -> HugeInt {
+        return lhs % HugeInt(rhs)
     }
 }
 /*
  Multiplicative inverse // TODO: support
  */
-/*
- Square root
- */
+
+// MARK: Square root
+@inlinable
 public func sqrt(_ x: HugeInt) -> HugeFloat { // TODO: fix | doesn't support remainders
     guard x > HugeInt.zero else { return HugeFloat.zero }
-    let numbers:[Int8] = x.numbers
-    guard let ending_number:Int8 = numbers.first else { return HugeFloat.zero }
-    let ending_root_1:Int8, ending_root_2:Int8
-    switch ending_number {
+    let numbers = x.numbers
+    guard let endingNumber = numbers.first else { return HugeFloat.zero }
+    let endingRoot1:Int8, endingRoot2:Int8
+    switch endingNumber {
     case 0:
-        if let integer:Int = x.to_int() { // TODO: fix
-            let closest:Int = get_closest_sqrt_number(integer)
+        if let integer:Int = x.toInt() { // TODO: fix
+            let closest = getClosestSqrtNumber(integer)
             return HugeFloat(closest)
         } else {
             return HugeFloat(integer: HugeInt.zero) // TODO: fix
         }
     case 1:
-        ending_root_1 = 1
-        ending_root_2 = 9
-        break
+        endingRoot1 = 1
+        endingRoot2 = 9
     case 4:
-        ending_root_1 = 2
-        ending_root_2 = 8
-        break
+        endingRoot1 = 2
+        endingRoot2 = 8
     case 6:
-        ending_root_1 = 4
-        ending_root_2 = 6
-        break
+        endingRoot1 = 4
+        endingRoot2 = 6
     case 9:
-        ending_root_1 = 3
-        ending_root_2 = 7
-        break
+        endingRoot1 = 3
+        endingRoot2 = 7
     default:
-        ending_root_1 = 5
-        ending_root_2 = 5
-        break
+        endingRoot1 = 5
+        endingRoot2 = 5
     }
     if numbers.count <= 2 {
-        let result:Int8 = ending_root_1 * ending_root_1 == x.to_int() ? ending_root_1 : ending_root_2
+        let result = endingRoot1 * endingRoot1 == x.toInt() ? endingRoot1 : endingRoot2
         return HugeFloat(result)
     }
-    let first_numbers:Int = Int(numbers.reversed()[0..<numbers.count-2].map({ String(describing: $0) }).joined())!
-    let first_result:Int = get_closest_sqrt_number(first_numbers)
-    let second_value:Int = first_result * (first_result + 1)
-    let second_result:Int8 = first_numbers < second_value ? ending_root_1 : ending_root_2
-    return HugeFloat(UInt64(String(describing: first_result) + String(describing: second_result))!)
+    let reversed = numbers.reversed()
+    let firstNumbers = Int(reversed[reversed.startIndex..<reversed.index(reversed.startIndex, offsetBy: numbers.count-2)].map({ String(describing: $0) }).joined())!
+    let firstResult = getClosestSqrtNumber(firstNumbers)
+    let secondValue = firstResult * (firstResult + 1)
+    let secondResult = firstNumbers < secondValue ? endingRoot1 : endingRoot2
+    return HugeFloat(UInt64(String(describing: firstResult) + String(describing: secondResult))!)
 }
-private func get_closest_sqrt_number(_ number: Int, starting_number: Int = 4) -> Int {
+@inlinable
+func getClosestSqrtNumber(_ number: Int, starting_number: Int = 4) -> Int {
     for index in starting_number...45_000 {
-        let squared:Int = index * index
+        let squared = index * index
         if number < squared {
             return index-1
         }
     }
     return 0
 }
-/*
- To the power of x
- */
-public extension HugeInt {
-    func squared() -> HugeInt {
-        return to_the_power_of(2)
-    }
-    func cubed() -> HugeInt {
-        return to_the_power_of(3)
-    }
+
+// MARK: Exponent
+extension HugeInt {
+    @inlinable public func squared() -> HugeInt { toThePowerOf(2) }
+    @inlinable public func cubed() -> HugeInt   { toThePowerOf(3) }
     
-    /// Returns a ``HugeInt`` taken to a given power.
+    /// Returns a `HugeInt` taken to a given power.
+    /// 
     /// - Complexity: O(n) where _n_ equals _x_.
     /// - Parameters:
     ///     - x: the amount of times to multiply self by self.
-    func to_the_power_of(_ x: UInt64) -> HugeInt {
-        var result:HugeInt = self
+    @inlinable
+    public func toThePowerOf(_ x: UInt64) -> HugeInt {
+        var result = self
         for _ in 1..<x {
             result *= self
         }

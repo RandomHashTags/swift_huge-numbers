@@ -5,13 +5,11 @@
 //  Created by Evan Anderson on 4/12/23.
 //
 
-import Foundation
-
-public struct HugeDecimal : Hashable, Comparable, CustomStringConvertible {
+public struct HugeDecimal : Hashable, CustomStringConvertible {
     
-    public static var zero:HugeDecimal = HugeDecimal(value: HugeInt.zero)
+    public static let zero:HugeDecimal = HugeDecimal(value: HugeInt.zero)
     
-    /// The ``HugeInt`` that represents this decimal.
+    /// The `HugeInt` that represents this decimal.
     public private(set) var value:HugeInt
     /// The infinitely repeating numbers, in reverse order.
     public private(set) var repeating_numbers:[Int8]?
@@ -20,42 +18,47 @@ public struct HugeDecimal : Hashable, Comparable, CustomStringConvertible {
         self.value = value
         self.repeating_numbers = repeating_numbers
     }
-    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, remove_leading_zeros: Bool = true, repeating_numbers: [Int8]? = nil) {
-        self.init(value: HugeInt(string, remove_leading_zeros: remove_leading_zeros), repeating_numbers: repeating_numbers)
+    public init<T: StringProtocol & RangeReplaceableCollection>(_ string: T, removeLeadingZeros: Bool = true, repeating_numbers: [Int8]? = nil) {
+        self.init(value: HugeInt(string, removeLeadingZeros: removeLeadingZeros), repeating_numbers: repeating_numbers)
     }
     
     /// The number the digits represent.
-    public var description : String {
+    @inlinable
+    public var description: String {
         if let repeating_numbers:[Int8] = repeating_numbers {
-            return value.description + String(repeating_numbers.reversed().map({ $0.repeating_symbol }))
+            return value.description + String(repeating_numbers.reversed().map({ $0.repeatingSymbol }))
         } else {
             return value.description
         }
     }
     
     /// The number the digits represent, in reverse order.
-    public var description_literal : String {
+    @inlinable
+    public var descriptionLiteral : String {
         if let repeating_numbers:[Int8] = repeating_numbers {
-            return value.description + String(repeating_numbers.map({ $0.repeating_symbol }))
+            return value.description + String(repeating_numbers.map({ $0.repeatingSymbol }))
         } else {
-            return value.description_literal
+            return value.descriptionLiteral
         }
     }
     
     /// Whether or not this huge decimal equals zero.
-    public var is_zero : Bool {
-        return value.is_zero && (repeating_numbers == nil || repeating_numbers!.allSatisfy({ $0 == 0 }))
+    @inlinable
+    public var isZero : Bool {
+        return value.isZero && (repeating_numbers == nil || repeating_numbers!.allSatisfy({ $0 == 0 }))
     }
     
-    /// Returns a ``HugeRemainder`` in which the decimal is the _dividend_, and the divisor is _10 to the power of decimal length plus one_.
-    public var to_remainder : HugeRemainder {
+    /// Returns a `HugeRemainder` in which the decimal is the _dividend_, and the divisor is _10 to the power of decimal length plus one_.
+    @inlinable
+    public var toRemainder : HugeRemainder {
         var divisor_numbers:[Int8] = [Int8].init(repeating: 0, count: value.length+1)
         divisor_numbers[divisor_numbers.count-1] = 1
-        let divisor:HugeInt = HugeInt(is_negative: value.is_negative, divisor_numbers)
+        let divisor = HugeInt(isNegative: value.isNegative, divisor_numbers)
         return HugeRemainder(dividend: value, divisor: divisor)
     }
     
     /// Returns the distance to the next whole number.
+    @inlinable
     public var distance_to_next_quotient : HugeDecimal {
         let value_numbers:[Int8] = value.numbers.reversed()
         var numbers:[Int8] = [Int8].init(repeating: 0, count: value_numbers.count)
@@ -64,71 +67,82 @@ public struct HugeDecimal : Hashable, Comparable, CustomStringConvertible {
             numbers[index] = 9 - value_numbers[index]
         }
         numbers[indices.last!] += 1
-        return HugeDecimal(value: HugeInt(is_negative: false, numbers.reversed()))
+        return HugeDecimal(value: HugeInt(isNegative: false, numbers.reversed()))
     }
 }
 
-/*
- Comparable
- */
-public extension HugeDecimal {
-    static func < (left: HugeDecimal, right: HugeDecimal) -> Bool {
-        return left.value < right.value
+// MARK: Comparable
+extension HugeDecimal: Comparable {
+    @inlinable
+    public static func < (lhs: HugeDecimal, rhs: HugeDecimal) -> Bool {
+        return lhs.value < rhs.value
     }
-    static func < (left: HugeDecimal, right: any BinaryInteger) -> Bool {
-        return left.value < HugeInt(right)
+    @inlinable
+    public static func < (lhs: HugeDecimal, rhs: any BinaryInteger) -> Bool {
+        return lhs.value < HugeInt(rhs)
     }
-    
-    static func <= (left: HugeDecimal, right: HugeDecimal) -> Bool {
-        return left.value <= right.value
+
+    @inlinable
+    public static func <= (lhs: HugeDecimal, rhs: HugeDecimal) -> Bool {
+        return lhs.value <= rhs.value
     }
-    static func <= (left: HugeDecimal, right: any BinaryInteger) -> Bool {
-        return left.value < HugeInt(right)
+    @inlinable
+    public static func <= (lhs: HugeDecimal, rhs: any BinaryInteger) -> Bool {
+        return lhs.value < HugeInt(rhs)
     }
-    
-    func is_less_than(_ value: HugeDecimal?) -> Bool {
+
+    @inlinable
+    public func is_less_than(_ value: HugeDecimal?) -> Bool {
         guard let value:HugeDecimal = value else { return true }
         return self < value
     }
-    func is_less_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
+    @inlinable
+    public func is_less_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
         guard let value:HugeDecimal = value else { return true }
         return self <= value
     }
 }
-public extension HugeDecimal {
-    static func > (left: HugeDecimal, right: HugeDecimal) -> Bool {
-        return left.value > right.value
+extension HugeDecimal {
+    @inlinable
+    public static func > (lhs: HugeDecimal, rhs: HugeDecimal) -> Bool {
+        return lhs.value > rhs.value
     }
-    static func > (left: HugeDecimal, right: any BinaryInteger) -> Bool {
-        return left.value > HugeInt(right)
+    @inlinable
+    public static func > (lhs: HugeDecimal, rhs: any BinaryInteger) -> Bool {
+        return lhs.value > HugeInt(rhs)
     }
-    
-    static func >= (left: HugeDecimal, right: HugeDecimal) -> Bool {
-        return left.value >= right.value
+
+    @inlinable
+    public static func >= (lhs: HugeDecimal, rhs: HugeDecimal) -> Bool {
+        return lhs.value >= rhs.value
     }
-    static func >= (left: HugeDecimal, right: any BinaryInteger) -> Bool {
-        return left.value >= HugeInt(right)
+    @inlinable
+    public static func >= (lhs: HugeDecimal, rhs: any BinaryInteger) -> Bool {
+        return lhs.value >= HugeInt(rhs)
     }
-    
-    func is_greater_than(_ value: HugeDecimal?) -> Bool {
+
+    @inlinable
+    public func is_greater_than(_ value: HugeDecimal?) -> Bool {
         guard let value:HugeDecimal = value else { return true }
         return self > value
     }
-    func is_greater_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
+    @inlinable
+    public func is_greater_than_or_equal_to(_ value: HugeDecimal?) -> Bool {
         guard let value:HugeDecimal = value else { return true }
         return self >= value
     }
 }
-public extension HugeDecimal {
-    static func == (left: HugeDecimal, right: HugeDecimal) -> Bool {
-        return left.value == right.value && left.repeating_numbers == right.repeating_numbers
+extension HugeDecimal {
+    @inlinable
+    public static func == (lhs: HugeDecimal, rhs: HugeDecimal) -> Bool {
+        return lhs.value == rhs.value && lhs.repeating_numbers == rhs.repeating_numbers
     }
 }
-/*
- prefixes / postfixes
- */
-public extension HugeDecimal {
-    static prefix func - (value: HugeDecimal) -> HugeDecimal {
+
+// MARK: Prefixes/postfixes
+extension HugeDecimal {
+    @inlinable
+    public static prefix func - (value: HugeDecimal) -> HugeDecimal {
         return HugeDecimal(value: -value.value, repeating_numbers: value.repeating_numbers)
     }
 }
@@ -136,30 +150,30 @@ public extension HugeDecimal {
  Addition
  */
 public extension HugeDecimal {
-    static func + (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
-        return HugeDecimal.add(left: left, right: right)
+    static func + (lhs: HugeDecimal, rhs: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
+        return HugeDecimal.add(lhs: lhs, rhs: rhs)
     }
     
-    /// - Warning: This doesn't add the resulting quotient to the `left` variable.
-    static func += (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support addition of repeating numbers
-        left = HugeDecimal.add(left: left, right: right).result
+    /// - Warning: This doesn't add the resulting quotient to the `lhs` variable.
+    static func += (lhs: inout HugeDecimal, rhs: HugeDecimal) { // TODO: support addition of repeating numbers
+        lhs = HugeDecimal.add(lhs: lhs, rhs: rhs).result
     }
 }
-internal extension HugeDecimal {
-    static func add(left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: support addition of repeating numbers
-        var left_value:HugeInt = left.value, right_value:HugeInt = right.value
-        let decimal_length:Int = max(left_value.length, right_value.length)
-        while left_value.length < decimal_length {
-            left_value.numbers.insert(0, at: 0)
+extension HugeDecimal {
+    static func add(lhs: HugeDecimal, rhs: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) { // TODO: support addition of repeating numbers
+        var leftValue:HugeInt = lhs.value, rightValue:HugeInt = rhs.value
+        let decimal_length:Int = max(leftValue.length, rightValue.length)
+        while leftValue.length < decimal_length {
+            leftValue.numbers.insert(0, at: 0)
         }
-        while right_value.length < decimal_length {
-            right_value.numbers.insert(0, at: 0)
+        while rightValue.length < decimal_length {
+            rightValue.numbers.insert(0, at: 0)
         }
-        var result:HugeInt = left_value + right_value, result_length:Int = result.length
+        var result:HugeInt = leftValue + rightValue, result_length:Int = result.length
         var quotient:HugeInt? = nil
         if result_length > decimal_length {
             let difference:Int = result_length - decimal_length
-            quotient = HugeInt(is_negative: false, result.numbers[decimal_length..<result_length])
+            quotient = HugeInt(isNegative: false, result.numbers[decimal_length..<result_length])
             for _ in 0..<difference {
                 result.numbers.removeLast()
             }
@@ -170,36 +184,34 @@ internal extension HugeDecimal {
         return (HugeDecimal(value: result), quotient)
     }
 }
-/*
- Subtraction
- */
+
+// MARK: Subtraction
 public extension HugeDecimal {
-    static func - (left: HugeDecimal, right: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
-        return left + -right
+    static func - (lhs: HugeDecimal, rhs: HugeDecimal) -> (result: HugeDecimal, quotient: HugeInt?) {
+        return lhs + -rhs
     }
     
-    static func -= (left: inout HugeDecimal, right: HugeDecimal) { // TODO: support subtraction of repeating numbers
-        left += -right
+    static func -= (lhs: inout HugeDecimal, rhs: HugeDecimal) { // TODO: support subtraction of repeating numbers
+        lhs += -rhs
     }
 }
-/*
- Multiplication
- */
+
+// MARK: Multiplication
 public extension HugeDecimal {
-    static func * (left: HugeDecimal, right: HugeInt) -> (quotient: HugeInt?, result: HugeDecimal) {
-        let result_string:String = HugeDecimal.multiply(left: left.value, right: right, decimal_places: left.value.length)
+    static func * (lhs: HugeDecimal, rhs: HugeInt) -> (quotient: HugeInt?, result: HugeDecimal) {
+        let result_string:String = HugeDecimal.multiply(lhs: lhs.value, rhs: rhs, decimal_places: lhs.value.length)
         let result:HugeFloat = HugeFloat(result_string)
         return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
     }
-    static func * (left: HugeDecimal, right: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) {
-        let result_string:String = HugeDecimal.multiply(left: left.value, right: right.value, decimal_places: left.value.length + right.value.length)
+    static func * (lhs: HugeDecimal, rhs: HugeDecimal) -> (quotient: HugeInt?, result: HugeDecimal) {
+        let result_string:String = HugeDecimal.multiply(lhs: lhs.value, rhs: rhs.value, decimal_places: lhs.value.length + rhs.value.length)
         let result:HugeFloat = HugeFloat(result_string)
         return (result.integer == HugeInt.zero ? nil : result.integer, result.decimal ?? HugeDecimal.zero)
     }
 }
 internal extension HugeDecimal {
-    static func multiply(left: HugeInt, right: HugeInt, decimal_places: Int) -> String {
-        var result_string:String = (left * right).description
+    static func multiply(lhs: HugeInt, rhs: HugeInt, decimal_places: Int) -> String {
+        var result_string:String = (lhs * rhs).description
         result_string.insert(".", at: result_string.index(result_string.endIndex, offsetBy: -decimal_places))
         if result_string[result_string.startIndex] == "." {
             result_string.insert("0", at: result_string.startIndex)
@@ -211,5 +223,5 @@ internal extension HugeDecimal {
  Misc
  */
 public func abs(_ integer: HugeInt) -> HugeDecimal {
-    return HugeDecimal(value: HugeInt(is_negative: false, integer.numbers))
+    return HugeDecimal(value: HugeInt(isNegative: false, integer.numbers))
 }

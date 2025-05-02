@@ -10,15 +10,15 @@ import Foundation
 /// Default unit is in degrees, or no unit at all (just a raw number).
 public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible {
     
-    public static var zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
-    public static var one:HugeFloat = HugeFloat(integer: HugeInt.one)
+    public static let zero:HugeFloat = HugeFloat(integer: HugeInt.zero)
+    public static let one:HugeFloat = HugeFloat(integer: HugeInt.one)
     
-    public static var pi:HugeFloat = pi(precision: HugeInt.default_precision)
-    public static var pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
+    public static let pi:HugeFloat = pi(precision: HugeInt.defaultPrecision)
+    public static let pi_100:HugeFloat = HugeFloat("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
     
     public static func pi(precision: HugeInt) -> HugeFloat { // TODO: finish
         //let total_precision:HugeInt = precision * 1_000_000
-        //let degrees:HugeDecimal = (180 / total_precision).to_decimal()
+        //let degrees:HugeDecimal = (180 / total_precision).toDecimal()
         //print("HugeFloat;pi;degrees=" + degrees.description)
         /*let four:HugeFloat = HugeFloat("4")
         var pi:HugeFloat = HugeFloat("3")
@@ -37,43 +37,44 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     }
     
     public internal(set) var integer:HugeInt
-    /// This float can have a populated ``decimal`` or ``remainder``; never both, however, both can be nil.
+    /// This float can have a populated `decimal` or `remainder`; never both, however, both can be nil.
     public internal(set) var decimal:HugeDecimal? = nil
-    /// This float can have a populated ``decimal`` or ``remainder``; never both, however, both can be nil.
+    /// This float can have a populated `decimal` or `remainder`; never both, however, both can be nil.
     public internal(set) var remainder:HugeRemainder? = nil
     // TODO: support a square root remainder
     
-    public var is_negative : Bool {
-        return integer.is_negative
+    @inlinable
+    public var isNegative : Bool {
+        return integer.isNegative
     }
     
     public init(integer: HugeInt, decimal: HugeDecimal? = nil, remainder: HugeRemainder? = nil) {
         self.integer = integer
-        self.decimal = decimal?.is_zero ?? false ? nil : decimal
-        self.remainder = remainder?.is_zero ?? false ? nil : remainder
+        self.decimal = decimal?.isZero ?? false ? nil : decimal
+        self.remainder = remainder?.isZero ?? false ? nil : remainder
     }
     public init(integer: String, decimal: HugeDecimal? = nil, remainder: HugeRemainder? = nil) {
         self.init(integer: HugeInt(integer), decimal: decimal, remainder: remainder)
     }
     
-    public init(_ string: String, remove_trailing_zeros: Bool = true) {
-        self.init(string: string, remove_trailing_zeros: remove_trailing_zeros)
+    public init(_ string: String, removeTrailingZeros: Bool = true) {
+        self.init(string: string, removeTrailingZeros: removeTrailingZeros)
     }
     /// This init is only here because Xcode cannot link the ambiguous version.
-    public init(string: String, remove_trailing_zeros: Bool = true) {
+    public init(string: String, removeTrailingZeros: Bool = true) {
         let values:[Substring] = string.split(separator: ".")
         let target_pre_decimal_number:Substring = values[0]
         var target_post_decimal_number:Substring = values.get(1) ?? "0"
         if let exponent_range:Range<Substring.Index> = target_post_decimal_number.rangeOfCharacter(from: ["e", "E"]) {
-            let is_negative:Bool = target_pre_decimal_number[target_pre_decimal_number.startIndex] == "-"
+            let isNegative:Bool = target_pre_decimal_number[target_pre_decimal_number.startIndex] == "-"
             let exponent_string:Substring = target_post_decimal_number[exponent_range.upperBound..<target_post_decimal_number.endIndex]
             target_post_decimal_number = target_post_decimal_number[target_post_decimal_number.startIndex..<exponent_range.lowerBound]
-            if remove_trailing_zeros {
-                target_post_decimal_number.remove_trailing_zeros()
+            if removeTrailingZeros {
+                target_post_decimal_number.removeTrailingZeros()
             }
             let exponent:Int = Int(exponent_string)!
             if exponent < 0 {
-                integer = HugeInt(is_negative: is_negative, [])
+                integer = HugeInt(isNegative: isNegative, [])
                 var post_numbers:[Int8] = [Int8].init(repeating: 0, count: abs(exponent) + target_post_decimal_number.count)
                 var index:Int = target_post_decimal_number.count-1
                 for pre_number_char in target_pre_decimal_number {
@@ -85,11 +86,11 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
                     post_numbers[index] = Int8(exactly: post_number_char.wholeNumberValue!)!
                     index += 1
                 }
-                decimal = HugeDecimal(value: HugeInt(is_negative: false, post_numbers))
+                decimal = HugeDecimal(value: HugeInt(isNegative: false, post_numbers))
             } else {
                 integer = HugeInt(target_pre_decimal_number)
-                let decimal_value:HugeInt = HugeInt(target_post_decimal_number, remove_leading_zeros: false)
-                decimal = decimal_value.is_zero ? nil : HugeDecimal(value: decimal_value)
+                let decimal_value:HugeInt = HugeInt(target_post_decimal_number, removeLeadingZeros: false)
+                decimal = decimal_value.isZero ? nil : HugeDecimal(value: decimal_value)
             }
         } else if let _:Range<Substring.Index> = string.rangeOfCharacter(from: ["r"]) {
             let values:[Substring] = string.split(separator: "r"), remainder_string:[Substring] = values[1].split(separator: "/")
@@ -98,15 +99,15 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
             remainder = HugeRemainder(dividend: HugeInt(remainder_string[0]), divisor: HugeInt(remainder_string[1]))
         } else {
             integer = HugeInt(target_pre_decimal_number)
-            if remove_trailing_zeros {
-                target_post_decimal_number.remove_trailing_zeros()
+            if removeTrailingZeros {
+                target_post_decimal_number.removeTrailingZeros()
             }
-            let decimal_value:HugeDecimal = HugeDecimal(target_post_decimal_number, remove_leading_zeros: false)
-            decimal = decimal_value.is_zero ? nil : decimal_value
+            let decimal_value:HugeDecimal = HugeDecimal(target_post_decimal_number, removeLeadingZeros: false)
+            decimal = decimal_value.isZero ? nil : decimal_value
         }
     }
     
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
     public init(_ float: any FloatingPoint) {
         self.init(String(describing: float))
     }
@@ -138,135 +139,142 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
         }
         return integer.description + suffix
     }
-    public var description_literal : String {
+    public var descriptionLiteral : String {
         let suffix:String
         if let remainder:HugeRemainder = remainder {
             suffix = "r" + remainder.description
         } else {
-            suffix = (decimal != nil ? "." + decimal!.description_literal : "0")
+            suffix = (decimal != nil ? "." + decimal!.descriptionLiteral : "0")
         }
-        return integer.description_literal + suffix
+        return integer.descriptionLiteral + suffix
     }
-    
-    public var description_simplified : String {
-        var description:String = description_literal
+
+    @inlinable
+    public var descriptionSimplified : String {
+        var description = descriptionLiteral
         if integer == HugeInt.zero {
-            description.removeFirst()
-            description.removeFirst()
             var exponent:UInt64 = 1
-            while description.first == "0" {
-                description.removeFirst()
+            var index = description.index(description.startIndex, offsetBy: 2)
+            var removed = 2
+            while index < description.endIndex, description[index] == "0" {
+                removed += 1
                 exponent += 1
+                description.formIndex(after: &index)
             }
+            description.removeFirst(removed)
             description.insert(".", at: description.index(description.startIndex, offsetBy: 1))
             description.append("e-" + String(describing: exponent))
         } else {
-            description.remove_trailing_zeros()
+            description.removeTrailingZeros()
         }
         return description
     }
     
     /// Whether or not this huge float equals zero.
-    public var is_zero : Bool {
-        return integer.is_zero && (remainder == nil || remainder!.is_zero) && (decimal == nil || decimal!.value.is_zero)
+    @inlinable
+    public var isZero: Bool {
+        return integer.isZero && (remainder == nil || remainder!.isZero) && (decimal == nil || decimal!.value.isZero)
     }
     
     /// Optimized version of multiplication when multiplying by 10. Using this function also respects the decimal and remainder.
-    public func multiply_by_ten(_ amount: Int) -> HugeFloat {
+    @inlinable
+    public func multiplyByTen(_ amount: Int) -> HugeFloat {
         if self == HugeFloat.zero {
             return HugeFloat.zero
         } else if decimal != nil {
-            return multiply_decimal_by_ten(amount)
+            return multiplyDecimalByTen(amount)
         } else if remainder != nil {
-            return multiply_remainder_by_ten(amount)
+            return multiplyRemainderByTen(amount)
         } else {
-            let is_negative:Bool = amount < 0
-            let target_amount:Int = abs(amount)
-            var numbers:[Int8] = integer.numbers
-            for _ in 0..<target_amount {
+            let isNegative = amount < 0
+            let targetAmount = abs(amount)
+            var numbers = integer.numbers
+            for _ in 0..<targetAmount {
                 numbers.insert(0, at: 0)
             }
-            return HugeFloat(integer: HugeInt(is_negative: is_negative == !integer.is_negative, numbers), remainder: remainder)
+            return HugeFloat(integer: HugeInt(isNegative: isNegative == !integer.isNegative, numbers), remainder: remainder)
         }
     }
-    /// Multiplies the ``decimal`` by ten to the power of _amount_, potentially removing it if applicable.
-    public func multiply_decimal_by_ten(_ amount: Int) -> HugeFloat {
-        let absolute_amount:Int = abs(amount)
-        let is_negative:Bool = amount < 0
-        var numbers:[Int8] = integer.numbers
+    /// Multiplies the `decimal` by ten to the power of _amount_, potentially removing it if applicable.
+    public func multiplyDecimalByTen(_ amount: Int) -> HugeFloat {
+        let absoluteAmount = abs(amount)
+        let isNegative = amount < 0
+        var numbers = integer.numbers
         var decimals:[Int8]! = decimal?.value.numbers.reversed() ?? []
-        var remaining_decimals:HugeDecimal? = nil
-        let decimals_count:Int = decimals.count
-        for i in 0..<decimals_count {
+        var remainingDecimals:HugeDecimal? = nil
+        let decimalsCount = decimals.count
+        for i in 0..<decimalsCount {
             numbers.insert(decimals[i], at: 0)
         }
-        if decimals_count <= absolute_amount {
+        if decimalsCount <= absoluteAmount {
             decimals = nil
         }
         
-        for _ in decimals_count..<absolute_amount {
+        for _ in decimalsCount..<absoluteAmount {
             numbers.insert(0, at: 0)
         }
         if decimals != nil {
-            remaining_decimals = HugeDecimal(value: HugeInt(is_negative: false, decimals))
+            remainingDecimals = HugeDecimal(value: HugeInt(isNegative: false, decimals))
         }
-        return HugeFloat(integer: HugeInt(is_negative: is_negative == !integer.is_negative, numbers), decimal: remaining_decimals)
+        return HugeFloat(integer: HugeInt(isNegative: isNegative == !integer.isNegative, numbers), decimal: remainingDecimals)
     }
-    /// Returns a new ``HugeFloat`` by moving the ``decimal``/``remainder`` _amount_ times, potentially removing it if applicable.
+    /// Returns a new `HugeFloat` by moving the `decimal`/`remainder` _amount_ times, potentially removing it if applicable.
     ///
-    /// If _amount_ is negative, move left, else right.
+    /// If _amount_ is negative, move lhs, else rhs.
     ///
-    /// If ``remainder`` != nil, it is converted to a ``HugeDecimal``.
-    public func move_decimal(_ amount: Int, precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
-        let is_negative:Bool = amount < 0
-        var numbers:[Int8] = integer.numbers
-        if let decimal:HugeDecimal = decimal ?? remainder?.to_decimal(precision: precision) {
-            var decimal_numbers:[Int8] = decimal.value.numbers
-            if is_negative {
+    /// If `remainder` != nil, it is converted to a `HugeDecimal`.
+    public func move_decimal(_ amount: Int, precision: HugeInt = HugeInt.defaultPrecision) -> HugeFloat {
+        let isNegative = amount < 0
+        var numbers = integer.numbers
+        if let decimal = decimal ?? remainder?.toDecimal(precision: precision) {
+            var decimalNumbers = decimal.value.numbers
+            if isNegative {
                 for _ in 0..<abs(amount) {
-                    decimal_numbers.append(numbers.isEmpty ? 0 : numbers.removeFirst())
+                    decimalNumbers.append(numbers.isEmpty ? 0 : numbers.removeFirst())
                 }
             } else {
                 for _ in 0..<amount {
-                    numbers.insert(decimal_numbers.isEmpty ? 0 : decimal_numbers.removeLast(), at: 0)
+                    numbers.insert(decimalNumbers.isEmpty ? 0 : decimalNumbers.removeLast(), at: 0)
                 }
             }
-            let remaining_decimal:HugeDecimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
-            return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: remaining_decimal)
+            let remainingDecimal = HugeDecimal(value: HugeInt(isNegative: false, decimalNumbers))
+            return HugeFloat(integer: HugeInt(isNegative: integer.isNegative, numbers), decimal: remainingDecimal)
         } else {
             var decimal:HugeDecimal? = nil
-            if is_negative {
-                let numbers_count:Int = numbers.count, absolute_amount:Int = abs(amount)
-                if numbers_count == absolute_amount {
+            if isNegative {
+                let numbersCount = numbers.count
+                let absoluteAmount = abs(amount)
+                if numbersCount == absoluteAmount {
                     decimal = abs(integer)
-                } else if numbers_count >= absolute_amount {
-                    let decimal_numbers:[Int8] = Array(numbers[0..<absolute_amount])
-                    numbers = Array(numbers[absolute_amount...])
-                    decimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
+                } else if numbersCount >= absoluteAmount {
+                    let decimalNumbers = Array(numbers[0..<absoluteAmount])
+                    numbers = Array(numbers[absoluteAmount...])
+                    decimal = HugeDecimal(value: HugeInt(isNegative: false, decimalNumbers))
                 } else {
-                    var decimal_numbers:[Int8] = numbers
-                    for _ in 0..<absolute_amount-numbers_count {
-                        decimal_numbers.append(0)
+                    var decimalNumbers = numbers
+                    for _ in 0..<absoluteAmount-numbersCount {
+                        decimalNumbers.append(0)
                     }
                     numbers = []
-                    decimal = HugeDecimal(value: HugeInt(is_negative: false, decimal_numbers))
+                    decimal = HugeDecimal(value: HugeInt(isNegative: false, decimalNumbers))
                 }
             } else {
                 for _ in 0..<amount {
                     numbers.insert(0, at: 0)
                 }
             }
-            return HugeFloat(integer: HugeInt(is_negative: integer.is_negative, numbers), decimal: decimal)
+            return HugeFloat(integer: HugeInt(isNegative: integer.isNegative, numbers), decimal: decimal)
         }
     }
-    /// Returns a new ``HugeFloat`` by multiplying the ``remainder`` by ten to the power of _amount_, potentially removing it if applicable. Also carries over the quotient to the new huge float, if applicable.
-    public func multiply_remainder_by_ten(_ amount: Int) -> HugeFloat {
+    /// Returns a new `HugeFloat` by multiplying the `remainder` by ten to the power of _amount_, potentially removing it if applicable. Also carries over the quotient to the new huge float, if applicable.
+    @inlinable
+    public func multiplyRemainderByTen(_ amount: Int) -> HugeFloat {
         var remainder:HugeRemainder! = remainder
-        guard remainder != nil else { return multiply_by_ten(amount) }
-        var integer:HugeInt = integer.multiply_by_ten(amount)
-        remainder = remainder.multiply_by_ten(amount)
+        guard remainder != nil else { return multiplyByTen(amount) }
+        var integer = integer.multiplyByTen(amount)
+        remainder = remainder.multiplyByTen(amount)
         if remainder.dividend >= remainder.divisor {
-            let (quotient, new_remainder):(HugeInt, HugeRemainder?) = remainder.dividend / remainder.divisor
+            let (quotient, new_remainder) = remainder.dividend / remainder.divisor
             integer += quotient
             remainder = new_remainder
         }
@@ -274,131 +282,137 @@ public struct HugeFloat : Hashable, Comparable, Codable, CustomStringConvertible
     }
     
     public func divide_by(_ value: HugeFloat, precision: HugeInt) -> HugeFloat {
-        return HugeFloat.divide(left: self, right: value, precision: precision)
+        return HugeFloat.divide(lhs: self, rhs: value, precision: precision)
     }
     
-    /// Returns a new ``HugeFloat``, and rounds it to the nearest given place.
-    /// Converts ``remainder`` to a ``HugeDecimal``, if present.
-    public func rounded(_ precision: UInt, remainder_precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
-        var decimals:[Int8] = decimal?.value.numbers.reversed() ?? remainder?.to_decimal(precision: remainder_precision).value.numbers.reversed() ?? []
-        let decimal_count:Int = decimals.count
-        let index:Int = min(Int(precision), decimal_count)
-        guard index != decimal_count, index > 0 else { return self }
-        var previous_decimals:ArraySlice<Int8> = decimals[0..<index]
+    /// Returns a new `HugeFloat`, and rounds it to the nearest given place.
+    /// Converts `remainder` to a `HugeDecimal`, if present.
+    @inlinable
+    public func rounded(_ precision: UInt, remainder_precision: HugeInt = HugeInt.defaultPrecision) -> HugeFloat {
+        var decimals = decimal?.value.numbers.reversed() ?? remainder?.toDecimal(precision: remainder_precision).value.numbers.reversed() ?? []
+        let decimalCount = decimals.count
+        let index = min(Int(precision), decimalCount)
+        guard index != decimalCount, index > 0 else { return self }
+        var previousDecimals = decimals[0..<index]
         
-        for i in index..<decimal_count {
-            let target_value:Int8 = decimals[i]
-            if target_value != 5 {
-                previous_decimals[previous_decimals.count-1] += target_value > 5 ? 1 : 0
+        for i in index..<decimalCount {
+            let targetValue = decimals[i]
+            if targetValue != 5 {
+                previousDecimals[previousDecimals.count-1] += targetValue > 5 ? 1 : 0
                 break
             }
         }
-        var integer:HugeInt = integer
-        while previous_decimals.last ?? 0 > 9 {
-            previous_decimals.removeLast()
-            if previous_decimals.count > 0 {
-                previous_decimals[previous_decimals.count-1] += 1
+        var integer = integer
+        while previousDecimals.last ?? 0 > 9 {
+            previousDecimals.removeLast()
+            if previousDecimals.count > 0 {
+                previousDecimals[previousDecimals.count-1] += 1
             } else {
-                integer += HugeInt(is_negative: integer.is_negative, [1])
+                integer += HugeInt(isNegative: integer.isNegative, [1])
             }
         }
-        decimals = Array(previous_decimals).reversed()
-        let decimal:HugeDecimal = HugeDecimal(value: HugeInt(is_negative: false, decimals))
+        decimals = Array(previousDecimals).reversed()
+        let decimal = HugeDecimal(value: HugeInt(isNegative: false, decimals))
         return HugeFloat.init(integer: integer, decimal: decimal)
     }
-    
-    public func decimal_to_remainder() -> HugeFloat {
-        return HugeFloat(integer: integer, remainder: decimal?.to_remainder)
+
+    @inlinable
+    public func decimalToRemainder() -> HugeFloat {
+        return HugeFloat(integer: integer, remainder: decimal?.toRemainder)
     }
-    public func remainder_to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeFloat {
-        return HugeFloat(integer: integer, decimal: remainder?.to_decimal(precision: precision))
+
+    @inlinable
+    public func remainderToDecimal(precision: HugeInt = HugeInt.defaultPrecision) -> HugeFloat {
+        return HugeFloat(integer: integer, decimal: remainder?.toDecimal(precision: precision))
     }
-    
-    public func to_radians() -> HugeFloat {
+
+    @inlinable
+    public func toRadians() -> HugeFloat {
         return self * HugeFloat("0.01745329252")
     }
-    public func to_degrees(precision: HugeInt = HugeInt.default_precision) -> HugeFloat { // TODO: support trig arithmetic
+    @inlinable
+    public func toDegrees(precision: HugeInt = HugeInt.defaultPrecision) -> HugeFloat { // TODO: support trig arithmetic
         return self * (180 / HugeFloat.pi_100)
     }
 }
 
 // MARK: Comparable
 public extension HugeFloat {
-    static func == (left: HugeFloat, right: HugeFloat) -> Bool {
-        return left.is_negative == right.is_negative && left.integer == right.integer && left.decimal == right.decimal && left.remainder == right.remainder
+    static func == (lhs: HugeFloat, rhs: HugeFloat) -> Bool {
+        return lhs.isNegative == rhs.isNegative && lhs.integer == rhs.integer && lhs.decimal == rhs.decimal && lhs.remainder == rhs.remainder
     }
-    static func == (left: HugeFloat, right: HugeInt) -> Bool {
-        return left == right.to_float
+    static func == (lhs: HugeFloat, rhs: HugeInt) -> Bool {
+        return lhs == rhs.toFloat
     }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func == (left: HugeFloat, right: any FloatingPoint) -> Bool {
-        return left == HugeFloat(right)
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
+    static func == (lhs: HugeFloat, rhs: any FloatingPoint) -> Bool {
+        return lhs == HugeFloat(rhs)
     }
-    static func == (left: HugeFloat, right: any BinaryInteger) -> Bool {
-        return left == HugeFloat(right)
+    static func == (lhs: HugeFloat, rhs: any BinaryInteger) -> Bool {
+        return lhs == HugeFloat(rhs)
     }
 }
 public extension HugeFloat {
-    static func < (left: HugeFloat, right: HugeFloat) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative
+    static func < (lhs: HugeFloat, rhs: HugeFloat) -> Bool {
+        guard lhs.isNegative == rhs.isNegative else {
+            return lhs.isNegative
         }
-        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        let left_integer:HugeInt = lhs.integer, right_integer:HugeInt = rhs.integer
         guard left_integer == right_integer else {
             return left_integer < right_integer
         }
-        if left.decimal != nil || right.decimal != nil {
-            return (left.decimal ?? HugeDecimal.zero).is_less_than(right.decimal)
-        } else if left.remainder != nil || right.remainder != nil {
-            return (left.remainder ?? HugeRemainder.zero).is_less_than(right.remainder)
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return (lhs.decimal ?? HugeDecimal.zero).is_less_than(rhs.decimal)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return (lhs.remainder ?? HugeRemainder.zero).is_less_than(rhs.remainder)
         }
         return false
     }
-    static func <= (left: HugeFloat, right: HugeFloat) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return left.is_negative
+    static func <= (lhs: HugeFloat, rhs: HugeFloat) -> Bool {
+        guard lhs.isNegative == rhs.isNegative else {
+            return lhs.isNegative
         }
-        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        let left_integer:HugeInt = lhs.integer, right_integer:HugeInt = rhs.integer
         guard left_integer == right_integer else {
             return left_integer <= right_integer
         }
-        if left.decimal != nil || right.decimal != nil {
-            return (left.decimal ?? HugeDecimal.zero).is_less_than_or_equal_to(right.decimal)
-        } else if left.remainder != nil || right.remainder != nil {
-            return (left.remainder ?? HugeRemainder.zero).is_less_than_or_equal_to(right.remainder)
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return (lhs.decimal ?? HugeDecimal.zero).is_less_than_or_equal_to(rhs.decimal)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return (lhs.remainder ?? HugeRemainder.zero).is_less_than_or_equal_to(rhs.remainder)
         }
         return true
     }
 }
 public extension HugeFloat {
-    static func > (left: HugeFloat, right: HugeFloat) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return !left.is_negative
+    static func > (lhs: HugeFloat, rhs: HugeFloat) -> Bool {
+        guard lhs.isNegative == rhs.isNegative else {
+            return !lhs.isNegative
         }
-        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        let left_integer:HugeInt = lhs.integer, right_integer:HugeInt = rhs.integer
         guard left_integer == right_integer else {
             return left_integer > right_integer
         }
-        if left.decimal != nil || right.decimal != nil {
-            return (left.decimal ?? HugeDecimal.zero).is_greater_than(right.decimal)
-        } else if left.remainder != nil || right.remainder != nil {
-            return (left.remainder ?? HugeRemainder.zero).is_greater_than(right.remainder)
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return (lhs.decimal ?? HugeDecimal.zero).is_greater_than(rhs.decimal)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return (lhs.remainder ?? HugeRemainder.zero).is_greater_than(rhs.remainder)
         }
         return false
     }
     
-    static func >= (left: HugeFloat, right: HugeFloat) -> Bool {
-        guard left.is_negative == right.is_negative else {
-            return !left.is_negative
+    static func >= (lhs: HugeFloat, rhs: HugeFloat) -> Bool {
+        guard lhs.isNegative == rhs.isNegative else {
+            return !lhs.isNegative
         }
-        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
+        let left_integer:HugeInt = lhs.integer, right_integer:HugeInt = rhs.integer
         guard left_integer == right_integer else {
             return left_integer >= right_integer
         }
-        if left.decimal != nil || right.decimal != nil {
-            return (left.decimal ?? HugeDecimal.zero).is_greater_than_or_equal_to(right.decimal)
-        } else if left.remainder != nil || right.remainder != nil {
-            return (left.remainder ?? HugeRemainder.zero).is_greater_than_or_equal_to(right.remainder)
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return (lhs.decimal ?? HugeDecimal.zero).is_greater_than_or_equal_to(rhs.decimal)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return (lhs.remainder ?? HugeRemainder.zero).is_greater_than_or_equal_to(rhs.remainder)
         }
         return true
     }
@@ -421,61 +435,61 @@ public func abs(_ float: HugeFloat) -> HugeFloat {
  Addition
  */
 public extension HugeFloat {
-    static func + (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        return HugeFloat.add(left: left, right: right)
+    static func + (lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        return HugeFloat.add(lhs: lhs, rhs: rhs)
     }
-    static func + (left: HugeFloat, right: HugeInt) -> HugeFloat {
-        return left + right.to_float
+    static func + (lhs: HugeFloat, rhs: HugeInt) -> HugeFloat {
+        return lhs + rhs.toFloat
     }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func + (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
-        return left + HugeFloat(right)
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
+    static func + (lhs: HugeFloat, rhs: any FloatingPoint) -> HugeFloat {
+        return lhs + HugeFloat(rhs)
     }
-    static func + (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left + HugeFloat(right)
+    static func + (lhs: HugeFloat, rhs: any BinaryInteger) -> HugeFloat {
+        return lhs + HugeFloat(rhs)
     }
     
-    static func += (left: inout HugeFloat, right: HugeFloat) {
-        left.integer += right.integer
-        if left.decimal == nil && left.remainder == nil {
-            if right.decimal != nil {
-                left.decimal = right.decimal!
-            } else if right.remainder != nil {
-                left.remainder = right.remainder!
+    static func += (lhs: inout HugeFloat, rhs: HugeFloat) {
+        lhs.integer += rhs.integer
+        if lhs.decimal == nil && lhs.remainder == nil {
+            if rhs.decimal != nil {
+                lhs.decimal = rhs.decimal!
+            } else if rhs.remainder != nil {
+                lhs.remainder = rhs.remainder!
             }
-        } else if let decimal:HugeDecimal = left.decimal {
-            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
-            let (result, quotient):(HugeDecimal, HugeInt?) = decimal + right_decimal
-            if let quotient:HugeInt = quotient {
-                left.integer += quotient
+        } else if let decimal:HugeDecimal = lhs.decimal {
+            let right_decimal = rhs.decimal ?? HugeDecimal.zero
+            let (result, quotient) = decimal + right_decimal
+            if let quotient {
+                lhs.integer += quotient
             }
-            left.decimal = result
-        } else if left.remainder != nil {
-            left.remainder! += right.remainder ?? HugeRemainder.zero
+            lhs.decimal = result
+        } else if lhs.remainder != nil {
+            lhs.remainder! += rhs.remainder ?? HugeRemainder.zero
         }
     }
 }
 internal extension HugeFloat {
-    static func add(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var target_quotient:HugeInt = left.integer + right.integer
+    static func add(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        var target_quotient:HugeInt = lhs.integer + rhs.integer
         var target_decimal:HugeDecimal? = nil, target_remainder:HugeRemainder? = nil
-        if left.decimal == nil && left.remainder == nil {
-            if right.decimal != nil {
-                target_decimal = right.decimal
-            } else if right.remainder != nil {
-                target_remainder = right.remainder
+        if lhs.decimal == nil && lhs.remainder == nil {
+            if rhs.decimal != nil {
+                target_decimal = rhs.decimal
+            } else if rhs.remainder != nil {
+                target_remainder = rhs.remainder
             }
-        } else if let decimal:HugeDecimal = left.decimal {
-            let right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
-            let (result, quotient):(HugeDecimal, HugeInt?) = decimal + right_decimal
-            if let quotient:HugeInt = quotient {
+        } else if let decimal = lhs.decimal {
+            let right_decimal = rhs.decimal ?? HugeDecimal.zero
+            let (result, quotient) = decimal + right_decimal
+            if let quotient = quotient {
                 target_quotient += quotient
             }
             target_decimal = result
-        } else if left.remainder != nil {
-            target_remainder = left.remainder! + (right.remainder ?? HugeRemainder.zero)
+        } else if lhs.remainder != nil {
+            target_remainder = lhs.remainder! + (rhs.remainder ?? HugeRemainder.zero)
         }
-        if target_decimal?.is_zero ?? false {
+        if target_decimal?.isZero ?? false {
             target_decimal = nil
         }
         return HugeFloat(integer: target_quotient, decimal: target_decimal, remainder: target_remainder)
@@ -485,43 +499,44 @@ internal extension HugeFloat {
  Subtraction
  */
 public extension HugeFloat {
-    static func - (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        return HugeFloat.subtract(left: left, right: right)
+    static func - (lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        return HugeFloat.subtract(lhs: lhs, rhs: rhs)
     }
     
-    static func -= (left: inout HugeFloat, right: HugeFloat) {
-        left = HugeFloat.subtract(left: left, right: right)
+    static func -= (lhs: inout HugeFloat, rhs: HugeFloat) {
+        lhs = HugeFloat.subtract(lhs: lhs, rhs: rhs)
     }
 }
-internal extension HugeFloat {
-    static func subtract(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        guard left.is_negative == right.is_negative else {
+extension HugeFloat {
+    static func subtract(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        guard lhs.isNegative == rhs.isNegative else {
             let value:HugeFloat
-            if left.is_negative || left.integer.is_zero {
-                value = add(left: -left, right: right)
+            if lhs.isNegative || lhs.integer.isZero {
+                value = add(lhs: -lhs, rhs: rhs)
             } else {
-                value = add(left: left, right: -right)
+                value = add(lhs: lhs, rhs: -rhs)
             }
             return -value
         }
-        if left.decimal != nil || right.decimal != nil {
-            return subtract_decimals(left: left, right: right)
-        } else if left.remainder != nil || right.remainder != nil {
-            return subtract_remainders(left: left, right: right)
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return subtract_decimals(lhs: lhs, rhs: rhs)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return subtract_remainders(lhs: lhs, rhs: rhs)
         } else {
-            return HugeFloat(integer: left.integer - right.integer)
+            return HugeFloat(integer: lhs.integer - rhs.integer)
         }
     }
-    static func subtract_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var quotient:HugeInt = left.integer - right.integer
+    static func subtract_decimals(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        var quotient = lhs.integer - rhs.integer
         let target_decimal:HugeDecimal
-        let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
+        let left_decimal = lhs.decimal ?? HugeDecimal.zero
+        let right_decimal = rhs.decimal ?? HugeDecimal.zero
         if left_decimal >= right_decimal {
             target_decimal = (left_decimal - right_decimal).result
-        } else if left.is_zero || quotient.is_zero {
-            quotient.is_negative = true
+        } else if lhs.isZero || quotient.isZero {
+            quotient.sign = .minus
             target_decimal = right_decimal
-        } else if quotient == left.integer {
+        } else if quotient == lhs.integer {
             quotient -= HugeInt.one
             target_decimal = (left_decimal + right_decimal.distance_to_next_quotient).result
         } else {
@@ -530,11 +545,12 @@ internal extension HugeFloat {
         }
         return HugeFloat(integer: quotient, decimal: target_decimal)
     }
-    static func subtract_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var quotient:HugeInt = left.integer - right.integer
-        let left_remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero, right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
+    static func subtract_remainders(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        var quotient:HugeInt = lhs.integer - rhs.integer
+        let left_remainder = lhs.remainder ?? HugeRemainder.zero
+        let right_remainder = rhs.remainder ?? HugeRemainder.zero
         let target_remainder:HugeRemainder?
-        if !left_remainder.is_zero && left_remainder >= right_remainder {
+        if !left_remainder.isZero && left_remainder >= right_remainder {
             target_remainder = left_remainder - right_remainder
         } else {
             quotient -= HugeInt.one
@@ -543,83 +559,91 @@ internal extension HugeFloat {
         return HugeFloat(integer: quotient, remainder: target_remainder)
     }
 }
-/*
- Multiplication
- */
-public extension HugeFloat {
-    static func * (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        return HugeFloat.multiply(left: left, right: right)
+
+// MARK: Multiplication
+extension HugeFloat {
+    public static func * (lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        return HugeFloat.multiply(lhs: lhs, rhs: rhs)
     }
-    static func * (left: HugeFloat, right: HugeInt) -> HugeFloat {
-        return left * right.to_float
+    @inlinable
+    public static func * (lhs: HugeFloat, rhs: HugeInt) -> HugeFloat {
+        return lhs * rhs.toFloat
     }
-    static func * (left: HugeInt, right: HugeFloat) -> HugeFloat {
-        return left.to_float * right
+    @inlinable
+    public static func * (lhs: HugeInt, rhs: HugeFloat) -> HugeFloat {
+        return lhs.toFloat * rhs
     }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func * (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
-        return left * HugeFloat(right)
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
+    @inlinable
+    public static func * (lhs: HugeFloat, rhs: any FloatingPoint) -> HugeFloat {
+        return lhs * HugeFloat(rhs)
     }
-    static func * (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left * HugeFloat(right)
+    @inlinable
+    public static func * (lhs: HugeFloat, rhs: any BinaryInteger) -> HugeFloat {
+        return lhs * HugeFloat(rhs)
     }
     
-    static func *= (left: inout HugeFloat, right: HugeFloat) { // TODO: optimize
-        left = left * right
+    @inlinable
+    public static func *= (lhs: inout HugeFloat, rhs: HugeFloat) { // TODO: optimize
+        lhs = lhs * rhs
     }
-    static func *= (left: inout HugeFloat, right: HugeInt) { // TODO: optimize
-        left = left * right.to_float
+    @inlinable
+    public static func *= (lhs: inout HugeFloat, rhs: HugeInt) { // TODO: optimize
+        lhs = lhs * rhs.toFloat
     }
 }
-internal extension HugeFloat {
-    static func multiply(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        if left == HugeFloat.zero || right == HugeFloat.zero {
+extension HugeFloat {
+    static func multiply(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        if lhs == HugeFloat.zero || rhs == HugeFloat.zero {
             return HugeFloat.zero
-        } else if left == HugeFloat.one {
-            return right
-        } else if right == HugeFloat.one {
-            return left
-        } else if left.decimal != nil || right.decimal != nil || left.remainder != nil || right.remainder != nil {
-            return multiply_remainders(left: left, right: right)
+        } else if lhs == HugeFloat.one {
+            return rhs
+        } else if rhs == HugeFloat.one {
+            return lhs
+        } else if lhs.decimal != nil || rhs.decimal != nil || lhs.remainder != nil || rhs.remainder != nil {
+            return multiply_remainders(lhs: lhs, rhs: rhs)
         } else {
-            return HugeFloat(integer: left.integer * right.integer)
+            return HugeFloat(integer: lhs.integer * rhs.integer)
         }
     }
-    static func multiply_decimals(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let left_post_number:HugeInt = left.decimal?.value ?? HugeInt.zero
-        let right_post_number:HugeInt = right.decimal?.value ?? HugeInt.zero
+    static func multiply_decimals(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        let left_post_number = lhs.decimal?.value ?? HugeInt.zero
+        let right_post_number = rhs.decimal?.value ?? HugeInt.zero
         
-        let result_decimal_places:Int = left_post_number.length + right_post_number.length
+        let result_decimal_places = left_post_number.length + right_post_number.length
         
-        var left_numbers:[Int8] = left_post_number.numbers
-        left_numbers.append(contentsOf: left.integer.numbers)
+        var leftNumbers = left_post_number.numbers
+        leftNumbers.append(contentsOf: lhs.integer.numbers)
         
-        var right_numbers:[Int8] = right_post_number.numbers
-        right_numbers.append(contentsOf: right.integer.numbers)
+        var rightNumbers = right_post_number.numbers
+        rightNumbers.append(contentsOf: rhs.integer.numbers)
         
-        var result:[Int8] = HugeInt.multiply(left: left_numbers, right: right_numbers, remove_leading_zeros: false)
+        var result = HugeInt.multiply(lhs: leftNumbers, rhs: rightNumbers, removeLeadingZeros: false)
         
-        let pre_decimal_numbers:ArraySlice<Int8> = result[result_decimal_places...]
-        var integer:HugeInt = HugeInt(is_negative: left.is_negative == !right.is_negative, pre_decimal_numbers)
-        integer.remove_leading_zeros()
+        let pre_decimal_numbers = result[result_decimal_places...]
+        var integer = HugeInt(isNegative: lhs.isNegative == !rhs.isNegative, pre_decimal_numbers)
+        integer.removeLeadingZeros()
         
-        var removed_zeroes:Int = 0
+        var removedZeroes:Int = 0
         while result.first == 0 {
             result.removeFirst()
-            removed_zeroes += 1
+            removedZeroes += 1
         }
-        let ending_index:Int = max(0, result_decimal_places-removed_zeroes)
-        let decimal_numbers:ArraySlice<Int8> = result[0..<ending_index]
-        let decimal:HugeInt = HugeInt(is_negative: false, decimal_numbers)
+        let endingIndex = max(0, result_decimal_places-removedZeroes)
+        let decimalNumbers = result[0..<endingIndex]
+        let decimal = HugeInt(isNegative: false, decimalNumbers)
         return HugeFloat(integer: integer, decimal: HugeDecimal(value: decimal))
     }
-    static func multiply_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        let remainder:HugeRemainder = left.decimal?.to_remainder ?? left.remainder ?? HugeRemainder.zero
-        let left_integer:HugeInt = left.integer, right_integer:HugeInt = right.integer
-        let (left_quotient, left_remainder):(HugeInt, HugeRemainder?) = (remainder * right_integer).to_int
-        let right_quotient:HugeInt, right_remainder:HugeRemainder?, multiplied_remainder:HugeRemainder?
-        if let target_right_remainder:HugeRemainder = right.decimal?.to_remainder ?? right.remainder {
-            (right_quotient, right_remainder) = (target_right_remainder * left_integer).to_int
+    static func multiply_remainders(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        let remainder = lhs.decimal?.toRemainder ?? lhs.remainder ?? HugeRemainder.zero
+        let left_integer = lhs.integer
+        let right_integer = rhs.integer
+        let (left_quotient, left_remainder) = (remainder * right_integer).toInt
+        let right_quotient:HugeInt
+        let right_remainder:HugeRemainder?
+        let multiplied_remainder:HugeRemainder?
+        if let target_right_remainder = rhs.decimal?.toRemainder ?? rhs.remainder {
+            (right_quotient, right_remainder) = (target_right_remainder * left_integer).toInt
             multiplied_remainder = remainder * target_right_remainder
         } else {
             (right_quotient, right_remainder) = (HugeInt.zero, nil)
@@ -630,86 +654,96 @@ internal extension HugeFloat {
         return HugeFloat(integer: integer, remainder: total_remainder == HugeRemainder.zero ? nil : total_remainder)
     }
 }
-/*
- Division
- */
-public extension HugeFloat {
-    static func / (left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        return HugeFloat.divide(left: left, right: right, precision: HugeInt.default_precision)
+
+// MARK: Division
+extension HugeFloat {
+    public static func / (lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        return HugeFloat.divide(lhs: lhs, rhs: rhs, precision: HugeInt.defaultPrecision)
     }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func / (left: HugeFloat, right: any FloatingPoint) -> HugeFloat {
-        return left / HugeFloat(right)
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
+    @inlinable
+    public static func / (lhs: HugeFloat, rhs: any FloatingPoint) -> HugeFloat {
+        return lhs / HugeFloat(rhs)
     }
-    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use ``HugeFloat/init(string:)`` for literal representation.
-    static func / (left: any FloatingPoint, right: HugeFloat) -> HugeFloat {
-        return HugeFloat(left) / right
+    /// - Warning: The float will not be represented literally. It will be set to the closest double-precision floating point number. Use `HugeFloat/init(string:)` for literal representation.
+    @inlinable
+    public static func / (lhs: any FloatingPoint, rhs: HugeFloat) -> HugeFloat {
+        return HugeFloat(lhs) / rhs
     }
     
-    static func /= (left: inout HugeFloat, right: HugeFloat) {
-        left = left / right
+    @inlinable
+    public static func /= (lhs: inout HugeFloat, rhs: HugeFloat) {
+        lhs = lhs / rhs
     }
 }
 internal extension HugeFloat {
-    static func divide(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat { // TODO: fix (can divide a smaller number [left] by a bigger number [right])
-        if left.decimal != nil || right.decimal != nil {
-            return HugeFloat.divide_decimals(left: left, right: right, precision: precision)
-        } else if left.remainder != nil || right.remainder != nil {
-            return HugeFloat.divide_remainders(left: left, right: right)
+    static func divide(lhs: HugeFloat, rhs: HugeFloat, precision: HugeInt) -> HugeFloat { // TODO: fix (can divide a smaller number [lhs] by a bigger number [rhs])
+        if lhs.decimal != nil || rhs.decimal != nil {
+            return HugeFloat.divideDecimals(lhs: lhs, rhs: rhs, precision: precision)
+        } else if lhs.remainder != nil || rhs.remainder != nil {
+            return HugeFloat.divideRemainders(lhs: lhs, rhs: rhs)
         } else {
-            let (result, remainder):(HugeInt, HugeRemainder?) = (left.integer / right.integer)
+            let (result, remainder) = (lhs.integer / rhs.integer)
             return HugeFloat(integer: result, remainder: remainder)
         }
     }
-    static func divide_decimals(left: HugeFloat, right: HugeFloat, precision: HugeInt) -> HugeFloat {
-        let left_decimal:HugeDecimal = left.decimal ?? HugeDecimal.zero, right_decimal:HugeDecimal = right.decimal ?? HugeDecimal.zero
-        let minimum_decimal_places:Int = max(left_decimal.value.length, right_decimal.value.length)
-        let left_value:HugeInt = left.multiply_decimal_by_ten(minimum_decimal_places).integer, right_value:HugeInt = right.multiply_decimal_by_ten(minimum_decimal_places).integer
-        let (quotient, remainder):(HugeInt, HugeRemainder?) = left_value / right_value
-        return HugeFloat(integer: quotient, decimal: remainder?.to_decimal(precision: precision))
+    static func divideDecimals(lhs: HugeFloat, rhs: HugeFloat, precision: HugeInt) -> HugeFloat {
+        let left_decimal = lhs.decimal ?? HugeDecimal.zero
+        let right_decimal = rhs.decimal ?? HugeDecimal.zero
+        let minDecimalPlaces = max(left_decimal.value.length, right_decimal.value.length)
+        let leftValue = lhs.multiplyDecimalByTen(minDecimalPlaces).integer
+        let rightValue = rhs.multiplyDecimalByTen(minDecimalPlaces).integer
+        let (quotient, remainder) = leftValue / rightValue
+        return HugeFloat(integer: quotient, decimal: remainder?.toDecimal(precision: precision))
     }
-    static func divide_remainders(left: HugeFloat, right: HugeFloat) -> HugeFloat {
-        var left_remainder:HugeRemainder = left.remainder ?? HugeRemainder.zero, right_remainder:HugeRemainder = right.remainder ?? HugeRemainder.zero
-        let remainder:HugeRemainder = left_remainder.add(left.integer) / right_remainder.add(right.integer)
-        let (quotient, new_remainder):(HugeInt, HugeRemainder?) = remainder.to_int
+    static func divideRemainders(lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat {
+        var left_remainder = lhs.remainder ?? HugeRemainder.zero
+        var right_remainder = rhs.remainder ?? HugeRemainder.zero
+        let remainder = left_remainder.add(lhs.integer) / right_remainder.add(rhs.integer)
+        let (quotient, new_remainder) = remainder.toInt
         return HugeFloat(integer: quotient, remainder: new_remainder)
     }
 }
-/*
- Percent
- */
-public extension HugeFloat {
-    static func % (left: HugeFloat, right: HugeFloat) -> HugeFloat { // TODO: fix
-        let value:HugeInt = left.integer % right.integer
+
+// MARK: Percent
+extension HugeFloat {
+    @inlinable
+    public static func % (lhs: HugeFloat, rhs: HugeFloat) -> HugeFloat { // TODO: fix
+        let value:HugeInt = lhs.integer % rhs.integer
         return HugeFloat(integer: value)
     }
-    static func % (left: HugeFloat, right: any BinaryInteger) -> HugeFloat {
-        return left % HugeFloat(right)
+    @inlinable
+    public static func % (lhs: HugeFloat, rhs: any BinaryInteger) -> HugeFloat {
+        return lhs % HugeFloat(rhs)
     }
 }
-/*
- Square root
- */
-/*
- To the power of x
- */
-public func pow(_ left: HugeFloat, right: UInt64) -> HugeFloat {
-    return left.to_the_power_of(right)
+// MARK: Square root
+
+
+
+
+
+// MARK: To the power of
+public func pow(_ lhs: HugeFloat, rhs: UInt64) -> HugeFloat {
+    return lhs.toThePowerOf(rhs)
 }
-public extension HugeFloat {
-    func squared() -> HugeFloat {
-        return to_the_power_of(2)
+extension HugeFloat {
+    @inlinable
+    public func squared() -> HugeFloat {
+        return toThePowerOf(2)
     }
-    func cubed() -> HugeFloat {
-        return to_the_power_of(3)
+    @inlinable
+    public func cubed() -> HugeFloat {
+        return toThePowerOf(3)
     }
     
-    /// Returns a ``HugeFloat`` taken to a given power.
+    /// Returns a `HugeFloat` taken to a given power.
     /// - Complexity: O(n) where _n_ equals _x_.
     /// - Parameters:
     ///     - x: the amount of times to multiply self by self.
-    func to_the_power_of(_ x: UInt64) -> HugeFloat {
-        var result:HugeFloat = self
+    @inlinable
+    public func toThePowerOf(_ x: UInt64) -> HugeFloat {
+        var result = self
         for _ in 1..<x {
             result *= self
         }

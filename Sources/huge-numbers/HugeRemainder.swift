@@ -30,45 +30,50 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         return "\(dividend)/\(divisor)"
     }
     
-    public var is_zero : Bool {
-        return divisor.is_zero || dividend.is_zero
+    @inlinable
+    public var isZero : Bool {
+        return divisor.isZero || dividend.isZero
     }
-    public var to_int : (quotient: HugeInt, remainder: HugeRemainder?) {
+    @inlinable
+    public var toInt : (quotient: HugeInt, remainder: HugeRemainder?) {
         return dividend / divisor
     }
-    public var to_float : HugeFloat {
-        let (test1, test2):(HugeInt, HugeRemainder?) = to_int
+    @inlinable
+    public var toFloat : HugeFloat {
+        let (test1, test2) = toInt
         return HugeFloat(integer: test1, decimal: nil, remainder: test2)
     }
-    
+
     // TODO: fix
     /// - Warning: This assumes the divisor is greater than or equal to the dividend.
+    @inlinable
     public var distance_to_next_quotient : HugeRemainder {
         return HugeRemainder(dividend: divisor - dividend, divisor: divisor)
     }
-    
+
     public mutating func add(_ integer: HugeInt) -> HugeRemainder {
         dividend += (integer * divisor)
         return self
     }
     
     /// - Warning: Using this function assumes the dividend is smaller than the divisor.
-    public func to_decimal(precision: HugeInt = HugeInt.default_precision) -> HugeDecimal {
-        let precision_int:Int = precision.to_int() ?? Int.max
+    @inlinable
+    public func toDecimal(precision: HugeInt = HugeInt.defaultPrecision) -> HugeDecimal {
+        let precision_int:Int = precision.toInt() ?? Int.max
         let zero:HugeInt = HugeInt.zero, zero_remainder:HugeRemainder = HugeRemainder.zero
         var result:ArraySlice<Int8> = ArraySlice<Int8>.init(repeating: 127, count: precision_int)
         var result_remainders:[HugeRemainder] = [HugeRemainder].init(repeating: zero_remainder, count: precision_int)
         var repeated_value:[Int8]? = nil
-        var remaining_dividend:HugeInt = abs(dividend), remaining_remainder:HugeRemainder = zero_remainder
+        var remainingDividend:HugeInt = abs(dividend), remaining_remainder:HugeRemainder = zero_remainder
         var index:Int = 0
         var same_division_indexes:[Int8:[Int]] = [:]
-        while index < precision_int && (remaining_dividend != zero || remaining_remainder != zero_remainder) && remaining_dividend <= divisor {
-            remaining_dividend.multiplied_by_ten(1)
-            let (maximum_divisions, remainder):(HugeInt, HugeRemainder?) = remaining_dividend / divisor
+        while index < precision_int && (remainingDividend != zero || remaining_remainder != zero_remainder) && remainingDividend <= divisor {
+            remainingDividend.multipliedByTen(1)
+            let (maximum_divisions, remainder) = remainingDividend / divisor
             let subtracted_value:HugeInt = maximum_divisions * divisor
-            remaining_dividend -= subtracted_value
-            remaining_remainder = remainder ?? HugeRemainder(dividend: remaining_dividend, divisor: divisor)
-            let maximum_divisions_int:Int8 = maximum_divisions.to_int() ?? 0
+            remainingDividend -= subtracted_value
+            remaining_remainder = remainder ?? HugeRemainder(dividend: remainingDividend, divisor: divisor)
+            let maximum_divisions_int:Int8 = maximum_divisions.toInt() ?? 0
             if let same_max_division_indexes:[Int] = same_division_indexes[maximum_divisions_int], let index_of_same_max_division:Int = same_max_division_indexes.firstIndex(where: { remaining_remainder == result_remainders[$0] }) {
                 let same_max_division_index:Int = same_max_division_indexes[index_of_same_max_division]
                 var included_previous_values:Int = 0
@@ -92,7 +97,7 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
             result_remainders[index] = remaining_remainder
             index += 1
         }
-        if let repeated_value:[Int8] = repeated_value {
+        if let repeated_value {
             index = 0
             while result.first == 0 && repeated_value[index] == 0 {
                 result.removeFirst()
@@ -101,12 +106,12 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
         } else {
             result = result[0..<index]
         }
-        return HugeDecimal(value: HugeInt(is_negative: dividend.is_negative, result.reversed()), repeating_numbers: repeated_value?.reversed())
+        return HugeDecimal(value: HugeInt(isNegative: dividend.isNegative, result.reversed()), repeating_numbers: repeated_value?.reversed())
     }
     
-    /// Returns a new ``HugeRemainder`` by multiplying the ``dividend`` by ten to the power of _amount_.
-    public func multiply_by_ten(_ amount: Int) -> HugeRemainder {
-        let dividend:HugeInt = dividend.multiply_by_ten(amount)
+    /// Returns a new `HugeRemainder` by multiplying the `dividend` by ten to the power of _amount_.
+    public func multiplyByTen(_ amount: Int) -> HugeRemainder {
+        let dividend:HugeInt = dividend.multiplyByTen(amount)
         return HugeRemainder(dividend: dividend, divisor: divisor)
     }
     
@@ -114,7 +119,7 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
     /// - Warning: Very resource intensive when using big numbers.
     public mutating func simplify() -> HugeInt {
         guard dividend < divisor else {
-            let (quotient, remainder):(HugeInt, HugeRemainder?) = divisor / dividend
+            let (quotient, remainder) = divisor / dividend
             divisor = remainder?.divisor ?? HugeInt.zero
             dividend = remainder?.dividend ?? HugeInt.zero
             return quotient
@@ -129,12 +134,12 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
     /// - Warning: Very resource intensive when using big numbers.
     public mutating func simplify_parallel() async -> HugeInt {
         guard dividend < divisor else {
-            let (quotient, remainder):(HugeInt, HugeRemainder?) = divisor / dividend
+            let (quotient, remainder) = divisor / dividend
             divisor = remainder?.divisor ?? HugeInt.zero
             dividend = remainder?.dividend ?? HugeInt.zero
             return quotient
         }
-        if let shared_factors:Set<HugeInt> = await dividend.get_shared_factors_parallel(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
+        if let shared_factors:Set<HugeInt> = await dividend.getSharedFactorsParallel(divisor), let maximum_shared_factor:HugeInt = shared_factors.max() {
             dividend /= maximum_shared_factor
             divisor /= maximum_shared_factor
         }
@@ -146,10 +151,10 @@ public struct HugeRemainder : Hashable, Comparable, CustomStringConvertible {
  Comparable
  */
 public extension HugeRemainder {
-    static func < (left: HugeRemainder, right: HugeRemainder) -> Bool {
-        var left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
-        if left.divisor != right.divisor {
-            let (_, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = HugeRemainder.get_common_denominator(left: left, right: right)
+    static func < (lhs: HugeRemainder, rhs: HugeRemainder) -> Bool {
+        var left_dividend:HugeInt = lhs.dividend, right_dividend:HugeInt = rhs.dividend
+        if lhs.divisor != rhs.divisor {
+            let (_, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = HugeRemainder.get_common_denominator(lhs: lhs, rhs: rhs)
             if let left_multiplier:HugeInt = left_multiplier {
                 left_dividend *= left_multiplier
             }
@@ -180,8 +185,8 @@ public extension HugeRemainder {
     }
 }
 public extension HugeRemainder {
-    static func == (left: HugeRemainder, right: HugeRemainder) -> Bool {
-        return left.dividend == right.dividend && left.divisor == right.divisor || left.is_zero && right.is_zero
+    static func == (lhs: HugeRemainder, rhs: HugeRemainder) -> Bool {
+        return lhs.dividend == rhs.dividend && lhs.divisor == rhs.divisor || lhs.isZero && rhs.isZero
     }
 }
 /*
@@ -194,8 +199,8 @@ public extension HugeRemainder {
 }
 internal extension HugeRemainder {
     /// - Warning: This doesn't check if the divisors are equal.
-    static func get_common_denominator(left: HugeRemainder, right: HugeRemainder) -> (denominator: HugeInt, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
-        let left_divisor:HugeInt = left.divisor, right_divisor:HugeInt = right.divisor
+    static func get_common_denominator(lhs: HugeRemainder, rhs: HugeRemainder) -> (denominator: HugeInt, left_multiplier: HugeInt?, right_multiplier: HugeInt?) {
+        let left_divisor:HugeInt = lhs.divisor, right_divisor:HugeInt = rhs.divisor
         /*if let max_shared_factor:HugeInt = left_divisor.get_shared_factors(right_divisor)?.max() { // TODO: fix? | makes performance significantly worse, but remainder is simplified
             let left_divisor_is_max:Bool = left_divisor == max_shared_factor
             if left_divisor_is_max {
@@ -214,38 +219,38 @@ internal extension HugeRemainder {
  Addition
  */
 public extension HugeRemainder {
-    static func + (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        if left == HugeRemainder.zero {
-            return right
-        } else if right == HugeRemainder.zero {
-            return left
-        } else if left.divisor == right.divisor {
-            return HugeRemainder(dividend: left.dividend + right.dividend, divisor: left.divisor)
+    static func + (lhs: HugeRemainder, rhs: HugeRemainder) -> HugeRemainder {
+        if lhs == HugeRemainder.zero {
+            return rhs
+        } else if rhs == HugeRemainder.zero {
+            return lhs
+        } else if lhs.divisor == rhs.divisor {
+            return HugeRemainder(dividend: lhs.dividend + rhs.dividend, divisor: lhs.divisor)
         } else {
-            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(lhs: lhs, rhs: rhs)
+            let left_dividend:HugeInt = lhs.dividend, right_dividend:HugeInt = rhs.dividend
             let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
             return HugeRemainder(dividend: left_result + right_result, divisor: common_denominator)
         }
     }
-    static func + (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
-        return left + HugeRemainder(dividend: right, divisor: HugeInt.one)
+    static func + (lhs: HugeRemainder, rhs: HugeInt) -> HugeRemainder {
+        return lhs + HugeRemainder(dividend: rhs, divisor: HugeInt.one)
     }
     
-    static func += (left: inout HugeRemainder, right: HugeRemainder) {
-        if left == HugeRemainder.zero {
-            left.dividend = right.dividend
-            left.divisor = right.divisor
-        } else if right == HugeRemainder.zero {
+    static func += (lhs: inout HugeRemainder, rhs: HugeRemainder) {
+        if lhs == HugeRemainder.zero {
+            lhs.dividend = rhs.dividend
+            lhs.divisor = rhs.divisor
+        } else if rhs == HugeRemainder.zero {
             return
-        } else if left.divisor == right.divisor {
-            left.dividend += right.dividend
+        } else if lhs.divisor == rhs.divisor {
+            lhs.dividend += rhs.dividend
         } else {
-            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(lhs: lhs, rhs: rhs)
+            let left_dividend:HugeInt = lhs.dividend, right_dividend:HugeInt = rhs.dividend
             let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-            left.dividend = left_result + right_result
-            left.divisor = common_denominator
+            lhs.dividend = left_result + right_result
+            lhs.divisor = common_denominator
         }
     }
 }
@@ -253,27 +258,27 @@ public extension HugeRemainder {
  Subtraction
  */
 public extension HugeRemainder {
-    static func - (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        return left + -right
+    static func - (lhs: HugeRemainder, rhs: HugeRemainder) -> HugeRemainder {
+        return lhs + -rhs
     }
-    static func - (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
-        return left - HugeRemainder(dividend: right, divisor: HugeInt.one)
+    static func - (lhs: HugeRemainder, rhs: HugeInt) -> HugeRemainder {
+        return lhs - HugeRemainder(dividend: rhs, divisor: HugeInt.one)
     }
     
-    static func -= (left: inout HugeRemainder, right: HugeRemainder) {
-        if left == HugeRemainder.zero {
-            left.dividend = right.dividend
-            left.divisor = right.divisor
-        } else if right == HugeRemainder.zero {
+    static func -= (lhs: inout HugeRemainder, rhs: HugeRemainder) {
+        if lhs == HugeRemainder.zero {
+            lhs.dividend = rhs.dividend
+            lhs.divisor = rhs.divisor
+        } else if rhs == HugeRemainder.zero {
             return
-        } else if left.divisor == right.divisor {
-            left.dividend -= right.dividend
+        } else if lhs.divisor == rhs.divisor {
+            lhs.dividend -= rhs.dividend
         } else {
-            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(left: left, right: right)
-            let left_dividend:HugeInt = left.dividend, right_dividend:HugeInt = right.dividend
+            let (common_denominator, left_multiplier, right_multiplier):(HugeInt, HugeInt?, HugeInt?) = get_common_denominator(lhs: lhs, rhs: rhs)
+            let left_dividend:HugeInt = lhs.dividend, right_dividend:HugeInt = rhs.dividend
             let left_result:HugeInt = left_dividend * left_multiplier!, right_result:HugeInt = right_dividend * right_multiplier!
-            left.dividend = left_result - right_result
-            left.divisor = common_denominator
+            lhs.dividend = left_result - right_result
+            lhs.divisor = common_denominator
         }
     }
 }
@@ -281,31 +286,31 @@ public extension HugeRemainder {
  Multiplication
  */
 public extension HugeRemainder {
-    static func * (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        return HugeRemainder(dividend: left.dividend * right.dividend, divisor: left.divisor * right.divisor)
+    static func * (lhs: HugeRemainder, rhs: HugeRemainder) -> HugeRemainder {
+        return HugeRemainder(dividend: lhs.dividend * rhs.dividend, divisor: lhs.divisor * rhs.divisor)
     }
-    static func * (left: HugeRemainder, right: HugeInt) -> HugeRemainder {
-        return HugeRemainder(dividend: left.dividend * right, divisor: left.divisor)
+    static func * (lhs: HugeRemainder, rhs: HugeInt) -> HugeRemainder {
+        return HugeRemainder(dividend: lhs.dividend * rhs, divisor: lhs.divisor)
     }
     
-    static func * (left: HugeRemainder, right: any BinaryInteger) -> HugeRemainder {
-        return left * HugeRemainder(dividend: HugeInt(right), divisor: HugeInt.one)
+    static func * (lhs: HugeRemainder, rhs: any BinaryInteger) -> HugeRemainder {
+        return lhs * HugeRemainder(dividend: HugeInt(rhs), divisor: HugeInt.one)
     }
         
-    static func *= (left: inout HugeRemainder, right: HugeRemainder) {
-        left.dividend *= right.dividend
-        left.divisor *= right.divisor
+    static func *= (lhs: inout HugeRemainder, rhs: HugeRemainder) {
+        lhs.dividend *= rhs.dividend
+        lhs.divisor *= rhs.divisor
     }
-    static func *= (left: inout HugeRemainder, right: HugeInt) {
-        left.dividend *= right
+    static func *= (lhs: inout HugeRemainder, rhs: HugeInt) {
+        lhs.dividend *= rhs
     }
 }
 /*
  Division
  */
 public extension HugeRemainder {
-    static func / (left: HugeRemainder, right: HugeRemainder) -> HugeRemainder {
-        let reciprocal:HugeRemainder = HugeRemainder(dividend: right.divisor, divisor: right.dividend)
-        return left * reciprocal
+    static func / (lhs: HugeRemainder, rhs: HugeRemainder) -> HugeRemainder {
+        let reciprocal:HugeRemainder = HugeRemainder(dividend: rhs.divisor, divisor: rhs.dividend)
+        return lhs * reciprocal
     }
 }
